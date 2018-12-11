@@ -39,19 +39,20 @@
             this.gamePanel.Name = "gamePanel";
             this.gamePanel.Size = new System.Drawing.Size(1142, 508);
             this.gamePanel.TabIndex = 0;
+            this.gamePanel.Click += new System.EventHandler(this.gamePanel_Click);
             // 
             // gameTimer
             // 
             this.gameTimer.Interval = 30;
             this.gameTimer.Tick += new System.EventHandler(this.gameTimer_Tick);
             // 
-            // Form1
+            // GameForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1405, 700);
             this.Controls.Add(this.gamePanel);
-            this.Name = "Form1";
+            this.Name = "GameForm";
             this.Text = "Form1";
             this.ResumeLayout(false);
 

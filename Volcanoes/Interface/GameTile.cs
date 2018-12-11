@@ -11,7 +11,6 @@ namespace Volcano.Interface
     class GameTile
     {
         public Point Location { get; set; }
-        public string Name { get; set; }
         public bool Upright { get; set; }
         public Rectangle BoundingBox { get; set; }
         public GraphicsPath Path { get; set; }

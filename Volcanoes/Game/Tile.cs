@@ -10,8 +10,15 @@ namespace Volcano.Game
     {
         public Player Owner { get; set; }
         public int Value { get; set; }
-        public string Name { get; set; }
         public int Index { get; set; }
+
+        public string Name
+        {
+            get
+            {
+                return Constants.TileNames[Index];
+            }
+        }
 
         public int[] AdjacentIndexes
         {
@@ -29,7 +36,6 @@ namespace Volcano.Game
         {
             Owner = copy.Owner;
             Value = copy.Value;
-            Name = copy.Name;
             Index = copy.Index;
         }        
     }

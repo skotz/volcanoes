@@ -39,7 +39,6 @@ namespace Volcano.Interface
                     int x = outerCol * (_settings.TileWidth * 2 + _settings.TileHorizontalSpacing * 4) + _settings.TileSpacing;
                     int y = outerRow * (_settings.TileHeight * 2 + _settings.TileSpacing * 2 + _settings.TileHorizontalSpacing) + _settings.TileHorizontalSpacing;
                     bool upright = outerRow % 2 == 0;
-                    string name = (outer + 1).ToString();
                     if (outerRow >= 2)
                     {
                         x += _settings.TileWidth + _settings.TileHorizontalSpacing * 2;
@@ -55,20 +54,16 @@ namespace Volcano.Interface
                                 x += _settings.TileWidth / 2 + _settings.TileHorizontalSpacing;
                                 y += _settings.TileHeight + _settings.TileSpacing;
                                 upright = !upright;
-                                name += "A";
                                 break;
                             case 1:
                                 x += _settings.TileWidth / 2 + _settings.TileHorizontalSpacing;
-                                name += "B";
                                 break;
                             case 2:
                                 x += _settings.TileWidth + _settings.TileHorizontalSpacing * 2;
                                 y += _settings.TileHeight + _settings.TileSpacing + _settings.TileHorizontalSpacing;
-                                name += "C";
                                 break;
                             case 3:
                                 y += _settings.TileHeight + _settings.TileSpacing + _settings.TileHorizontalSpacing;
-                                name += "D";
                                 break;
                         }
                     }
@@ -80,19 +75,15 @@ namespace Volcano.Interface
                                 x += _settings.TileWidth / 2 + _settings.TileHorizontalSpacing;
                                 y += _settings.TileHorizontalSpacing;
                                 upright = !upright;
-                                name += "A";
                                 break;
                             case 1:
                                 x += _settings.TileWidth / 2 + _settings.TileHorizontalSpacing;
                                 y += _settings.TileHeight + _settings.TileSpacing + _settings.TileHorizontalSpacing;
-                                name += "B";
                                 break;
                             case 2:
-                                name += "C";
                                 break;
                             case 3:
                                 x += _settings.TileWidth + _settings.TileHorizontalSpacing * 2;
-                                name += "D";
                                 break;
                         }
                     }
@@ -121,7 +112,6 @@ namespace Volcano.Interface
                     _tiles.Add(new GameTile
                     {
                         Location = new Point(x, y),
-                        Name = name,
                         Upright = upright,
                         BoundingBox = new Rectangle(x, y, _settings.TileWidth, _settings.TileHeight),
                         Path = path
@@ -129,11 +119,10 @@ namespace Volcano.Interface
                 }
             }
         }
-
-        public void Draw(Board gameState)
+        
+        public void Draw(Board gameState, Point mouseLocation)
         {
-            PointF mouseLocation = _panel.PointToClient(Cursor.Position);
-            int hoverTile = GetIndexFromLocation(mouseLocation);
+            int hoverTile = GetTileIndex(mouseLocation);
 
             using (Bitmap b = new Bitmap(_panel.Width, _panel.Height))
             using (Graphics g = Graphics.FromImage(b))
@@ -144,9 +133,19 @@ namespace Volcano.Interface
 
                 for (int i = 0; i < 80; i++)
                 {
-                    DrawTile(g, i, hoverTile);
-                    DrawTileText(g, i, gameState.Tiles[i].Index.ToString());
+                    DrawTile(g, gameState, i, hoverTile);
+
+                    if (gameState.Tiles[i].Owner == Player.Empty)
+                    {
+                        DrawTileText(g, i, gameState.Tiles[i].Name);
+                    }
+                    else
+                    {
+                        DrawTileText(g, i, gameState.Tiles[i].Value.ToString());
+                    }
                 }
+
+                g.DrawString("Turn " + gameState.Turn, new Font("Tahoma", 12f, FontStyle.Bold), Brushes.Black, new Point(0, 0));
 
                 using (Graphics game = _panel.CreateGraphics())
                 {
@@ -155,31 +154,40 @@ namespace Volcano.Interface
             }
         }
 
-        private void DrawTile(Graphics g, int index, int hoverIndex)
+        private void DrawTile(Graphics g, Board gameState, int index, int hoverIndex)
         {
-            Brush brush = Brushes.Red;
+            Color tileColor = Color.Gray;
+
+            if (gameState.Tiles[index].Owner == Player.Blue)
+            {
+                tileColor = _settings.BlueColor;
+            }
+
+            if (gameState.Tiles[index].Owner == Player.Orange)
+            {
+                tileColor = _settings.OrangeColor;
+            }
+
             if (index == hoverIndex)
             {
-                brush = Brushes.Blue;
+                tileColor = Color.FromArgb(128, tileColor);
             }
 
-            // TODO: get this data in a better way
-            if (hoverIndex >= 0)
-            {
-                try
-                {
-                    if (Constants.ConnectingTiles[hoverIndex].Any(x => x == index))
-                    {
-                        brush = Brushes.LightBlue;
-                    }
-                }
-                catch { }
-            }
+            Brush brush = new SolidBrush(tileColor);
 
             g.FillPath(brush, _tiles[index].Path);
+                        
+            if (hoverIndex >= 0)
+            {
+                if (Constants.ConnectingTiles[hoverIndex].Any(x => x == index))
+                {
+                    Pen pen = new Pen(Color.Black, _settings.TileHorizontalSpacing / 2);
+                    g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
+                }
+            }
         }
 
-        private int GetIndexFromLocation(PointF location)
+        public int GetTileIndex(Point location)
         {
             for (int i = 0; i < 80; i++)
             {

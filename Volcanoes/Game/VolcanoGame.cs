@@ -14,5 +14,10 @@ namespace Volcano.Game
         {
             CurrentState = new Board();
         }
+        
+        public void MakeMove(int tileIndex)
+        {
+            CurrentState.MakeMove(new Move(tileIndex, MoveType.SingleGrow));
+        }
     }
 }

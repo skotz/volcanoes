@@ -10,7 +10,9 @@ namespace Volcano.Game
     {
         public const int VolcanoEruptionValue = 8;
 
-        private static Lazy<int[][]> _connectingTiles = new Lazy<int[][]>(LoadConnectingTiles);
+        private static Lazy<int[][]> _connectingTiles = new Lazy<int[][]>(GetConnectingTiles);
+
+        private static Lazy<string[]> _tileNames = new Lazy<string[]>(GetTileNames);
 
         /// <summary>
         /// An array mapping a source tile index to it's three connecting triangle indexes.
@@ -18,7 +20,13 @@ namespace Volcano.Game
         /// </summary>
         public static int[][] ConnectingTiles { get { return _connectingTiles.Value; } }
 
-        private static int[][] LoadConnectingTiles()
+        /// <summary>
+        /// An array mapping a source tile index to it's tile name.
+        /// E.G., TileNames[5] = "2A"
+        /// </summary>
+        public static string[] TileNames { get { return _tileNames.Value; } }
+
+        private static int[][] GetConnectingTiles()
         {
             int[][] connections = new int[80][];
 
@@ -131,6 +139,41 @@ namespace Volcano.Game
             }
 
             return connections;
+        }
+
+        private static string[] GetTileNames()
+        {
+            string[] names = new string[80];
+
+            for (int outer = 0; outer < 20; outer++)
+            {
+                int outerRow = outer / 5;
+                int outerCol = outer % 5;
+
+                for (int inner = 0; inner < 4; inner++)
+                {
+                    int index = outer * 4 + inner;
+                    names[index] = (outer + 1).ToString();
+
+                    switch (inner)
+                    {
+                        case 0:
+                            names[index] += "A";
+                            break;
+                        case 1:
+                            names[index] += "B";
+                            break;
+                        case 2:
+                            names[index] += "C";
+                            break;
+                        case 3:
+                            names[index] += "D";
+                            break;
+                    }
+                }
+            }
+
+            return names;
         }
     }
 }

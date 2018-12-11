@@ -32,7 +32,14 @@ namespace Volcano
 
         private void gameTimer_Tick(object sender, EventArgs e)
         {
-            g.Draw(game.CurrentState);
+            g.Draw(game.CurrentState, gamePanel.PointToClient(Cursor.Position));
+        }
+
+        private void gamePanel_Click(object sender, EventArgs e)
+        {
+            Point mouse = gamePanel.PointToClient(Cursor.Position);
+            int tileIndex = g.GetTileIndex(mouse);
+            game.MakeMove(tileIndex);
         }
     }
 }

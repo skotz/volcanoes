@@ -10,16 +10,11 @@ namespace Volcano.Game
     {
         public int TileIndex { get; set; }
         public MoveType MoveType { get; set; }
-
-        public Move()
-        {
-        }
-
+        
         public Move(int index, MoveType type)
         {
             TileIndex = index;
             MoveType = type;
-
         }
 
         public static bool operator ==(Move a, Move b)
@@ -41,7 +36,7 @@ namespace Volcano.Game
 
             var other = (Move)obj;
 
-            return (TileIndex == other.TileIndex && MoveType == other.MoveType);
+            return TileIndex == other.TileIndex && MoveType == other.MoveType;
         }
 
         public override int GetHashCode()

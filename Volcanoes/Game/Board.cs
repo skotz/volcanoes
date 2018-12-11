@@ -8,6 +8,7 @@ namespace Volcano.Game
 {
     class Board
     {
+        // TODO: tile state can be maintained in a simple list of 80 ints where positive numbers are for blue and negative numbers are for orange
         public List<Tile> Tiles { get; private set; }
         public Player Player { get; private set; }
         public int Turn { get; private set; }
@@ -18,40 +19,14 @@ namespace Volcano.Game
             Player = Player.Blue;
             Tiles = new List<Tile>();
 
-            for (int outer = 0; outer < 20; outer++)
+            for (int i = 0; i < 80; i++)
             {
-                int outerRow = outer / 5;
-                int outerCol = outer % 5;
-
-                for (int inner = 0; inner < 4; inner++)
+                Tiles.Add(new Tile
                 {
-                    int index = outer * 4 + inner;
-                    string name = (outer + 1).ToString();
-
-                    switch (inner)
-                    {
-                        case 0:
-                            name += "A";
-                            break;
-                        case 1:
-                            name += "B";
-                            break;
-                        case 2:
-                            name += "C";
-                            break;
-                        case 3:
-                            name += "D";
-                            break;
-                    }
-
-                    Tiles.Add(new Tile
-                    {
-                        Index = index,
-                        Owner = Player.Empty,
-                        Value = 0,
-                        Name = name
-                    });
-                }
+                    Index = i,
+                    Owner = Player.Empty,
+                    Value = 0
+                });
             }
         }
 
@@ -70,12 +45,36 @@ namespace Volcano.Game
         {
             if (IsValidMove(move))
             {
-                Tiles[move.TileIndex].Owner = Player;
-                Tiles[move.TileIndex].Value += 1;
+                if (move.MoveType == MoveType.AllGrow)
+                {
+                    for (int i = 0; i < 80; i++)
+                    {
+                        if (Tiles[i].Value != 0)
+                        {
+                            Tiles[i].Value++;
+
+                            // process eruptions
+                            // process wins
+                        }
+                    }
+                }
+                else if (move.MoveType == MoveType.SingleGrow)
+                {
+                    Tiles[move.TileIndex].Owner = Player;
+                    Tiles[move.TileIndex].Value += 1;
+                }
 
                 // process eruptions
                 // check for win
-                // note: maintain list of connected tiles to make win check trivial?
+                // TODO: maintain list of connected tiles to make win check trivial?
+
+                Turn++;
+                Player = GetPlayerForTurn(Turn);
+
+                if (GetMoveTypeForTurn(Turn) == MoveType.AllGrow)
+                {
+                    MakeMove(new Move(-1, MoveType.AllGrow));
+                }
             }
         }
 
@@ -89,18 +88,25 @@ namespace Volcano.Game
 
             // TODO: order moves for alpha/beta pruning by 1) growing existing tiles, 2) claiming adjacent tiles, and then 3) claiming remaining tiles
 
-            for (int i = 0; i < 80; i++)
+            if (GetMoveTypeForTurn(Turn) == MoveType.AllGrow)
             {
-                // Grow existing tiles
-                if (Tiles[i].Owner == Player && Tiles[i].Value < Constants.VolcanoEruptionValue)
+                moves.Add(new Move(-1, MoveType.AllGrow));
+            }
+            else
+            {
+                for (int i = 0; i < 80; i++)
                 {
-                    moves.Add(new Move(i, GetMoveTypeForTurn(i)));
-                }
+                    // Grow existing tiles
+                    if (Tiles[i].Owner == Player && Tiles[i].Value < Constants.VolcanoEruptionValue)
+                    {
+                        moves.Add(new Move(i, MoveType.SingleGrow));
+                    }
 
-                // Claim new tiles
-                if (Tiles[i].Owner == Player.Empty)
-                {
-                    moves.Add(new Move(i, GetMoveTypeForTurn(i)));
+                    // Claim new tiles
+                    if (Tiles[i].Owner == Player.Empty)
+                    {
+                        moves.Add(new Move(i, MoveType.SingleGrow));
+                    }
                 }
             }
 
