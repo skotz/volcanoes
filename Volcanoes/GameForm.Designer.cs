@@ -29,15 +29,16 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GameForm));
             this.gamePanel = new System.Windows.Forms.Panel();
             this.gameTimer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // gamePanel
             // 
-            this.gamePanel.Location = new System.Drawing.Point(120, 116);
+            this.gamePanel.Location = new System.Drawing.Point(12, 12);
             this.gamePanel.Name = "gamePanel";
-            this.gamePanel.Size = new System.Drawing.Size(1142, 508);
+            this.gamePanel.Size = new System.Drawing.Size(1016, 494);
             this.gamePanel.TabIndex = 0;
             this.gamePanel.Click += new System.EventHandler(this.gamePanel_Click);
             // 
@@ -50,10 +51,11 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1405, 700);
+            this.ClientSize = new System.Drawing.Size(1038, 518);
             this.Controls.Add(this.gamePanel);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "GameForm";
-            this.Text = "Form1";
+            this.Text = "Volcanoes";
             this.ResumeLayout(false);
 
         }

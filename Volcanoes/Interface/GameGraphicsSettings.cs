@@ -19,8 +19,10 @@ namespace Volcano.Interface
         public int FontSize { get; set; }
 
         public Color BlueColor = Color.Blue;
-
         public Color OrangeColor = Color.Orange;
+
+        public int IdealPanelWidth { get { return TileWidth * 11 + TileHorizontalSpacing * 20 + TileSpacing * 2; } }
+        public int IdealPanelHeight { get { return TileHeight * 6 + TileHorizontalSpacing * 4 + TileSpacing * 7; } }
 
         public GameGraphicsSettings(int tileSize, int tileSpacing, int fontSize)
         {

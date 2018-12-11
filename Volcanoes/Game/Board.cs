@@ -52,9 +52,6 @@ namespace Volcano.Game
                         if (Tiles[i].Value != 0)
                         {
                             Tiles[i].Value++;
-
-                            // process eruptions
-                            // process wins
                         }
                     }
                 }
@@ -64,7 +61,8 @@ namespace Volcano.Game
                     Tiles[move.TileIndex].Value += 1;
                 }
 
-                // process eruptions
+                ProcessEruptions();
+
                 // check for win
                 // TODO: maintain list of connected tiles to make win check trivial?
 
@@ -74,6 +72,45 @@ namespace Volcano.Game
                 if (GetMoveTypeForTurn(Turn) == MoveType.AllGrow)
                 {
                     MakeMove(new Move(-1, MoveType.AllGrow));
+                }
+            }
+        }
+
+        private void ProcessEruptions()
+        {
+            bool done = false;
+            while (!done)
+            {
+                done = true;
+                for (int i = 0; i < 80; i++)
+                {
+                    if (Tiles[i].Value >= Constants.VolcanoEruptionValue)
+                    {
+                        for (int adjacent = 0; adjacent < 3; adjacent++)
+                        {
+                            Tiles[i].Value = 1;
+                            done = false;
+
+                            // Blank tile
+                            if (Tiles[Constants.ConnectingTiles[i][adjacent]].Owner == Player.Empty)
+                            {
+                                Tiles[Constants.ConnectingTiles[i][adjacent]].Owner = Tiles[i].Owner;
+                                Tiles[Constants.ConnectingTiles[i][adjacent]].Value = 1;
+                            }
+
+                            // Same owner
+                            else if (Tiles[Constants.ConnectingTiles[i][adjacent]].Owner == Tiles[i].Owner)
+                            {
+                                Tiles[Constants.ConnectingTiles[i][adjacent]].Value++;
+                            }
+
+                            // Enemy owner
+                            else if (Tiles[Constants.ConnectingTiles[i][adjacent]].Owner != Tiles[i].Owner)
+                            {
+                                Tiles[Constants.ConnectingTiles[i][adjacent]].Value = 1;
+                            }
+                        }
+                    }
                 }
             }
         }
