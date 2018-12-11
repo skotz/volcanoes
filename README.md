@@ -1,5 +1,5 @@
 # Volcanoes
-This is a prototype for a new board game concept. 
+This is a prototype for a new board game concept being designed by Simon Dorfman.
 
 ![Board Concept](Concept/board.png)
 
