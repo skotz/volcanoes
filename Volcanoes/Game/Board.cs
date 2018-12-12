@@ -137,7 +137,7 @@ namespace Volcano.Game
             {
                 if (Tiles[i].Owner != Player.Empty && Tiles[Tiles[i].Antipode].Owner == Tiles[i].Owner)
                 {
-                    List<int> path = FindPath2(i, Tiles[i].Antipode);
+                    List<int> path = FindPath(i, Tiles[i].Antipode);
 
                     if (path.Count > 0)
                     {
@@ -148,7 +148,7 @@ namespace Volcano.Game
             }
         }
 
-        private List<int> FindPath2(int startingIndex, int endingIndex)
+        private List<int> FindPath(int startingIndex, int endingIndex)
         {
             // The set of nodes already evaluated
             List<int> closedSet = new List<int>();
@@ -251,66 +251,6 @@ namespace Volcano.Game
                     cameFrom[neighbor] = current;
                     gScore[neighbor] = tentative_gScore;
                     fScore[neighbor] = gScore[neighbor] + Math.Abs(neighbor - startingIndex);
-                }
-            }
-
-            return new List<int>();
-        }
-
-        private List<int> FindPath(int startingIndex, int endingIndex)
-        {
-            Dictionary<int, bool> closedSet = new Dictionary<int, bool>();
-            Dictionary<int, bool> openSet = new Dictionary<int, bool>();
-            Dictionary<int, int> gScore = new Dictionary<int, int>();
-            Dictionary<int, int> nodeLinks = new Dictionary<int, int>();
-
-            openSet[startingIndex] = true;
-            gScore[startingIndex] = 0;
-
-            while (openSet.Count > 0)
-            {
-                var current = openSet.Keys.First();
-
-                if (current.Equals(endingIndex))
-                {
-                    List<int> path = new List<int>();
-                    while (nodeLinks.ContainsKey(current))
-                    {
-                        path.Add(current);
-                        current = nodeLinks[current];
-                    }
-                    return path;
-                }
-                
-                openSet.Remove(current);
-                closedSet[current] = true;
-
-                foreach (var neighbor in Tiles[current].AdjacentIndexes)
-                {
-                    if (closedSet.ContainsKey(neighbor))
-                    {
-                        continue;
-                    }
-
-                    int score = int.MaxValue;
-                    gScore.TryGetValue(current, out score);
-                    var projectedG = score + 1;
-
-                    int neighborScore = int.MaxValue;
-                    gScore.TryGetValue(neighbor, out score);
-
-                    if (!openSet.ContainsKey(neighbor))
-                    {
-                        openSet[neighbor] = true;
-                    }
-                    else if (projectedG >= neighborScore)
-                    {
-                        continue;
-                    }
-
-                    //record it
-                    nodeLinks[neighbor] = current;
-                    gScore[neighbor] = projectedG;
                 }
             }
 
