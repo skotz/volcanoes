@@ -13,11 +13,24 @@ namespace Volcano.Game
         public Player Player { get; private set; }
         public int Turn { get; private set; }
 
+        public Player Winner { get; private set; }
+        public List<int> WinningPath { get; private set; }
+        
+        public GameState State
+        {
+            get
+            {
+                return Winner == Player.Empty ? GameState.InProgress : GameState.GameOver;
+            }
+        }
+
         public Board()
         {
             Turn = 1;
             Player = Player.Blue;
             Tiles = new List<Tile>();
+            Winner = Player.Empty;
+            WinningPath = new List<int>();
 
             for (int i = 0; i < 80; i++)
             {
@@ -35,6 +48,8 @@ namespace Volcano.Game
             Tiles = copy.Tiles.Select(x => new Tile(x)).ToList();
             Player = copy.Player;
             Turn = copy.Turn;
+            Winner = copy.Winner;
+            WinningPath = copy.WinningPath;
         }
 
         /// <summary>
@@ -60,23 +75,19 @@ namespace Volcano.Game
                     Tiles[move.TileIndex].Owner = Player;
                     Tiles[move.TileIndex].Value += 1;
                 }
-
+                
                 ProcessEruptions();
+                SearchForWin();
 
-                Player winner = GetWinner();
-
-                if (winner != Player.Empty)
+                if (Winner == Player.Empty)
                 {
-                    // TODO
-                    throw new Exception("WINNER!");
-                }
+                    Turn++;
+                    Player = GetPlayerForTurn(Turn);
 
-                Turn++;
-                Player = GetPlayerForTurn(Turn);
-
-                if (GetMoveTypeForTurn(Turn) == MoveType.AllGrow)
-                {
-                    MakeMove(new Move(-1, MoveType.AllGrow));
+                    if (GetMoveTypeForTurn(Turn) == MoveType.AllGrow)
+                    {
+                        MakeMove(new Move(-1, MoveType.AllGrow));
+                    }
                 }
             }
         }
@@ -120,13 +131,190 @@ namespace Volcano.Game
             }
         }
 
-        private Player GetWinner()
+        private void SearchForWin()
         {
-            Player winner = Player.Empty;
+            for (int i = 0; i < 80; i++)
+            {
+                if (Tiles[i].Owner != Player.Empty && Tiles[Tiles[i].Antipode].Owner == Tiles[i].Owner)
+                {
+                    List<int> path = FindPath2(i, Tiles[i].Antipode);
 
-            // TODO: do some path searching to find winners
+                    if (path.Count > 0)
+                    {
+                        Winner = Tiles[i].Owner;
+                        WinningPath = path;
+                    }
+                }
+            }
+        }
 
-            return winner;
+        private List<int> FindPath2(int startingIndex, int endingIndex)
+        {
+            // The set of nodes already evaluated
+            List<int> closedSet = new List<int>();
+
+            // The set of currently discovered nodes that are not evaluated yet.
+            // Initially, only the start node is known.
+            List<int> openSet = new List<int>();
+            openSet.Add(startingIndex);
+
+            // For each node, which node it can most efficiently be reached from.
+            // If a node can be reached from many nodes, cameFrom will eventually contain the
+            // most efficient previous step.
+            int[] cameFrom = new int[80];
+            for (int i = 0; i < 80; i++)
+            {
+                cameFrom[i] = -1;
+            }
+
+            // For each node, the cost of getting from the start node to that node.
+            int[] gScore = new int[80];
+            for (int i = 0; i < 80; i++)
+            {
+                gScore[i] = int.MaxValue;
+            }
+
+            // The cost of going from start to start is zero.
+            gScore[startingIndex] = 0;
+
+            // For each node, the total cost of getting from the start node to the goal
+            // by passing by that node. That value is partly known, partly heuristic.
+            int[] fScore = new int[80];
+            for (int i = 0; i < 80; i++)
+            {
+                fScore[i] = int.MaxValue;
+            }
+
+            // For the first node, that value is completely heuristic.
+            fScore[startingIndex] = Math.Abs(endingIndex - startingIndex);
+
+            while (openSet.Count > 0)
+            {
+                // Get the next item in the open set with the lowest fScore
+                int current = openSet[0];
+                int best = fScore[current];
+                foreach (int i in openSet)
+                {
+                    if (fScore[i] < best)
+                    {
+                        current = i;
+                        best = fScore[i];
+                    }
+                }
+
+                // If we found a path from the start to the end, reconstruct the path and return it
+                if (current == endingIndex)
+                {
+                    List<int> path = new List<int>();
+                    path.Add(current);
+
+                    while (cameFrom[current] != -1)
+                    {
+                        current = cameFrom[current];
+                        path.Add(current);
+                    }
+
+                    return path;
+                }
+
+                openSet.Remove(current);
+                closedSet.Add(current);
+
+                foreach (int neighbor in Tiles[current].AdjacentIndexes)
+                {
+                    // Ignore the neighbor which is already evaluated.
+                    if (closedSet.Contains(neighbor))
+                    {
+                        continue;
+                    }
+
+                    // Ignore tiles that aren't the player's
+                    if (Tiles[neighbor].Owner != Tiles[startingIndex].Owner)
+                    {
+                        continue;
+                    }
+
+                    // The distance from start to a neighbor
+                    int tentative_gScore = gScore[current] + 1;
+
+                    // Discover a new node
+                    if (!openSet.Contains(neighbor))
+                    {
+                        openSet.Add(neighbor);
+                    }
+                    else if (tentative_gScore >= gScore[neighbor])
+                    {
+                        continue;
+                    }
+
+                    // This path is the best until now. Record it!
+                    cameFrom[neighbor] = current;
+                    gScore[neighbor] = tentative_gScore;
+                    fScore[neighbor] = gScore[neighbor] + Math.Abs(neighbor - startingIndex);
+                }
+            }
+
+            return new List<int>();
+        }
+
+        private List<int> FindPath(int startingIndex, int endingIndex)
+        {
+            Dictionary<int, bool> closedSet = new Dictionary<int, bool>();
+            Dictionary<int, bool> openSet = new Dictionary<int, bool>();
+            Dictionary<int, int> gScore = new Dictionary<int, int>();
+            Dictionary<int, int> nodeLinks = new Dictionary<int, int>();
+
+            openSet[startingIndex] = true;
+            gScore[startingIndex] = 0;
+
+            while (openSet.Count > 0)
+            {
+                var current = openSet.Keys.First();
+
+                if (current.Equals(endingIndex))
+                {
+                    List<int> path = new List<int>();
+                    while (nodeLinks.ContainsKey(current))
+                    {
+                        path.Add(current);
+                        current = nodeLinks[current];
+                    }
+                    return path;
+                }
+                
+                openSet.Remove(current);
+                closedSet[current] = true;
+
+                foreach (var neighbor in Tiles[current].AdjacentIndexes)
+                {
+                    if (closedSet.ContainsKey(neighbor))
+                    {
+                        continue;
+                    }
+
+                    int score = int.MaxValue;
+                    gScore.TryGetValue(current, out score);
+                    var projectedG = score + 1;
+
+                    int neighborScore = int.MaxValue;
+                    gScore.TryGetValue(neighbor, out score);
+
+                    if (!openSet.ContainsKey(neighbor))
+                    {
+                        openSet[neighbor] = true;
+                    }
+                    else if (projectedG >= neighborScore)
+                    {
+                        continue;
+                    }
+
+                    //record it
+                    nodeLinks[neighbor] = current;
+                    gScore[neighbor] = projectedG;
+                }
+            }
+
+            return new List<int>();
         }
 
         /// <summary>

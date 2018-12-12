@@ -148,7 +148,14 @@ namespace Volcano.Interface
                 // TODO: draw points between triangle groups
 
                 Color playerColor = gameState.Player == Player.Blue ? _settings.PlayerOneTileColor : _settings.PlayerTwoTileColor;
-                g.DrawString("Turn " + gameState.Turn, new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(0, 0));
+                if (gameState.State == GameState.GameOver)
+                {
+                    g.DrawString("Game Over!", new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(0, 0));
+                }
+                else
+                {
+                    g.DrawString("Turn " + gameState.Turn, new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(0, 0));
+                }
 
                 using (Graphics game = _panel.CreateGraphics())
                 {
@@ -168,6 +175,12 @@ namespace Volcano.Interface
             else if (gameState.Tiles[index].Owner == Player.Orange)
             {
                 tileColor = _settings.PlayerTwoTileColor;
+            }
+
+            // Winning path
+            if (gameState.WinningPath.Count > 0 && !gameState.WinningPath.Contains(index))
+            {
+                tileColor = Color.FromArgb(128, tileColor);
             }
 
             Brush brush = new SolidBrush(tileColor);

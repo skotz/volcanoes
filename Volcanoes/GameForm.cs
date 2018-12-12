@@ -54,9 +54,12 @@ namespace Volcano
 
         private void gamePanel_Click(object sender, EventArgs e)
         {
-            Point mouse = gamePanel.PointToClient(Cursor.Position);
-            int tileIndex = graphics.GetTileIndex(mouse);
-            game.MakeMove(tileIndex);
+            if (game.CurrentState.State == GameState.InProgress)
+            {
+                Point mouse = gamePanel.PointToClient(Cursor.Position);
+                int tileIndex = graphics.GetTileIndex(mouse);
+                game.MakeMove(tileIndex);
+            }
         }
     }
 }
