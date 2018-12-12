@@ -63,8 +63,13 @@ namespace Volcano.Game
 
                 ProcessEruptions();
 
-                // check for win
-                // TODO: maintain list of connected tiles to make win check trivial?
+                Player winner = GetWinner();
+
+                if (winner != Player.Empty)
+                {
+                    // TODO
+                    throw new Exception("WINNER!");
+                }
 
                 Turn++;
                 Player = GetPlayerForTurn(Turn);
@@ -113,6 +118,15 @@ namespace Volcano.Game
                     }
                 }
             }
+        }
+
+        private Player GetWinner()
+        {
+            Player winner = Player.Empty;
+
+            // TODO: do some path searching to find winners
+
+            return winner;
         }
 
         /// <summary>

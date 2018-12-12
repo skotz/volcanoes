@@ -28,6 +28,14 @@ namespace Volcano.Game
             }
         }
 
+        public int Antipodes
+        {
+            get
+            {
+                return Constants.Antipodes[Index];
+            }
+        }
+
         public Tile()
         {
         }

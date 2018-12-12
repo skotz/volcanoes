@@ -145,7 +145,10 @@ namespace Volcano.Interface
                     }
                 }
 
-                g.DrawString("Turn " + gameState.Turn, new Font("Tahoma", 12f, FontStyle.Bold), Brushes.Black, new Point(0, 0));
+                // TODO: draw points between triangle groups
+
+                Color playerColor = gameState.Player == Player.Blue ? _settings.BlueColor : _settings.OrangeColor;
+                g.DrawString("Turn " + gameState.Turn, new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(0, 0));
 
                 using (Graphics game = _panel.CreateGraphics())
                 {
@@ -162,26 +165,37 @@ namespace Volcano.Interface
             {
                 tileColor = _settings.BlueColor;
             }
-
-            if (gameState.Tiles[index].Owner == Player.Orange)
+            else if (gameState.Tiles[index].Owner == Player.Orange)
             {
                 tileColor = _settings.OrangeColor;
             }
 
-            if (index == hoverIndex)
+            if (hoverIndex >= 0)
             {
-                tileColor = Color.FromArgb(128, tileColor);
+                // Tile under the mouse pointer
+                if (index == hoverIndex)
+                {
+                    tileColor = Color.FromArgb(128, tileColor);
+                }
             }
 
             Brush brush = new SolidBrush(tileColor);
 
             g.FillPath(brush, _tiles[index].Path);
-                        
+
             if (hoverIndex >= 0)
             {
+                // Tiles directly adjacent to the tile under the mouse pointer
                 if (Constants.ConnectingTiles[hoverIndex].Any(x => x == index))
                 {
-                    Pen pen = new Pen(Color.Black, _settings.TileHorizontalSpacing / 2);
+                    Pen pen = new Pen(Color.Black, _settings.TileHorizontalSpacing);
+                    g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
+                }
+
+                // Tile on the opposite side of the board
+                if (gameState.Tiles[hoverIndex].Antipodes == index)
+                {
+                    Pen pen = new Pen(Color.Lime, _settings.TileHorizontalSpacing);
                     g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
                 }
             }

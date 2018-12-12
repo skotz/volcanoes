@@ -14,6 +14,8 @@ namespace Volcano.Game
 
         private static Lazy<string[]> _tileNames = new Lazy<string[]>(GetTileNames);
 
+        private static Lazy<int[]> _antipodes = new Lazy<int[]>(GetAntipodes);
+
         /// <summary>
         /// An array mapping a source tile index to it's three connecting triangle indexes.
         /// E.G., ConnectingTiles[55] = { 33, 52, 74 } since tile 55 connects to tiles 33, 51, and 74.
@@ -25,6 +27,11 @@ namespace Volcano.Game
         /// E.G., TileNames[5] = "2A"
         /// </summary>
         public static string[] TileNames { get { return _tileNames.Value; } }
+
+        /// <summary>
+        /// An array mapping a source tile to its antipodes (tile directly opposite on the 3D board shape).
+        /// </summary>
+        public static int[] Antipodes { get { return _antipodes.Value; } }
 
         private static int[][] GetConnectingTiles()
         {
@@ -174,6 +181,53 @@ namespace Volcano.Game
             }
 
             return names;
+        }
+
+        private static int[] GetAntipodes()
+        {
+            int[] antipodes = new int[80];
+
+            for (int i = 0; i < 12; i++)
+            {
+                int a = 68;
+                a = i % 4 == 2 ? 69 : a;
+                a = i % 4 == 3 ? 67 : a;
+
+                antipodes[i] = i + a;
+                antipodes[i + a] = i;
+            }
+
+            for (int i = 12; i < 20; i++)
+            {
+                int a = 48;
+                a = i % 4 == 2 ? 49 : a;
+                a = i % 4 == 3 ? 47 : a;
+
+                antipodes[i] = i + a;
+                antipodes[i + a] = i;
+            }
+
+            for (int i = 20; i < 32; i++)
+            {
+                int a = 28;
+                a = i % 4 == 2 ? 29 : a;
+                a = i % 4 == 3 ? 27 : a;
+
+                antipodes[i] = i + a;
+                antipodes[i + a] = i;
+            }
+
+            for (int i = 32; i < 40; i++)
+            {
+                int a = 8;
+                a = i % 4 == 2 ? 9 : a;
+                a = i % 4 == 3 ? 7 : a;
+
+                antipodes[i] = i + a;
+                antipodes[i + a] = i;
+            }
+
+            return antipodes;
         }
     }
 }
