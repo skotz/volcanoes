@@ -129,7 +129,7 @@ namespace Volcano.Interface
             {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
 
-                g.Clear(Color.White);
+                g.Clear(_settings.BackgroundColor);
 
                 for (int i = 0; i < 80; i++)
                 {
@@ -147,7 +147,7 @@ namespace Volcano.Interface
 
                 // TODO: draw points between triangle groups
 
-                Color playerColor = gameState.Player == Player.Blue ? _settings.BlueColor : _settings.OrangeColor;
+                Color playerColor = gameState.Player == Player.Blue ? _settings.PlayerOneTileColor : _settings.PlayerTwoTileColor;
                 g.DrawString("Turn " + gameState.Turn, new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(0, 0));
 
                 using (Graphics game = _panel.CreateGraphics())
@@ -159,24 +159,15 @@ namespace Volcano.Interface
 
         private void DrawTile(Graphics g, Board gameState, int index, int hoverIndex)
         {
-            Color tileColor = Color.Gray;
+            Color tileColor = _settings.EmptyTileColor;
 
             if (gameState.Tiles[index].Owner == Player.Blue)
             {
-                tileColor = _settings.BlueColor;
+                tileColor = _settings.PlayerOneTileColor;
             }
             else if (gameState.Tiles[index].Owner == Player.Orange)
             {
-                tileColor = _settings.OrangeColor;
-            }
-
-            if (hoverIndex >= 0)
-            {
-                // Tile under the mouse pointer
-                if (index == hoverIndex)
-                {
-                    tileColor = Color.FromArgb(128, tileColor);
-                }
+                tileColor = _settings.PlayerTwoTileColor;
             }
 
             Brush brush = new SolidBrush(tileColor);
@@ -185,17 +176,24 @@ namespace Volcano.Interface
 
             if (hoverIndex >= 0)
             {
+                // Tile under the mouse pointer
+                if (index == hoverIndex)
+                {
+                    Pen pen = new Pen(_settings.HoverTileBorderColor, _settings.TileHorizontalSpacing);
+                    g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
+                }
+
                 // Tiles directly adjacent to the tile under the mouse pointer
                 if (Constants.ConnectingTiles[hoverIndex].Any(x => x == index))
                 {
-                    Pen pen = new Pen(Color.Black, _settings.TileHorizontalSpacing);
+                    Pen pen = new Pen(_settings.HoverAdjacentTileBorderColor, _settings.TileHorizontalSpacing);
                     g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
                 }
 
                 // Tile on the opposite side of the board
-                if (gameState.Tiles[hoverIndex].Antipodes == index)
+                if (gameState.Tiles[hoverIndex].Antipode == index)
                 {
-                    Pen pen = new Pen(Color.Lime, _settings.TileHorizontalSpacing);
+                    Pen pen = new Pen(_settings.HoverAntipodeTileBorderColor, _settings.TileHorizontalSpacing);
                     g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
                 }
             }

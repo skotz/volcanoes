@@ -28,7 +28,7 @@ namespace Volcano.Game
             }
         }
 
-        public int Antipodes
+        public int Antipode
         {
             get
             {

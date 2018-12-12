@@ -10,35 +10,52 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Volcano.Game;
+using System.IO;
 
 namespace Volcano
 {
     public partial class GameForm : Form
     {
-        GameGraphics g;
+        GameGraphics graphics;
         VolcanoGame game;
 
         public GameForm()
         {
             InitializeComponent();
-
-            var settings = new GameGraphicsSettings(80, 8, 14);
-            g = new GameGraphics(gamePanel, settings);
+            
+            graphics = new GameGraphics(gamePanel, GetGraphicsSettings());
 
             game = new VolcanoGame();
 
             gameTimer.Start();
         }
 
+        private static GameGraphicsSettings GetGraphicsSettings()
+        {
+            string file = "volcanoes.json";
+            GameGraphicsSettings settings = GameGraphicsSettings.Default;
+
+            if (File.Exists(file))
+            {
+                settings = GameGraphicsSettings.Load(file);
+            }
+            else
+            {
+                settings.Save(file);
+            }
+
+            return settings;
+        }
+
         private void gameTimer_Tick(object sender, EventArgs e)
         {
-            g.Draw(game.CurrentState, gamePanel.PointToClient(Cursor.Position));
+            graphics.Draw(game.CurrentState, gamePanel.PointToClient(Cursor.Position));
         }
 
         private void gamePanel_Click(object sender, EventArgs e)
         {
             Point mouse = gamePanel.PointToClient(Cursor.Position);
-            int tileIndex = g.GetTileIndex(mouse);
+            int tileIndex = graphics.GetTileIndex(mouse);
             game.MakeMove(tileIndex);
         }
     }
