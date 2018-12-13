@@ -27,7 +27,7 @@ namespace Volcano.Game
         public Board()
         {
             Turn = 1;
-            Player = Player.Blue;
+            Player = Player.One;
             Tiles = new List<Tile>();
             Winner = Player.Empty;
             WinningPath = new List<int>();
@@ -314,7 +314,7 @@ namespace Volcano.Game
         /// <returns></returns>
         private Player GetOpponent(Player current)
         {
-            return current == Player.Blue ? Player.Orange : Player.Blue;
+            return current == Player.One ? Player.Two : Player.One;
         }
 
         /// <summary>
@@ -324,7 +324,19 @@ namespace Volcano.Game
         /// <returns></returns>
         private Player GetPlayerForTurn(int turn)
         {
-            return (turn - 1) % 6 <= 2 ? Player.Blue : Player.Orange;
+            switch ((turn - 1) % 6)
+            {
+                case 0:
+                case 4:
+                case 5: 
+                    return Player.One;
+                case 1:
+                case 2:
+                case 3:
+                    return Player.Two;
+                default:
+                    return Player.Empty;
+            }
         }
 
         /// <summary>

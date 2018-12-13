@@ -162,7 +162,7 @@ namespace Volcano.Interface
 
                 // TODO: draw points between triangle groups
 
-                Color playerColor = gameState.Player == Player.Blue ? _settings.PlayerOneVolcanoTileColor : _settings.PlayerTwoVolcanoTileColor;
+                Color playerColor = gameState.Player == Player.One ? _settings.PlayerOneVolcanoTileColor : _settings.PlayerTwoVolcanoTileColor;
                 if (gameState.State == GameState.GameOver)
                 {
                     g.DrawString("Game Over!", new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(0, 0));
@@ -183,11 +183,11 @@ namespace Volcano.Interface
         {
             Color tileColor = _settings.EmptyTileColor;
 
-            if (gameState.Tiles[index].Owner == Player.Blue)
+            if (gameState.Tiles[index].Owner == Player.One)
             {
                 tileColor = gameState.Tiles[index].Type == TileType.Volcano ? _settings.PlayerOneVolcanoTileColor : _settings.PlayerOneMagmaChamberTileColor;
             }
-            else if (gameState.Tiles[index].Owner == Player.Orange)
+            else if (gameState.Tiles[index].Owner == Player.Two)
             {
                 tileColor = gameState.Tiles[index].Type == TileType.Volcano ? _settings.PlayerTwoVolcanoTileColor : _settings.PlayerTwoMagmaChamberTileColor;
             }

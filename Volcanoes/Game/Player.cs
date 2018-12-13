@@ -8,8 +8,8 @@ namespace Volcano.Game
 {
     enum Player
     {
-        Blue,
-        Orange,
+        One,
+        Two,
         Empty
     }
 }
