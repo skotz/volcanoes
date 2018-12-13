@@ -137,17 +137,32 @@ namespace Volcano.Interface
 
                     if (gameState.Tiles[i].Owner == Player.Empty)
                     {
-                        DrawTileText(g, i, gameState.Tiles[i].Name);
+                        if (_settings.ShowTileNames)
+                        {
+                            DrawTileMainText(g, i, gameState.Tiles[i].Name);
+                        }
                     }
                     else
                     {
-                        DrawTileText(g, i, gameState.Tiles[i].Value.ToString());
+                        int value = gameState.Tiles[i].Value;
+
+                        if (gameState.Tiles[i].Type == TileType.MagmaChamber)
+                        {
+                            DrawTileSubText(g, i, "Chamber");
+                        }
+                        else
+                        {
+                            value -= Constants.MaxMagmaChamberLevel;
+                            DrawTileSubText(g, i, "Volcano");
+                        }
+
+                        DrawTileMainText(g, i, value.ToString());
                     }
                 }
 
                 // TODO: draw points between triangle groups
 
-                Color playerColor = gameState.Player == Player.Blue ? _settings.PlayerOneTileColor : _settings.PlayerTwoTileColor;
+                Color playerColor = gameState.Player == Player.Blue ? _settings.PlayerOneVolcanoTileColor : _settings.PlayerTwoVolcanoTileColor;
                 if (gameState.State == GameState.GameOver)
                 {
                     g.DrawString("Game Over!", new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(0, 0));
@@ -170,17 +185,17 @@ namespace Volcano.Interface
 
             if (gameState.Tiles[index].Owner == Player.Blue)
             {
-                tileColor = _settings.PlayerOneTileColor;
+                tileColor = gameState.Tiles[index].Type == TileType.Volcano ? _settings.PlayerOneVolcanoTileColor : _settings.PlayerOneMagmaChamberTileColor;
             }
             else if (gameState.Tiles[index].Owner == Player.Orange)
             {
-                tileColor = _settings.PlayerTwoTileColor;
+                tileColor = gameState.Tiles[index].Type == TileType.Volcano ? _settings.PlayerTwoVolcanoTileColor : _settings.PlayerTwoMagmaChamberTileColor;
             }
 
             // Winning path
             if (gameState.WinningPath.Count > 0 && !gameState.WinningPath.Contains(index))
             {
-                tileColor = Color.FromArgb(128, tileColor);
+                tileColor = Color.FromArgb(64, tileColor);
             }
 
             Brush brush = new SolidBrush(tileColor);
@@ -225,10 +240,21 @@ namespace Volcano.Interface
             return -1;
         }
 
-        private void DrawTileText(Graphics g, int index, string text)
+        private void DrawTileMainText(Graphics g, int index, string text)
         {
-            int triangleAdjust = (_tiles[index].Upright ? 1 : -1) * _settings.TileHeight / 6;
-            Font font = new Font("Tahoma", _settings.FontSize, FontStyle.Bold);
+            int triangleAdjust = (_tiles[index].Upright ? 1 : -1) * _settings.TileHeight / 600;
+            Font font = new Font("Tahoma", _settings.MainFontSize, FontStyle.Bold);
+            SizeF size = g.MeasureString(text, font);
+            Brush brush = new SolidBrush(Color.FromArgb(128, 255, 255, 255));
+            RectangleF location = new RectangleF(new PointF(_tiles[index].BoundingBox.X + _tiles[index].BoundingBox.Width / 2 - size.Width / 2, _tiles[index].BoundingBox.Y + _tiles[index].BoundingBox.Height / 2 - size.Height / 2 + triangleAdjust), size);
+
+            g.DrawString(text, font, brush, location);
+        }
+
+        private void DrawTileSubText(Graphics g, int index, string text)
+        {
+            int triangleAdjust = (_tiles[index].Upright ? 1 : -1) * _settings.TileHeight / 3;
+            Font font = new Font("Tahoma", _settings.SubTextFontSize, FontStyle.Regular);
             SizeF size = g.MeasureString(text, font);
             Brush brush = new SolidBrush(Color.FromArgb(128, 255, 255, 255));
             RectangleF location = new RectangleF(new PointF(_tiles[index].BoundingBox.X + _tiles[index].BoundingBox.Width / 2 - size.Width / 2, _tiles[index].BoundingBox.Y + _tiles[index].BoundingBox.Height / 2 - size.Height / 2 + triangleAdjust), size);

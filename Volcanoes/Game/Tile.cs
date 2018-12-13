@@ -36,6 +36,25 @@ namespace Volcano.Game
             }
         }
 
+        public TileType Type
+        {
+            get
+            {
+                if (Value <= 0)
+                {
+                    return TileType.Empty;
+                }
+                else if (Value <= Constants.MaxMagmaChamberLevel)
+                {
+                    return TileType.MagmaChamber;
+                }
+                else
+                {
+                    return TileType.Volcano;
+                }
+            }
+        }
+
         public Tile()
         {
         }

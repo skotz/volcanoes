@@ -100,7 +100,7 @@ namespace Volcano.Game
                 done = true;
                 for (int i = 0; i < 80; i++)
                 {
-                    if (Tiles[i].Value >= Constants.VolcanoEruptionValue)
+                    if (Tiles[i].Value >= Constants.MaxVolcanoLevel)
                     {
                         for (int adjacent = 0; adjacent < 3; adjacent++)
                         {
@@ -121,9 +121,13 @@ namespace Volcano.Game
                             }
 
                             // Enemy owner
-                            else if (Tiles[Constants.ConnectingTiles[i][adjacent]].Owner != Tiles[i].Owner)
+                            else if (Tiles[Constants.ConnectingTiles[i][adjacent]].Owner != Tiles[i].Owner && Tiles[Constants.ConnectingTiles[i][adjacent]].Value > 0)
                             {
-                                Tiles[Constants.ConnectingTiles[i][adjacent]].Value = 1;
+                                Tiles[Constants.ConnectingTiles[i][adjacent]].Value -= 1;
+                                if (Tiles[Constants.ConnectingTiles[i][adjacent]].Value <= 0)
+                                {
+                                    Tiles[Constants.ConnectingTiles[i][adjacent]].Owner = Player.Empty;
+                                }
                             }
                         }
                     }
@@ -234,6 +238,12 @@ namespace Volcano.Game
                         continue;
                     }
 
+                    // Ignore magma chambers
+                    if (Tiles[neighbor].Value <= Constants.MaxMagmaChamberLevel)
+                    {
+                        continue;
+                    }
+
                     // The distance from start to a neighbor
                     int tentative_gScore = gScore[current] + 1;
 
@@ -276,7 +286,7 @@ namespace Volcano.Game
                 for (int i = 0; i < 80; i++)
                 {
                     // Grow existing tiles
-                    if (Tiles[i].Owner == Player && Tiles[i].Value < Constants.VolcanoEruptionValue)
+                    if (Tiles[i].Owner == Player && Tiles[i].Value < Constants.MaxVolcanoLevel)
                     {
                         moves.Add(new Move(i, MoveType.SingleGrow));
                     }

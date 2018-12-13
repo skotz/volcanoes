@@ -18,18 +18,24 @@ namespace Volcano.Interface
         public int TileHeight { get { return (int)(TileWidth * Math.Sqrt(3) / 2); } }
         public int TileHorizontalSpacing { get { return (int)(TileSpacing * Math.Sqrt(3) / 2); } }
 
-        public int FontSize { get; set; } = 14;
+        public int MainFontSize { get; set; } = 14;
+        public int SubTextFontSize { get; set; } = 8;
 
-        public Color PlayerOneTileColor { get; set; } = Color.Blue;
-        public Color PlayerTwoTileColor { get; set; } = Color.Orange;
+        public Color PlayerOneVolcanoTileColor { get; set; } = Color.FromArgb(18, 11, 134);
+        public Color PlayerOneMagmaChamberTileColor { get; set; } = Color.FromArgb(39, 29, 211);
+        public Color PlayerTwoVolcanoTileColor { get; set; } = Color.FromArgb(192, 114, 0);
+        public Color PlayerTwoMagmaChamberTileColor { get; set; } = Color.FromArgb(255, 151, 0);
+
         public Color EmptyTileColor { get; set; } = Color.Gray;
         public Color BackgroundColor { get; set; } = Color.White;
-        public Color HoverTileBorderColor { get; set; } = Color.Magenta;
+        public Color HoverTileBorderColor { get; set; } = Color.FromArgb(230, 0, 113);
         public Color HoverAdjacentTileBorderColor { get; set; } = Color.LightGray;
-        public Color HoverAntipodeTileBorderColor { get; set; } = Color.Lime;
+        public Color HoverAntipodeTileBorderColor { get; set; } = Color.FromArgb(0, 219, 48);
 
         public int IdealPanelWidth { get { return TileWidth * 11 + TileHorizontalSpacing * 20 + TileSpacing * 2; } }
         public int IdealPanelHeight { get { return TileHeight * 6 + TileHorizontalSpacing * 4 + TileSpacing * 7; } }
+
+        public bool ShowTileNames { get; set; } = false;
 
         private GameGraphicsSettings()
         {
