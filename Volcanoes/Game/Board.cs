@@ -58,36 +58,33 @@ namespace Volcano.Game
         /// <param name="move"></param>
         public void MakeMove(Move move)
         {
-            if (IsValidMove(move))
+            if (move.MoveType == MoveType.AllGrow)
             {
-                if (move.MoveType == MoveType.AllGrow)
+                for (int i = 0; i < 80; i++)
                 {
-                    for (int i = 0; i < 80; i++)
+                    if (Tiles[i].Value != 0)
                     {
-                        if (Tiles[i].Value != 0)
-                        {
-                            Tiles[i].Value++;
-                        }
+                        Tiles[i].Value++;
                     }
                 }
-                else if (move.MoveType == MoveType.SingleGrow)
-                {
-                    Tiles[move.TileIndex].Owner = Player;
-                    Tiles[move.TileIndex].Value += 1;
-                }
-                
-                ProcessEruptions();
-                SearchForWin();
+            }
+            else if (move.MoveType == MoveType.SingleGrow)
+            {
+                Tiles[move.TileIndex].Owner = Player;
+                Tiles[move.TileIndex].Value += 1;
+            }
 
-                if (Winner == Player.Empty)
-                {
-                    Turn++;
-                    Player = GetPlayerForTurn(Turn);
+            ProcessEruptions();
+            SearchForWin();
 
-                    if (GetMoveTypeForTurn(Turn) == MoveType.AllGrow)
-                    {
-                        MakeMove(new Move(-1, MoveType.AllGrow));
-                    }
+            if (Winner == Player.Empty)
+            {
+                Turn++;
+                Player = GetPlayerForTurn(Turn);
+
+                if (GetMoveTypeForTurn(Turn) == MoveType.AllGrow)
+                {
+                    MakeMove(new Move(-1, MoveType.AllGrow));
                 }
             }
         }
@@ -139,7 +136,7 @@ namespace Volcano.Game
         {
             for (int i = 0; i < 80; i++)
             {
-                if (Tiles[i].Owner != Player.Empty && Tiles[Tiles[i].Antipode].Owner == Tiles[i].Owner)
+                if (Tiles[i].Owner != Player.Empty && Tiles[Tiles[i].Antipode].Owner == Tiles[i].Owner && Tiles[i].Value > Constants.MaxMagmaChamberLevel)
                 {
                     List<int> path = FindPath(i, Tiles[i].Antipode);
 

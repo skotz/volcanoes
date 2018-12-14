@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Volcano.Game;
 using System.IO;
+using Volcano.Engine;
 
 namespace Volcano
 {
@@ -23,28 +24,12 @@ namespace Volcano
         {
             InitializeComponent();
             
-            graphics = new GameGraphics(gamePanel, GetGraphicsSettings());
-
+            graphics = new GameGraphics(gamePanel, GameGraphicsSettings.Default);
             game = new VolcanoGame();
 
+            ConfigureComputer();
+
             gameTimer.Start();
-        }
-
-        private static GameGraphicsSettings GetGraphicsSettings()
-        {
-            string file = "volcanoes.json";
-            GameGraphicsSettings settings = GameGraphicsSettings.Default;
-
-            if (File.Exists(file))
-            {
-                settings = GameGraphicsSettings.Load(file);
-            }
-            else
-            {
-                settings.Save(file);
-            }
-
-            return settings;
         }
 
         private void gameTimer_Tick(object sender, EventArgs e)
@@ -60,6 +45,47 @@ namespace Volcano
                 int tileIndex = graphics.GetTileIndex(mouse);
                 game.MakeMove(tileIndex);
             }
+        }
+
+        private void btnNewGame_Click(object sender, EventArgs e)
+        {
+            game = new VolcanoGame();
+            ConfigureComputer();
+        }
+
+        private void ddlPlayerOne_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ConfigureComputer();
+        }
+
+        private void ddlPlayerTwo_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ConfigureComputer();
+        }
+
+        private void ConfigureComputer()
+        {
+            switch (ddlPlayerOne.Text)
+            {
+                case "Human":
+                    game.RegisterEngine(Player.One, null);
+                    break;
+                case "Random AI":
+                    game.RegisterEngine(Player.One, new RandomEngine());
+                    break;
+            }
+
+            switch (ddlPlayerTwo.Text)
+            {
+                case "Human":
+                    game.RegisterEngine(Player.Two, null);
+                    break;
+                case "Random AI":
+                    game.RegisterEngine(Player.Two, new RandomEngine());
+                    break;
+            }
+
+            game.ComputerPlay();
         }
     }
 }
