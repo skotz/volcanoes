@@ -52,12 +52,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Engine\AlphaEngine.cs" />
     <Compile Include="Engine\EngineHelper.cs" />
     <Compile Include="Engine\IEngine.cs" />
     <Compile Include="Engine\LongestPathEngine.cs" />
     <Compile Include="Engine\MiniMaxAlphaBetaEngine.cs" />
     <Compile Include="Engine\RandomEngine.cs" />
     <Compile Include="Engine\SearchResult.cs" />
+    <Compile Include="Engine\SkipTileEngine.cs" />
     <Compile Include="GameForm.cs">
       <SubType>Form</SubType>
     </Compile>

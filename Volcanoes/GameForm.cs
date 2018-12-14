@@ -37,7 +37,9 @@ namespace Volcano
             engines.Add<RandomEngine>("Random");
             engines.Add<LongestPathEngine>("Longest Path L1");
             engines.Add("MiniMax Alpha-Beta L4", () => new MiniMaxAlphaBetaEngine(4));
-            
+            engines.Add<AlphaEngine>("Alpha Tile");
+            engines.Add<SkipTileEngine>("Tile Skipper");
+
             foreach (string engine in engines.EngineNames)
             {
                 ddlPlayerOne.Items.Add(engine);
