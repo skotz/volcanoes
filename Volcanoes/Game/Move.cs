@@ -10,7 +10,8 @@ namespace Volcano.Game
     {
         public int TileIndex { get; set; }
         public MoveType MoveType { get; set; }
-        
+        public int Evaluation { get; set; }
+
         public Move(int index, MoveType type)
         {
             TileIndex = index;
@@ -19,7 +20,7 @@ namespace Volcano.Game
 
         public static bool operator ==(Move a, Move b)
         {
-            return a.TileIndex == b.TileIndex && a.MoveType == b.MoveType;
+            return a?.TileIndex == b?.TileIndex && a?.MoveType == b?.MoveType;
         }
         
         public static bool operator !=(Move a, Move b)

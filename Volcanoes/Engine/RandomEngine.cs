@@ -11,10 +11,13 @@ namespace Volcano.Engine
     {
         private static Random _random = new Random();
 
-        public Move GetBestMove(Board state)
+        public SearchResult GetBestMove(Board state)
         {
             List<Move> moves = state.GetMoves();
-            return moves[_random.Next(moves.Count)];
+            return new SearchResult
+            {
+                BestMove = moves[_random.Next(moves.Count)]
+            };
         }
     }
 }

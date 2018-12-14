@@ -42,7 +42,7 @@ namespace Volcano
 
         private void gamePanel_Click(object sender, EventArgs e)
         {
-            if (game.CurrentState.State == GameState.InProgress)
+            if (game.CurrentState.State == GameState.InProgress && !game.Thinking)
             {
                 Point mouse = gamePanel.PointToClient(Cursor.Position);
                 int tileIndex = graphics.GetTileIndex(mouse);
@@ -90,6 +90,9 @@ namespace Volcano
                     break;
                 case "Random AI":
                     game.RegisterEngine(Player.Two, new RandomEngine());
+                    break;
+                case "MiniMax L4":
+                    game.RegisterEngine(Player.Two, new MiniMaxAlphaBetaEngine(4));
                     break;
             }
 

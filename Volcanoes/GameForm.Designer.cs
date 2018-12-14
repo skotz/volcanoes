@@ -91,7 +91,8 @@
             this.ddlPlayerTwo.FormattingEnabled = true;
             this.ddlPlayerTwo.Items.AddRange(new object[] {
             "Human",
-            "Random AI"});
+            "Random AI",
+            "MiniMax L4"});
             this.ddlPlayerTwo.Location = new System.Drawing.Point(370, 11);
             this.ddlPlayerTwo.Name = "ddlPlayerTwo";
             this.ddlPlayerTwo.Size = new System.Drawing.Size(215, 21);

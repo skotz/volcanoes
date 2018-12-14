@@ -53,7 +53,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Engine\IEngine.cs" />
+    <Compile Include="Engine\MiniMaxAlphaBetaEngine.cs" />
     <Compile Include="Engine\RandomEngine.cs" />
+    <Compile Include="Engine\SearchResult.cs" />
     <Compile Include="GameForm.cs">
       <SubType>Form</SubType>
     </Compile>

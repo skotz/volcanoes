@@ -7,8 +7,12 @@ using Volcano.Game;
 
 namespace Volcano.Engine
 {
-    interface IEngine
+    class SearchResult
     {
-        SearchResult GetBestMove(Board state);
+        public int Score { get; set; }
+
+        public long Evaluations { get; set; }
+        
+        public Move BestMove { get; set; }
     }
 }

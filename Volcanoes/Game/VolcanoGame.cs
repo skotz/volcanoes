@@ -20,6 +20,14 @@ namespace Volcano.Game
         public event GameOverHandler OnGameOver;
         public delegate void GameOverHandler(Player winner);
 
+        public bool Thinking
+        {
+            get
+            {
+                return _worker.IsBusy;
+            }
+        }
+
         public VolcanoGame()
         {
             CurrentState = new Board();
@@ -89,7 +97,7 @@ namespace Volcano.Game
 
         private void BackgroundWorkCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            CurrentState.MakeMove(e.Result as Move);
+            CurrentState.MakeMove(((SearchResult)e.Result).BestMove);
 
             if (CurrentState.State == GameState.GameOver)
             {
