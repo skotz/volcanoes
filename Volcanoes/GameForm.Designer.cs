@@ -37,6 +37,8 @@
             this.label2 = new System.Windows.Forms.Label();
             this.ddlPlayerTwo = new System.Windows.Forms.ComboBox();
             this.btnNewGame = new System.Windows.Forms.Button();
+            this.btnRunTests = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // gamePanel
@@ -106,11 +108,32 @@
             this.btnNewGame.UseVisualStyleBackColor = true;
             this.btnNewGame.Click += new System.EventHandler(this.btnNewGame_Click);
             // 
+            // btnRunTests
+            // 
+            this.btnRunTests.Location = new System.Drawing.Point(12, 598);
+            this.btnRunTests.Name = "btnRunTests";
+            this.btnRunTests.Size = new System.Drawing.Size(123, 23);
+            this.btnRunTests.TabIndex = 5;
+            this.btnRunTests.Text = "Play 1K";
+            this.btnRunTests.UseVisualStyleBackColor = true;
+            this.btnRunTests.Click += new System.EventHandler(this.btnRunTests_Click);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(9, 582);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(271, 13);
+            this.label3.TabIndex = 6;
+            this.label3.Text = "Self-play 1,000 games and record the results in data.csv";
+            // 
             // GameForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1038, 547);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.btnRunTests);
             this.Controls.Add(this.btnNewGame);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -134,6 +157,8 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox ddlPlayerTwo;
         private System.Windows.Forms.Button btnNewGame;
+        private System.Windows.Forms.Button btnRunTests;
+        private System.Windows.Forms.Label label3;
     }
 }
 

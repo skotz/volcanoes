@@ -101,7 +101,8 @@ namespace Volcano.Game
                     {
                         for (int adjacent = 0; adjacent < 3; adjacent++)
                         {
-                            Tiles[i].Value = 1;
+                            // Downgrade to a level one volcano
+                            Tiles[i].Value = Constants.MaxMagmaChamberLevel + 1;
                             done = false;
 
                             // Blank tile
@@ -343,7 +344,18 @@ namespace Volcano.Game
         /// <returns></returns>
         private MoveType GetMoveTypeForTurn(int turn)
         {
-            return (turn - 1) % 3 == 1 ? MoveType.AllGrow : MoveType.SingleGrow;
+            switch ((turn - 1) % 6)
+            {
+                case 2:
+                case 5:
+                    return MoveType.AllGrow;
+                case 0:
+                case 1:
+                case 3:
+                case 4:
+                default:
+                    return MoveType.SingleGrow;
+            }
         }
     }
 }

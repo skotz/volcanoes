@@ -17,6 +17,9 @@ namespace Volcano.Game
 
         private BackgroundWorker _worker;
 
+        public event GameOverHandler OnGameOver;
+        public delegate void GameOverHandler(Player winner);
+
         public VolcanoGame()
         {
             CurrentState = new Board();
@@ -24,6 +27,11 @@ namespace Volcano.Game
             _worker = new BackgroundWorker();
             _worker.DoWork += BackgroundWork;
             _worker.RunWorkerCompleted += BackgroundWorkCompleted;
+        }
+
+        public void StartNewGame()
+        {
+            CurrentState = new Board();
         }
 
         public void RegisterEngine(Player player, IEngine engine)
@@ -44,7 +52,15 @@ namespace Volcano.Game
             if (CurrentState.IsValidMove(move))
             {
                 CurrentState.MakeMove(move);
-                ComputerPlay();
+
+                if (CurrentState.State == GameState.GameOver)
+                {
+                    OnGameOver?.Invoke(CurrentState.Winner);
+                }
+                else
+                {
+                    ComputerPlay();
+                }
             }
         }
 
@@ -75,7 +91,11 @@ namespace Volcano.Game
         {
             CurrentState.MakeMove(e.Result as Move);
 
-            if (CurrentState.State == GameState.InProgress)
+            if (CurrentState.State == GameState.GameOver)
+            {
+                OnGameOver?.Invoke(CurrentState.Winner);
+            }
+            else
             {
                 ComputerPlay();
             }

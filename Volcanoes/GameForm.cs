@@ -20,12 +20,15 @@ namespace Volcano
         GameGraphics graphics;
         VolcanoGame game;
 
+        int autoPlay = 0;
+
         public GameForm()
         {
             InitializeComponent();
             
             graphics = new GameGraphics(gamePanel, GameGraphicsSettings.Default);
             game = new VolcanoGame();
+            game.OnGameOver += Game_OnGameOver;
 
             ConfigureComputer();
 
@@ -49,7 +52,12 @@ namespace Volcano
 
         private void btnNewGame_Click(object sender, EventArgs e)
         {
-            game = new VolcanoGame();
+            StartNewGame();
+        }
+
+        private void StartNewGame()
+        {
+            game.StartNewGame();
             ConfigureComputer();
         }
 
@@ -86,6 +94,25 @@ namespace Volcano
             }
 
             game.ComputerPlay();
+        }
+
+        private void btnRunTests_Click(object sender, EventArgs e)
+        {
+            autoPlay = 1000;
+            StartNewGame();
+        }
+
+        private void Game_OnGameOver(Player winner)
+        {
+            if (autoPlay-- > 0)
+            {
+                using (StreamWriter w = new StreamWriter("data.csv", true))
+                {
+                    w.WriteLine("\"" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "\"," + game.CurrentState.Turn + "," + winner.ToString());
+                }
+
+                StartNewGame();
+            }
         }
     }
 }
