@@ -10,7 +10,7 @@ namespace Volcano.Engine
     class RandomEngine : IEngine
     {
         private static Random _random = new Random();
-
+        
         public SearchResult GetBestMove(Board state)
         {
             List<Move> moves = state.GetMoves();

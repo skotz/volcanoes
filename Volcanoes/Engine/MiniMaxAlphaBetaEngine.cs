@@ -13,6 +13,8 @@ namespace Volcano.Engine
         private long evaluations;
         private int searchDepth;
 
+        public string EngineName { get { return "MiniMax Alpha-Beta L4"; } }
+
         public MiniMaxAlphaBetaEngine(int depth)
         {
             searchDepth = depth;
@@ -20,11 +22,13 @@ namespace Volcano.Engine
 
         public SearchResult GetBestMove(Board state)
         {
+            Stopwatch timer = Stopwatch.StartNew();
             evaluations = 0;
             
             SearchResult result = AlphaBetaSearch(state, searchDepth, int.MinValue, int.MaxValue);
 
             result.Evaluations = evaluations;
+            result.Milliseconds = timer.ElapsedMilliseconds;
 
             return result;
         }
@@ -33,12 +37,13 @@ namespace Volcano.Engine
         {
             // Positive scores are good for player one and negative are good for player two
             int score = 0;
+            evaluations++;
 
             // TODO: need to work in logic around longest paths
 
+            // Get points for each connected tile
             for (int i = 0; i < 80; i++)
             {
-                // Get a point for each connected tile
                 if (position.Tiles[i].Value > 0)
                 {
                     for (int c = 0; c < 3; c++)
@@ -127,7 +132,7 @@ namespace Volcano.Engine
             {
                 // Copy the board and make a move
                 Board copy = new Board(position);
-                copy.MakeMove(move);
+                copy.MakeMove(move, false);
                 
                 // Find opponents best counter move
                 SearchResult child = AlphaBetaSearch(copy, depth - 1, alpha, beta);

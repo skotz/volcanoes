@@ -120,9 +120,10 @@ namespace Volcano.Interface
             }
         }
         
-        public void Draw(Board gameState, Point mouseLocation)
+        public void Draw(VolcanoGame game, Point mouseLocation)
         {
             int hoverTile = GetTileIndex(mouseLocation);
+            Board gameState = game.CurrentState;
 
             using (Bitmap b = new Bitmap(_panel.Width, _panel.Height))
             using (Graphics g = Graphics.FromImage(b))
@@ -159,19 +160,19 @@ namespace Volcano.Interface
                         DrawTileMainText(g, i, value.ToString());
                     }
                 }
-
-                // TODO: draw points between triangle groups
-
+                
                 Color playerColor = gameState.Player == Player.One ? _settings.PlayerOneVolcanoTileColor : _settings.PlayerTwoVolcanoTileColor;
                 g.DrawString("Turn " + gameState.Turn, new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(0, 0));
                 if (gameState.State == GameState.GameOver)
                 {
                     g.DrawString("Game Over!", new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(0, 20));
                 }
+                
+                g.DrawString(game.NodesPerSecond.ToString() + " NPS", new Font("Tahoma", 12f, FontStyle.Bold), Brushes.Gray, new Point(0, _settings.IdealPanelHeight - 20));
 
-                using (Graphics game = _panel.CreateGraphics())
+                using (Graphics gg = _panel.CreateGraphics())
                 {
-                    game.DrawImage(b, 0, 0, _panel.Width, _panel.Height);
+                    gg.DrawImage(b, 0, 0, _panel.Width, _panel.Height);
                 }
             }
         }

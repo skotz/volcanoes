@@ -12,7 +12,22 @@ namespace Volcano.Engine
         public int Score { get; set; }
 
         public long Evaluations { get; set; }
-        
+
+        public long Milliseconds { get; set; }
+
         public Move BestMove { get; set; }
+
+        public int NodesPerSecond
+        {
+            get
+            {
+                if (Milliseconds > 0)
+                {
+                    return (int)(Evaluations / (Milliseconds / 1000.0));
+                }
+
+                return 0;
+            }
+        }
     }
 }

@@ -58,6 +58,15 @@ namespace Volcano.Game
         /// <param name="move"></param>
         public void MakeMove(Move move)
         {
+            MakeMove(move, true);
+        }
+
+        /// <summary>
+        /// Make a given move on the board. 
+        /// </summary>
+        /// <param name="move"></param>
+        public void MakeMove(Move move, bool checkForWin)
+        {
             if (move.MoveType == MoveType.AllGrow)
             {
                 for (int i = 0; i < 80; i++)
@@ -75,7 +84,11 @@ namespace Volcano.Game
             }
 
             ProcessEruptions();
-            SearchForWin();
+
+            if (checkForWin)
+            {
+                SearchForWin();
+            }
 
             if (Winner == Player.Empty)
             {

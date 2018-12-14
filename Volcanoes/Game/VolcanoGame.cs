@@ -16,6 +16,7 @@ namespace Volcano.Game
         private IEngine _playerTwoEngine;
 
         private BackgroundWorker _worker;
+        private SearchResult _lastSearch;
 
         public event GameOverHandler OnGameOver;
         public delegate void GameOverHandler(Player winner);
@@ -27,6 +28,8 @@ namespace Volcano.Game
                 return _worker.IsBusy;
             }
         }
+
+        public int NodesPerSecond { get { return _lastSearch?.NodesPerSecond ?? 0; } }
 
         public VolcanoGame()
         {
@@ -74,7 +77,7 @@ namespace Volcano.Game
 
         public void ComputerPlay()
         {
-            if (!_worker.IsBusy)
+            if (!_worker.IsBusy && CurrentState.State == GameState.InProgress)
             {
                 if (CurrentState.Player == Player.One && _playerOneEngine != null || CurrentState.Player == Player.Two && _playerTwoEngine != null)
                 {
@@ -97,7 +100,8 @@ namespace Volcano.Game
 
         private void BackgroundWorkCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            CurrentState.MakeMove(((SearchResult)e.Result).BestMove);
+            _lastSearch = (SearchResult)e.Result;
+            CurrentState.MakeMove(_lastSearch.BestMove);
 
             if (CurrentState.State == GameState.GameOver)
             {

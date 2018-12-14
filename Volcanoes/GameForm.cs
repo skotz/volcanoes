@@ -19,6 +19,7 @@ namespace Volcano
     {
         GameGraphics graphics;
         VolcanoGame game;
+        EngineHelper engines;
 
         int autoPlay = 0;
 
@@ -30,14 +31,25 @@ namespace Volcano
             game = new VolcanoGame();
             game.OnGameOver += Game_OnGameOver;
 
-            ConfigureComputer();
-
             gameTimer.Start();
+
+            engines = new EngineHelper();
+            engines.Add<RandomEngine>("Random");
+            engines.Add<LongestPathEngine>("Longest Path L1");
+            engines.Add("MiniMax Alpha-Beta L4", () => new MiniMaxAlphaBetaEngine(4));
+            
+            foreach (string engine in engines.EngineNames)
+            {
+                ddlPlayerOne.Items.Add(engine);
+                ddlPlayerTwo.Items.Add(engine);
+            }
+
+            ConfigureComputer();
         }
 
         private void gameTimer_Tick(object sender, EventArgs e)
         {
-            graphics.Draw(game.CurrentState, gamePanel.PointToClient(Cursor.Position));
+            graphics.Draw(game, gamePanel.PointToClient(Cursor.Position));
         }
 
         private void gamePanel_Click(object sender, EventArgs e)
@@ -73,28 +85,8 @@ namespace Volcano
 
         private void ConfigureComputer()
         {
-            switch (ddlPlayerOne.Text)
-            {
-                case "Human":
-                    game.RegisterEngine(Player.One, null);
-                    break;
-                case "Random AI":
-                    game.RegisterEngine(Player.One, new RandomEngine());
-                    break;
-            }
-
-            switch (ddlPlayerTwo.Text)
-            {
-                case "Human":
-                    game.RegisterEngine(Player.Two, null);
-                    break;
-                case "Random AI":
-                    game.RegisterEngine(Player.Two, new RandomEngine());
-                    break;
-                case "MiniMax L4":
-                    game.RegisterEngine(Player.Two, new MiniMaxAlphaBetaEngine(4));
-                    break;
-            }
+            game.RegisterEngine(Player.One, engines.GetEngine(ddlPlayerOne.Text));
+            game.RegisterEngine(Player.Two, engines.GetEngine(ddlPlayerTwo.Text));
 
             game.ComputerPlay();
         }
