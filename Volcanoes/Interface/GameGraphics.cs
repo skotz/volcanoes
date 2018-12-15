@@ -180,7 +180,7 @@ namespace Volcano.Interface
                     g2.DrawString("Turn " + gameState.Turn, new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(5, 5));
                     if (gameState.State == GameState.GameOver)
                     {
-                        g2.DrawString("Game Over!", new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(0, 20));
+                        g2.DrawString("Game Over!", new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(5, 25));
                     }
                     g2.DrawString(game.NodesPerSecond.ToString() + " NPS", new Font("Tahoma", 12f, FontStyle.Bold), Brushes.Gray, new Point(5, _panel.Height - 25));
 
@@ -212,6 +212,13 @@ namespace Volcano.Interface
             Brush brush = new SolidBrush(tileColor);
 
             g.FillPath(brush, _tiles[index].Path);
+
+            //// Recently erupted volcano
+            //if (gameState.Eruptions.Contains(index))
+            //{
+            //    Pen pen = new Pen(_settings.RecentEruptionTileBorderColor, _settings.TileHorizontalSpacing);
+            //    g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
+            //}
 
             if (hoverIndex >= 0)
             {

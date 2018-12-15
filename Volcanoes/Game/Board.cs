@@ -15,7 +15,9 @@ namespace Volcano.Game
 
         public Player Winner { get; private set; }
         public List<int> WinningPath { get; private set; }
-        
+
+        public List<int> Eruptions { get; private set; }
+
         public GameState State
         {
             get
@@ -31,6 +33,7 @@ namespace Volcano.Game
             Tiles = new List<Tile>();
             Winner = Player.Empty;
             WinningPath = new List<int>();
+            Eruptions = new List<int>();
 
             for (int i = 0; i < 80; i++)
             {
@@ -50,6 +53,7 @@ namespace Volcano.Game
             Turn = copy.Turn;
             Winner = copy.Winner;
             WinningPath = copy.WinningPath;
+            Eruptions = new List<int>();
         }
 
         /// <summary>
@@ -114,6 +118,7 @@ namespace Volcano.Game
                 {
                     if (Tiles[i].Value >= Constants.MaxVolcanoLevel)
                     {
+                        Eruptions.Add(i);
                         for (int adjacent = 0; adjacent < 3; adjacent++)
                         {
                             // Downgrade to a level one volcano
@@ -198,7 +203,7 @@ namespace Volcano.Game
                         }
 
                         // Did this change trigger a chain reaction?
-                        if (Tiles[i].Value > Constants.MaxVolcanoLevel)
+                        if (Tiles[i].Value >= Constants.MaxVolcanoLevel)
                         {
                             done = false;
                         }
