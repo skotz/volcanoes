@@ -107,7 +107,9 @@ namespace Volcano.Game
             bool done = false;
             while (!done)
             {
-                done = true;
+                // Phase one: get a list of deltas from eruptions
+                int[] oneDeltas = new int[80];
+                int[] twoDeltas = new int[80];
                 for (int i = 0; i < 80; i++)
                 {
                     if (Tiles[i].Value >= Constants.MaxVolcanoLevel)
@@ -116,30 +118,98 @@ namespace Volcano.Game
                         {
                             // Downgrade to a level one volcano
                             Tiles[i].Value = Constants.MaxMagmaChamberLevel + 1;
-                            done = false;
 
                             // Blank tile
                             if (Tiles[Constants.ConnectingTiles[i][adjacent]].Owner == Player.Empty)
                             {
-                                Tiles[Constants.ConnectingTiles[i][adjacent]].Owner = Tiles[i].Owner;
-                                Tiles[Constants.ConnectingTiles[i][adjacent]].Value = 1;
+                                if (Tiles[i].Owner == Player.One)
+                                {
+                                    oneDeltas[Constants.ConnectingTiles[i][adjacent]] += 1;
+                                }
+                                else
+                                {
+                                    twoDeltas[Constants.ConnectingTiles[i][adjacent]] += 1;
+                                }
+                                //Tiles[Constants.ConnectingTiles[i][adjacent]].Owner = Tiles[i].Owner;
+                                //Tiles[Constants.ConnectingTiles[i][adjacent]].Value = 1;
                             }
 
                             // Same owner
                             else if (Tiles[Constants.ConnectingTiles[i][adjacent]].Owner == Tiles[i].Owner)
                             {
-                                Tiles[Constants.ConnectingTiles[i][adjacent]].Value++;
+                                if (Tiles[i].Owner == Player.One)
+                                {
+                                    oneDeltas[Constants.ConnectingTiles[i][adjacent]] += 1;
+                                }
+                                else
+                                {
+                                    twoDeltas[Constants.ConnectingTiles[i][adjacent]] += 1;
+                                }
+                                //Tiles[Constants.ConnectingTiles[i][adjacent]].Value++;
                             }
 
                             // Enemy owner
                             else if (Tiles[Constants.ConnectingTiles[i][adjacent]].Owner != Tiles[i].Owner && Tiles[Constants.ConnectingTiles[i][adjacent]].Value > 0)
                             {
-                                Tiles[Constants.ConnectingTiles[i][adjacent]].Value -= 1;
-                                if (Tiles[Constants.ConnectingTiles[i][adjacent]].Value <= 0)
+                                if (Tiles[i].Owner == Player.One)
                                 {
-                                    Tiles[Constants.ConnectingTiles[i][adjacent]].Owner = Player.Empty;
+                                    twoDeltas[Constants.ConnectingTiles[i][adjacent]] -= 1;
                                 }
+                                else
+                                {
+                                    oneDeltas[Constants.ConnectingTiles[i][adjacent]] -= 1;
+                                }
+
+                                //Tiles[Constants.ConnectingTiles[i][adjacent]].Value -= 1;
+                                //if (Tiles[Constants.ConnectingTiles[i][adjacent]].Value <= 0)
+                                //{
+                                //    Tiles[Constants.ConnectingTiles[i][adjacent]].Owner = Player.Empty;
+                                //}
                             }
+                        }
+                    }
+                }
+
+                // Phase two: process deltas
+                done = true;
+                for (int i = 0; i < 80; i++)
+                {
+                    if (oneDeltas[i] != 0 || twoDeltas[i] != 0)
+                    {
+                        if (Tiles[i].Value == 0)
+                        {
+                            // When the tile is empty it's possible to get multiple positive deltas so we need them to cancel out
+                            Tiles[i].Value += Math.Abs(oneDeltas[i] - twoDeltas[i]);
+
+                            // The player with the higher delta will own the tile
+                            if (Tiles[i].Value != 0)
+                            {
+                                Tiles[i].Owner = oneDeltas[i] > twoDeltas[i] ? Player.One : Player.Two;
+                            }
+                        }
+                        else
+                        {
+                            // Someone already owns this tile, so the deltas can be takes as-is
+                            Tiles[i].Value += oneDeltas[i] + twoDeltas[i];
+
+                            // If we subtracted this tile enough to get a negative number, then switch the owner to the opposite player
+                            if (Tiles[i].Value < 0)
+                            {
+                                Tiles[i].Value = -Tiles[i].Value;
+                                Tiles[i].Owner = Tiles[i].Owner == Player.One ? Player.Two : Player.One;
+                            }
+                        }
+
+                        // If after the changes the tile is clear, remove any owner
+                        if (Tiles[i].Value == 0)
+                        {
+                            Tiles[i].Owner = Player.Empty;
+                        }
+
+                        // Did this change trigger a chain reaction?
+                        if (Tiles[i].Value > Constants.MaxVolcanoLevel)
+                        {
+                            done = false;
                         }
                     }
                 }
