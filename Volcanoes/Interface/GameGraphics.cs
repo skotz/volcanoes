@@ -36,8 +36,8 @@ namespace Volcano.Interface
                 for (int inner = 0; inner < 4; inner++)
                 {
                     // Details of outer triangle
-                    int x = outerCol * (_settings.TileWidth * 2 + _settings.TileHorizontalSpacing * 4) + _settings.TileSpacing;
-                    int y = outerRow * (_settings.TileHeight * 2 + _settings.TileSpacing * 2 + _settings.TileHorizontalSpacing) + _settings.TileHorizontalSpacing;
+                    int x = outerCol * (_settings.TileWidth * 2 + _settings.TileHorizontalSpacing * 4) + _settings.TileSpacing + _settings.BoardSpacing;
+                    int y = outerRow * (_settings.TileHeight * 2 + _settings.TileSpacing * 2 + _settings.TileHorizontalSpacing) + _settings.TileHorizontalSpacing + _settings.BoardSpacing;
                     bool upright = outerRow % 2 == 0;
                     if (outerRow >= 2)
                     {
@@ -120,12 +120,20 @@ namespace Volcano.Interface
             }
         }
         
+        public void Resize()
+        {
+            _settings.UpdateBestTileWidth(_panel.Size);            
+            InitializeTiles();
+        }
+
         public void Draw(VolcanoGame game, Point mouseLocation)
         {
+            Resize();
+
             int hoverTile = GetTileIndex(mouseLocation);
             Board gameState = game.CurrentState;
 
-            using (Bitmap b = new Bitmap(_panel.Width, _panel.Height))
+            using (Bitmap b = new Bitmap(_settings.IdealPanelWidth, _settings.IdealPanelHeight))
             using (Graphics g = Graphics.FromImage(b))
             {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
@@ -160,19 +168,24 @@ namespace Volcano.Interface
                         DrawTileMainText(g, i, value.ToString());
                     }
                 }
-                
-                Color playerColor = gameState.Player == Player.One ? _settings.PlayerOneVolcanoTileColor : _settings.PlayerTwoVolcanoTileColor;
-                g.DrawString("Turn " + gameState.Turn, new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(0, 0));
-                if (gameState.State == GameState.GameOver)
-                {
-                    g.DrawString("Game Over!", new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(0, 20));
-                }
-                
-                g.DrawString(game.NodesPerSecond.ToString() + " NPS", new Font("Tahoma", 12f, FontStyle.Bold), Brushes.Gray, new Point(0, _settings.IdealPanelHeight - 20));
 
-                using (Graphics gg = _panel.CreateGraphics())
+                using (Bitmap b2 = new Bitmap(_panel.Width, _panel.Height))
+                using (Graphics g2 = Graphics.FromImage(b2))
+                using (Graphics g3 = _panel.CreateGraphics())
                 {
-                    gg.DrawImage(b, 0, 0, _panel.Width, _panel.Height);
+                    g2.Clear(_settings.BackgroundColor);
+                    g2.DrawImage(b, (_panel.Width - _settings.IdealPanelWidth) / 2, (_panel.Height - _settings.IdealPanelHeight) / 2, _settings.IdealPanelWidth, _settings.IdealPanelHeight);
+                    
+                    Color playerColor = gameState.Player == Player.One ? _settings.PlayerOneVolcanoTileColor : _settings.PlayerTwoVolcanoTileColor;
+                    g2.DrawString("Turn " + gameState.Turn, new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(5, 5));
+                    if (gameState.State == GameState.GameOver)
+                    {
+                        g2.DrawString("Game Over!", new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(0, 20));
+                    }
+                    g2.DrawString(game.NodesPerSecond.ToString() + " NPS", new Font("Tahoma", 12f, FontStyle.Bold), Brushes.Gray, new Point(5, _panel.Height - 25));
+
+                    // Double buffering
+                    g3.DrawImage(b2, 0, 0, _panel.Width, _panel.Height);
                 }
             }
         }
@@ -225,11 +238,23 @@ namespace Volcano.Interface
             }
         }
 
+        private Point GetOffsetPoint(int x, int y)
+        {
+            return new Point(x - (_panel.Width - _settings.IdealPanelWidth) / 2, y - (_panel.Height - _settings.IdealPanelHeight) / 2);
+        }
+
+        private Point GetOffsetPoint(Point point)
+        {
+            return GetOffsetPoint(point.X, point.Y);
+        }
+
         public int GetTileIndex(Point location)
         {
+            Point offset = GetOffsetPoint(location);
+
             for (int i = 0; i < 80; i++)
             {
-                if (_tiles[i].Path.IsVisible(location))
+                if (_tiles[i].Path.IsVisible(offset))
                 {
                     return i;
                 }

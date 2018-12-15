@@ -130,8 +130,6 @@ namespace Volcano.Game
                                 {
                                     twoDeltas[Constants.ConnectingTiles[i][adjacent]] += 1;
                                 }
-                                //Tiles[Constants.ConnectingTiles[i][adjacent]].Owner = Tiles[i].Owner;
-                                //Tiles[Constants.ConnectingTiles[i][adjacent]].Value = 1;
                             }
 
                             // Same owner
@@ -145,7 +143,6 @@ namespace Volcano.Game
                                 {
                                     twoDeltas[Constants.ConnectingTiles[i][adjacent]] += 1;
                                 }
-                                //Tiles[Constants.ConnectingTiles[i][adjacent]].Value++;
                             }
 
                             // Enemy owner
@@ -159,12 +156,6 @@ namespace Volcano.Game
                                 {
                                     oneDeltas[Constants.ConnectingTiles[i][adjacent]] -= 1;
                                 }
-
-                                //Tiles[Constants.ConnectingTiles[i][adjacent]].Value -= 1;
-                                //if (Tiles[Constants.ConnectingTiles[i][adjacent]].Value <= 0)
-                                //{
-                                //    Tiles[Constants.ConnectingTiles[i][adjacent]].Owner = Player.Empty;
-                                //}
                             }
                         }
                     }

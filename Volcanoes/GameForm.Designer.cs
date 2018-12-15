@@ -38,14 +38,19 @@
             this.ddlPlayerTwo = new System.Windows.Forms.ComboBox();
             this.btnNewGame = new System.Windows.Forms.Button();
             this.btnRunTests = new System.Windows.Forms.Button();
-            this.label3 = new System.Windows.Forms.Label();
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+            this.splitContainer1.Panel1.SuspendLayout();
+            this.splitContainer1.Panel2.SuspendLayout();
+            this.splitContainer1.SuspendLayout();
             this.SuspendLayout();
             // 
             // gamePanel
             // 
-            this.gamePanel.Location = new System.Drawing.Point(12, 41);
+            this.gamePanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.gamePanel.Location = new System.Drawing.Point(0, 0);
             this.gamePanel.Name = "gamePanel";
-            this.gamePanel.Size = new System.Drawing.Size(1016, 494);
+            this.gamePanel.Size = new System.Drawing.Size(1063, 565);
             this.gamePanel.TabIndex = 0;
             this.gamePanel.Click += new System.EventHandler(this.gamePanel_Click);
             // 
@@ -60,7 +65,7 @@
             this.ddlPlayerOne.FormattingEnabled = true;
             this.ddlPlayerOne.Items.AddRange(new object[] {
             "Human"});
-            this.ddlPlayerOne.Location = new System.Drawing.Point(80, 11);
+            this.ddlPlayerOne.Location = new System.Drawing.Point(79, 12);
             this.ddlPlayerOne.Name = "ddlPlayerOne";
             this.ddlPlayerOne.Size = new System.Drawing.Size(215, 21);
             this.ddlPlayerOne.TabIndex = 1;
@@ -69,7 +74,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(301, 14);
+            this.label1.Location = new System.Drawing.Point(300, 15);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(63, 13);
             this.label1.TabIndex = 2;
@@ -78,7 +83,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 14);
+            this.label2.Location = new System.Drawing.Point(11, 15);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(62, 13);
             this.label2.TabIndex = 3;
@@ -90,7 +95,7 @@
             this.ddlPlayerTwo.FormattingEnabled = true;
             this.ddlPlayerTwo.Items.AddRange(new object[] {
             "Human"});
-            this.ddlPlayerTwo.Location = new System.Drawing.Point(370, 11);
+            this.ddlPlayerTwo.Location = new System.Drawing.Point(369, 12);
             this.ddlPlayerTwo.Name = "ddlPlayerTwo";
             this.ddlPlayerTwo.Size = new System.Drawing.Size(215, 21);
             this.ddlPlayerTwo.TabIndex = 1;
@@ -98,7 +103,7 @@
             // 
             // btnNewGame
             // 
-            this.btnNewGame.Location = new System.Drawing.Point(905, 9);
+            this.btnNewGame.Location = new System.Drawing.Point(928, 10);
             this.btnNewGame.Name = "btnNewGame";
             this.btnNewGame.Size = new System.Drawing.Size(123, 23);
             this.btnNewGame.TabIndex = 4;
@@ -108,7 +113,7 @@
             // 
             // btnRunTests
             // 
-            this.btnRunTests.Location = new System.Drawing.Point(12, 598);
+            this.btnRunTests.Location = new System.Drawing.Point(1171, 10);
             this.btnRunTests.Name = "btnRunTests";
             this.btnRunTests.Size = new System.Drawing.Size(123, 23);
             this.btnRunTests.TabIndex = 5;
@@ -116,33 +121,45 @@
             this.btnRunTests.UseVisualStyleBackColor = true;
             this.btnRunTests.Click += new System.EventHandler(this.btnRunTests_Click);
             // 
-            // label3
+            // splitContainer1
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(9, 582);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(271, 13);
-            this.label3.TabIndex = 6;
-            this.label3.Text = "Self-play 1,000 games and record the results in data.csv";
+            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+            this.splitContainer1.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer1.Name = "splitContainer1";
+            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer1.Panel1
+            // 
+            this.splitContainer1.Panel1.Controls.Add(this.label2);
+            this.splitContainer1.Panel1.Controls.Add(this.ddlPlayerOne);
+            this.splitContainer1.Panel1.Controls.Add(this.btnRunTests);
+            this.splitContainer1.Panel1.Controls.Add(this.ddlPlayerTwo);
+            this.splitContainer1.Panel1.Controls.Add(this.btnNewGame);
+            this.splitContainer1.Panel1.Controls.Add(this.label1);
+            // 
+            // splitContainer1.Panel2
+            // 
+            this.splitContainer1.Panel2.Controls.Add(this.gamePanel);
+            this.splitContainer1.Size = new System.Drawing.Size(1063, 609);
+            this.splitContainer1.SplitterDistance = 40;
+            this.splitContainer1.TabIndex = 7;
             // 
             // GameForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1038, 547);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.btnRunTests);
-            this.Controls.Add(this.btnNewGame);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.ddlPlayerTwo);
-            this.Controls.Add(this.ddlPlayerOne);
-            this.Controls.Add(this.gamePanel);
+            this.ClientSize = new System.Drawing.Size(1063, 609);
+            this.Controls.Add(this.splitContainer1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "GameForm";
             this.Text = "Volcanoes";
+            this.splitContainer1.Panel1.ResumeLayout(false);
+            this.splitContainer1.Panel1.PerformLayout();
+            this.splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+            this.splitContainer1.ResumeLayout(false);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -156,7 +173,7 @@
         private System.Windows.Forms.ComboBox ddlPlayerTwo;
         private System.Windows.Forms.Button btnNewGame;
         private System.Windows.Forms.Button btnRunTests;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.SplitContainer splitContainer1;
     }
 }
 
