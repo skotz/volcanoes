@@ -36,10 +36,11 @@ namespace Volcano
             engines = new EngineHelper();
             engines.Add<RandomEngine>("Random");
             engines.Add<LongestPathEngine>("Longest Path L1");
-            engines.Add("MiniMax Alpha-Beta L4", () => new MiniMaxAlphaBetaEngine(4));
+            //engines.Add("MiniMax Alpha-Beta L4", () => new MiniMaxAlphaBetaEngine(4));
             engines.Add<AlphaEngine>("Alpha Tile");
             engines.Add<SkipTileEngine>("Tile Skipper");
             engines.Add<KittyCornerEngine>("Kitty Corner");
+            engines.Add<BeeLineEngine>("Bee Line");
 
             foreach (string engine in engines.EngineNames)
             {
@@ -111,6 +112,22 @@ namespace Volcano
 
                 StartNewGame();
             }
+        }
+
+        private void btnTournament_Click(object sender, EventArgs e)
+        {
+            btnTournament.Enabled = false;
+
+            Tournament tourney = new Tournament(100, "tourney.csv", engines);
+            tourney.OnTournamentCompleted += Tourney_OnTournamentCompleted;
+            tourney.Start();
+        }
+
+        private void Tourney_OnTournamentCompleted()
+        {
+            btnTournament.Enabled = true;
+
+            MessageBox.Show("Tournament complete! Round robin cross table saved to file.");
         }
     }
 }

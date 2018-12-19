@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Engine\BeeLineEngine.cs" />
     <Compile Include="Engine\KittyCornerEngine.cs" />
     <Compile Include="Engine\AlphaEngine.cs" />
     <Compile Include="Engine\EngineHelper.cs" />
@@ -71,6 +72,7 @@
     <Compile Include="Game\Constants.cs" />
     <Compile Include="Game\GameState.cs" />
     <Compile Include="Game\TileType.cs" />
+    <Compile Include="Game\Tournament.cs" />
     <Compile Include="Game\VolcanoGame.cs" />
     <Compile Include="Game\Move.cs" />
     <Compile Include="Game\MoveType.cs" />

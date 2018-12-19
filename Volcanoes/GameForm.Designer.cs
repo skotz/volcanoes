@@ -39,6 +39,7 @@
             this.btnNewGame = new System.Windows.Forms.Button();
             this.btnRunTests = new System.Windows.Forms.Button();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.btnTournament = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -131,6 +132,7 @@
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.btnTournament);
             this.splitContainer1.Panel1.Controls.Add(this.label2);
             this.splitContainer1.Panel1.Controls.Add(this.ddlPlayerOne);
             this.splitContainer1.Panel1.Controls.Add(this.btnRunTests);
@@ -144,6 +146,16 @@
             this.splitContainer1.Size = new System.Drawing.Size(1063, 609);
             this.splitContainer1.SplitterDistance = 40;
             this.splitContainer1.TabIndex = 7;
+            // 
+            // btnTournament
+            // 
+            this.btnTournament.Location = new System.Drawing.Point(776, 10);
+            this.btnTournament.Name = "btnTournament";
+            this.btnTournament.Size = new System.Drawing.Size(146, 23);
+            this.btnTournament.TabIndex = 6;
+            this.btnTournament.Text = "Run Tournament";
+            this.btnTournament.UseVisualStyleBackColor = true;
+            this.btnTournament.Click += new System.EventHandler(this.btnTournament_Click);
             // 
             // GameForm
             // 
@@ -174,6 +186,7 @@
         private System.Windows.Forms.Button btnNewGame;
         private System.Windows.Forms.Button btnRunTests;
         private System.Windows.Forms.SplitContainer splitContainer1;
+        private System.Windows.Forms.Button btnTournament;
     }
 }
 
