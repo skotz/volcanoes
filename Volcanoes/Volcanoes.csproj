@@ -59,6 +59,10 @@
     <Compile Include="Engine\IEngine.cs" />
     <Compile Include="Engine\LongestPathEngine.cs" />
     <Compile Include="Engine\MiniMaxAlphaBetaEngine.cs" />
+    <Compile Include="Search\KittyPathFinder.cs" />
+    <Compile Include="Search\LongestPathFinder.cs" />
+    <Compile Include="Search\NonEnemyPathFinder.cs" />
+    <Compile Include="Search\PathFinder.cs" />
     <Compile Include="Engine\RandomEngine.cs" />
     <Compile Include="Engine\SearchResult.cs" />
     <Compile Include="Engine\SkipTileEngine.cs" />

@@ -118,7 +118,7 @@ namespace Volcano
         {
             btnTournament.Enabled = false;
 
-            Tournament tourney = new Tournament(100, "tourney.csv", engines);
+            Tournament tourney = new Tournament(10, "tourney.csv", engines);
             tourney.OnTournamentCompleted += Tourney_OnTournamentCompleted;
             tourney.Start();
         }
