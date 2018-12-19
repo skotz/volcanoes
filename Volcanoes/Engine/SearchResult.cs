@@ -29,5 +29,14 @@ namespace Volcano.Engine
                 return 0;
             }
         }
+
+        public SearchResult()
+        {
+        }
+
+        public SearchResult(Move bestMove)
+        {
+            BestMove = bestMove;
+        }
     }
 }

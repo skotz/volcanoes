@@ -18,6 +18,8 @@ namespace Volcano.Game
 
         private static Lazy<int[]> _antipodes = new Lazy<int[]>(GetAntipodes);
 
+        private static Lazy<int[][]> _kittyCornerTiles = new Lazy<int[][]>(GetKittyCornerTiles);
+
         /// <summary>
         /// An array mapping a source tile index to it's three connecting triangle indexes.
         /// E.G., ConnectingTiles[55] = { 33, 52, 74 } since tile 55 connects to tiles 33, 51, and 74.
@@ -34,6 +36,12 @@ namespace Volcano.Game
         /// An array mapping a source tile to its antipodes (tile directly opposite on the 3D board shape).
         /// </summary>
         public static int[] Antipodes { get { return _antipodes.Value; } }
+
+        /// <summary>
+        /// An array mapping a source tile index to it's three or four kitty corner tile indexes.
+        /// NOTE: Currently there are only mappings for "A" tiles (not B, C, or D)
+        /// </summary>
+        public static int[][] KittyCornerTiles { get { return _kittyCornerTiles.Value; } }
 
         private static int[][] GetConnectingTiles()
         {
@@ -230,6 +238,77 @@ namespace Volcano.Game
             }
 
             return antipodes;
+        }
+
+        private static int[][] GetKittyCornerTiles()
+        {
+            int[][] corners = new int[80][];
+            
+            for (int outer = 0; outer < 5; outer++)
+            {
+                // A
+                int i = outer * 4;
+                corners[i] = new int[3] { (i + 4) % 20, i + 20, (i - 4 + 20) % 20 };
+
+                // TODO: B, C, D
+                i++;
+                corners[i] = new int[3] { i, i, i };
+                i++;
+                corners[i] = new int[3] { i, i, i };
+                i++;
+                corners[i] = new int[3] { i, i, i };
+            }
+            
+            for (int outer = 5; outer < 10; outer++)
+            {
+                // A
+                int i = outer * 4;
+                corners[i] = new int[3] { i - 20, i + 20, i + 16 };
+                corners[i][2] = i == 20 ? 56 : corners[i][2];
+
+                // TODO: B, C, D
+                i++;
+                corners[i] = new int[3] { i, i, i };
+                i++;
+                corners[i] = new int[3] { i, i, i };
+                i++;
+                corners[i] = new int[3] { i, i, i };
+            }
+            
+            for (int outer = 10; outer < 15; outer++)
+            {
+                // A
+                int i = outer * 4;
+                corners[i] = new int[3] { i - 20, i - 16, i + 20 };
+                corners[i][1] = i == 56 ? 20 : corners[i][1];
+
+                // TODO: B, C, D
+                i++;
+                corners[i] = new int[3] { i, i, i };
+                i++;
+                corners[i] = new int[3] { i, i, i };
+                i++;
+                corners[i] = new int[3] { i, i, i };
+            }
+            
+            for (int outer = 15; outer < 20; outer++)
+            {
+                // A
+                int i = outer * 4;
+                corners[i] = new int[3] { i - 20, i + 4, i - 4 };
+                corners[i][1] = i == 76 ? 60 : corners[i][1];
+                corners[i][2] = i == 60 ? 76 : corners[i][2];
+
+                // TODO: B, C, D
+                i++;
+                corners[i] = new int[3] { i, i, i };
+                i++;
+                corners[i] = new int[3] { i, i, i };
+                i++;
+                corners[i] = new int[3] { i, i, i };
+            }
+
+            return corners;
         }
     }
 }

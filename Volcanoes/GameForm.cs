@@ -39,6 +39,7 @@ namespace Volcano
             engines.Add("MiniMax Alpha-Beta L4", () => new MiniMaxAlphaBetaEngine(4));
             engines.Add<AlphaEngine>("Alpha Tile");
             engines.Add<SkipTileEngine>("Tile Skipper");
+            engines.Add<KittyCornerEngine>("Kitty Corner");
 
             foreach (string engine in engines.EngineNames)
             {

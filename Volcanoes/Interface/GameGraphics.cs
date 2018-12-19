@@ -150,6 +150,10 @@ namespace Volcano.Interface
                         {
                             DrawTileMainText(g, i, gameState.Tiles[i].Name);
                         }
+                        else if (_settings.ShowTileIndexes)
+                        {
+                            DrawTileMainText(g, i, gameState.Tiles[i].Index.ToString());
+                        }
                     }
                     else
                     {
@@ -235,6 +239,13 @@ namespace Volcano.Interface
                     Pen pen = new Pen(_settings.HoverAdjacentTileBorderColor, _settings.TileHorizontalSpacing);
                     g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
                 }
+
+                //// Tiles kitty corner to the tile under the pointer
+                //if (Constants.KittyCornerTiles[hoverIndex].Any(x => x == index))
+                //{
+                //    Pen pen = new Pen(Color.Red, _settings.TileHorizontalSpacing);
+                //    g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
+                //}
 
                 // Tile on the opposite side of the board
                 if (gameState.Tiles[hoverIndex].Antipode == index)

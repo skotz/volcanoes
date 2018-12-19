@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Engine\KittyCornerEngine.cs" />
     <Compile Include="Engine\AlphaEngine.cs" />
     <Compile Include="Engine\EngineHelper.cs" />
     <Compile Include="Engine\IEngine.cs" />

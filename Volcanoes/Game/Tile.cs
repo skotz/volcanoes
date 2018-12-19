@@ -28,6 +28,14 @@ namespace Volcano.Game
             }
         }
 
+        public int[] KittyCornerIndexes
+        {
+            get
+            {
+                return Constants.KittyCornerTiles[Index];
+            }
+        }
+
         public int Antipode
         {
             get
