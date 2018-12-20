@@ -89,40 +89,48 @@ namespace Volcano.Game
                 Parallel.ForEach(games, x => x());
             }
 
+            List<TournamentResultLine> lines = new List<TournamentResultLine>();
+            foreach (var engine1 in _engines.EngineNames)
+            {
+                decimal score = 0m;
+                TournamentResultLine line = new TournamentResultLine();
+                line.Name = engine1;
+                foreach (var engine2 in _engines.EngineNames)
+                {
+                    if (engine1 != engine2 || allowSelfPlay)
+                    {
+                        decimal wins = results.Where(x => x.PlayerOne == engine1 && x.PlayerTwo == engine2).Sum(x => x.PlayerOneScore) + results.Where(x => x.PlayerOne == engine2 && x.PlayerTwo == engine1).Sum(x => x.PlayerTwoScore);
+                        score += wins;
+                        line.Data.Add(engine2, wins.ToString());
+                    }
+                    else
+                    {
+                        line.Data.Add(engine2, "");
+                    }
+                }
+                decimal total = results.Where(x => x.PlayerOne == engine1 || x.PlayerTwo == engine1).Count();
+                line.TotalScore = score;
+                line.TotalPercentage = score * 100m / total;
+                line.Score = score;
+                lines.Add(line);
+            }
+
+            lines.Sort((c, n) => n.Score.CompareTo(c.Score));
+
             using (StreamWriter w = new StreamWriter(_file))
             {
-                w.WriteLine("," + _engines.EngineNames.Aggregate((c, n) => c + "," + n) + ",SCORE");
-
-                List<TournamentResultLine> lines = new List<TournamentResultLine>();
-                foreach (var engine1 in _engines.EngineNames)
+                w.WriteLine("," + lines.Select(x => x.Name).Aggregate((c, n) => c + "," + n) + ",Wins,Percentage");
+                foreach (var player in lines)
                 {
-                    decimal score = 0m;
-                    TournamentResultLine line = new TournamentResultLine();
-                    line.Data += engine1;
-                    foreach (var engine2 in _engines.EngineNames)
+                    w.Write(player.Name);
+                    foreach (var opponent in lines)
                     {
-                        if (engine1 != engine2 || allowSelfPlay)
-                        {
-                            decimal wins = results.Where(x => x.PlayerOne == engine1 && x.PlayerTwo == engine2).Sum(x => x.PlayerOneScore) + results.Where(x => x.PlayerOne == engine2 && x.PlayerTwo == engine1).Sum(x => x.PlayerTwoScore);
-                            score += wins;
-                            line.Data += "," + wins;
-                        }
-                        else
-                        {
-                            line.Data += ",";
-                        }
+                        w.Write("," + player.Data[opponent.Name]);
                     }
-                    line.Data += "," + score;
-                    line.Score = score;
-                    lines.Add(line);
+                    w.Write(", " + player.TotalScore);
+                    w.Write(", " + player.TotalPercentage.ToString("0.00"));
+                    w.WriteLine();
                 }
-
-                lines.Sort((c, n) => n.Score.CompareTo(c.Score));
-
-                foreach (var line in lines)
-                {
-                    w.WriteLine(line.Data);
-                }             
             }
         }
 
@@ -167,7 +175,15 @@ namespace Volcano.Game
 
     class TournamentResultLine
     {
-        public string Data { get; set; }
+        public string Name { get; set; }
+        public Dictionary<string, string> Data { get; set; }
         public decimal Score { get; set; }
+        public decimal TotalScore { get; set; }
+        public decimal TotalPercentage { get; set; }
+
+        public TournamentResultLine()
+        {
+            Data = new Dictionary<string, string>();
+        }
     }
 }
