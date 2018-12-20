@@ -224,7 +224,7 @@ namespace Volcano.Game
             {
                 if (Tiles[i].Owner != Player.Empty && Tiles[Tiles[i].Antipode].Owner == Tiles[i].Owner && Tiles[i].Value > Constants.MaxMagmaChamberLevel)
                 {
-                    List<int> path = pathFinder.FindPath(this, i, Tiles[i].Antipode);
+                    List<int> path = pathFinder.FindPath(this, i, Tiles[i].Antipode).Path;
 
                     if (path.Count > 0)
                     {
@@ -241,6 +241,15 @@ namespace Volcano.Game
         /// <returns></returns>
         public List<Move> GetMoves()
         {
+            return GetMoves(true, true, Constants.MaxVolcanoLevel);
+        }
+
+        /// <summary>
+        /// Get a list of all valid moves for the current player on the current board state.
+        /// </summary>
+        /// <returns></returns>
+        public List<Move> GetMoves(bool growthMoves, bool expandMoves, int maxGrowthValue)
+        {
             List<Move> moves = new List<Move>();
 
             // TODO: order moves for alpha/beta pruning by 1) growing existing tiles, 2) claiming adjacent tiles, and then 3) claiming remaining tiles
@@ -254,13 +263,13 @@ namespace Volcano.Game
                 for (int i = 0; i < 80; i++)
                 {
                     // Grow existing tiles
-                    if (Tiles[i].Owner == Player && Tiles[i].Value < Constants.MaxVolcanoLevel)
+                    if (growthMoves && Tiles[i].Owner == Player && Tiles[i].Value < maxGrowthValue)
                     {
                         moves.Add(new Move(i, MoveType.SingleGrow));
                     }
 
                     // Claim new tiles
-                    if (Tiles[i].Owner == Player.Empty)
+                    if (expandMoves && Tiles[i].Owner == Player.Empty)
                     {
                         moves.Add(new Move(i, MoveType.SingleGrow));
                     }
@@ -274,7 +283,7 @@ namespace Volcano.Game
         {
             return GetMoves().Any(x => x == move);
         }
-        
+
         /// <summary>
         /// Get the opponent for a given player.
         /// </summary>
@@ -296,7 +305,7 @@ namespace Volcano.Game
             {
                 case 0:
                 case 4:
-                case 5: 
+                case 5:
                     return Player.One;
                 case 1:
                 case 2:

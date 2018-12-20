@@ -150,12 +150,12 @@ namespace Volcano.Engine
 
         private List<int> GetAntipodePath(Board state, int index)
         {
-            return playerOnlyPathFinder.FindPath(state, index, state.Tiles[index].Antipode);
+            return playerOnlyPathFinder.FindPath(state, index, state.Tiles[index].Antipode).Path;
         }
 
         private List<int> GetSuggestedAntipodePath(Board state, int index)
         {
-            return pathFinder.FindPath(state, index, state.Tiles[index].Antipode);
+            return pathFinder.FindPath(state, index, state.Tiles[index].Antipode).Path;
         }
     }
 }

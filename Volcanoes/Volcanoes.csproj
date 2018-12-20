@@ -53,14 +53,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Engine\BeeLineEngine.cs" />
+    <Compile Include="Engine\EngineMove.cs" />
     <Compile Include="Engine\KittyCornerEngine.cs" />
     <Compile Include="Engine\AlphaEngine.cs" />
     <Compile Include="Engine\EngineHelper.cs" />
     <Compile Include="Engine\IEngine.cs" />
     <Compile Include="Engine\LongestPathEngine.cs" />
+    <Compile Include="Engine\DeepBeelineEngine.cs" />
     <Compile Include="Engine\MiniMaxAlphaBetaEngine.cs" />
     <Compile Include="Search\KittyPathFinder.cs" />
     <Compile Include="Search\LongestPathFinder.cs" />
+    <Compile Include="Search\WeightedNonEnemyPathFinder.cs" />
     <Compile Include="Search\NonEnemyPathFinder.cs" />
     <Compile Include="Search\PathFinder.cs" />
     <Compile Include="Engine\RandomEngine.cs" />
@@ -88,6 +91,7 @@
     <Compile Include="Interface\JsonColorConverter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Search\PathResult.cs" />
     <EmbeddedResource Include="GameForm.resx">
       <DependentUpon>GameForm.cs</DependentUpon>
     </EmbeddedResource>

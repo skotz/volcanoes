@@ -55,7 +55,7 @@ namespace Volcano.Engine
 
         private List<int> GetSuggestedAntipodePath(Board state, int index)
         {
-            return pathFinder.FindPath(state, index, state.Tiles[index].Antipode);
+            return pathFinder.FindPath(state, index, state.Tiles[index].Antipode).Path;
         }
 
         private List<int> Shuffle(List<int> list)

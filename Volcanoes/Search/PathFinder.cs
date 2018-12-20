@@ -40,7 +40,7 @@ namespace Volcano.Search
             return 1;
         }
 
-        public List<int> FindPath(Board state, int startingIndex, int endingIndex)
+        public PathResult FindPath(Board state, int startingIndex, int endingIndex)
         {
             // The set of nodes already evaluated
             List<int> closedSet = new List<int>();
@@ -108,7 +108,7 @@ namespace Volcano.Search
 
                     path.Reverse();
 
-                    return path;
+                    return new PathResult(path, gScore[endingIndex]);
                 }
 
                 openSet.Remove(current);
@@ -147,7 +147,7 @@ namespace Volcano.Search
                 }
             }
 
-            return new List<int>();
+            return new PathResult();
         }
     }
 }

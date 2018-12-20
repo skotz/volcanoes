@@ -79,7 +79,7 @@ namespace Volcano.Engine
             //}
             for (int i = 0; i < tiles.Count; i++)
             {
-                int length = pathFinder.FindPath(state, lastIndex, i).Count;
+                int length = pathFinder.FindPath(state, lastIndex, i).Path.Count;
                 longest = Math.Max(length, longest);
             }
 
