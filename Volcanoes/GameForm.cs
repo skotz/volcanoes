@@ -58,6 +58,11 @@ namespace Volcano
 
             menuStrip1.Renderer = new MenuProfessionalRenderer(new MenuColorTable());
             toolStrip1.Renderer = new MenuProfessionalRenderer(new MenuColorTable());
+
+            if (!string.IsNullOrEmpty(VolcanoGame.Settings.CustomSettingsFile))
+            {
+                lblStatusBar.Text = VolcanoGame.Settings.CustomSettingsFile + " loaded " + VolcanoGame.Settings.CustomSettingsTitle;
+            }
         }
 
         private void gameTimer_Tick(object sender, EventArgs e)
@@ -189,6 +194,12 @@ namespace Volcano
                 tourney.OnTournamentStatus += Tourney_OnTournamentStatus;
                 tourney.Start();
             }
+        }
+
+        private void exportRulesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            VolcanoGame.Settings.Save("volcano.json");
+            MessageBox.Show("Rules exported as volcano.json!\r\nEdit the settings and reload to play with custom rules.", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }

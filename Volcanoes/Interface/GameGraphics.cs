@@ -178,7 +178,7 @@ namespace Volcano.Interface
                         }
                         else
                         {
-                            value -= Constants.MaxMagmaChamberLevel;
+                            value -= VolcanoGame.Settings.MaxMagmaChamberLevel;
                             DrawTileSubText(g, i, "Volcano");
                         }
 

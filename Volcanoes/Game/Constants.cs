@@ -9,10 +9,6 @@ namespace Volcano.Game
 {
     class Constants
     {
-        public const int MaxVolcanoLevel = 8;
-
-        public const int MaxMagmaChamberLevel = 4;
-
         private static Lazy<int[][]> _connectingTiles = new Lazy<int[][]>(GetConnectingTiles);
 
         private static Lazy<string[]> _tileNames = new Lazy<string[]>(GetTileNames);

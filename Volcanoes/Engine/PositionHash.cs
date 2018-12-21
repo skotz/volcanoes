@@ -27,8 +27,8 @@ namespace Volcano.Engine
                 tilesMasks[tile] = new int[3][];
                 for (int player = 0; player < 3; player++)
                 {
-                    tilesMasks[tile][player] = new int[Constants.MaxVolcanoLevel];
-                    for (int value = 0; value < Constants.MaxVolcanoLevel; value++)
+                    tilesMasks[tile][player] = new int[VolcanoGame.Settings.MaxVolcanoLevel];
+                    for (int value = 0; value < VolcanoGame.Settings.MaxVolcanoLevel; value++)
                     {
                         tilesMasks[tile][player][value] = GetRandom();
                     }

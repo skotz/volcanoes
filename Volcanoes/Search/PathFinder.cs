@@ -27,7 +27,7 @@ namespace Volcano.Search
             }
 
             // Ignore magma chambers
-            if (state.Tiles[tileIndex].Value <= Constants.MaxMagmaChamberLevel)
+            if (state.Tiles[tileIndex].Value <= VolcanoGame.Settings.MaxMagmaChamberLevel)
             {
                 return false;
             }

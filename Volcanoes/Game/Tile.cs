@@ -52,7 +52,7 @@ namespace Volcano.Game
                 {
                     return TileType.Empty;
                 }
-                else if (Value <= Constants.MaxMagmaChamberLevel)
+                else if (Value <= VolcanoGame.Settings.MaxMagmaChamberLevel)
                 {
                     return TileType.MagmaChamber;
                 }

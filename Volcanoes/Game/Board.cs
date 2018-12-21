@@ -125,24 +125,24 @@ namespace Volcano.Game
                 int[] twoDeltas = new int[80];
                 for (int i = 0; i < 80; i++)
                 {
-                    if (Tiles[i].Value >= Constants.MaxVolcanoLevel)
+                    if (Tiles[i].Value >= VolcanoGame.Settings.MaxVolcanoLevel)
                     {
                         Eruptions.Add(i);
                         for (int adjacent = 0; adjacent < 3; adjacent++)
                         {
                             // Downgrade to a level one volcano
-                            Tiles[i].Value = Constants.MaxMagmaChamberLevel + 1;
+                            Tiles[i].Value = VolcanoGame.Settings.MaxMagmaChamberLevel + 1;
 
                             // Blank tile
                             if (Tiles[Constants.ConnectingTiles[i][adjacent]].Owner == Player.Empty)
                             {
                                 if (Tiles[i].Owner == Player.One)
                                 {
-                                    oneDeltas[Constants.ConnectingTiles[i][adjacent]] += 1;
+                                    oneDeltas[Constants.ConnectingTiles[i][adjacent]] += VolcanoGame.Settings.EruptOverflowEmptyTileAmount;
                                 }
                                 else
                                 {
-                                    twoDeltas[Constants.ConnectingTiles[i][adjacent]] += 1;
+                                    twoDeltas[Constants.ConnectingTiles[i][adjacent]] += VolcanoGame.Settings.EruptOverflowEmptyTileAmount;
                                 }
                             }
 
@@ -151,11 +151,11 @@ namespace Volcano.Game
                             {
                                 if (Tiles[i].Owner == Player.One)
                                 {
-                                    oneDeltas[Constants.ConnectingTiles[i][adjacent]] += 1;
+                                    oneDeltas[Constants.ConnectingTiles[i][adjacent]] += VolcanoGame.Settings.EruptOverflowFriendlyTileAmount;
                                 }
                                 else
                                 {
-                                    twoDeltas[Constants.ConnectingTiles[i][adjacent]] += 1;
+                                    twoDeltas[Constants.ConnectingTiles[i][adjacent]] += VolcanoGame.Settings.EruptOverflowFriendlyTileAmount;
                                 }
                             }
 
@@ -164,11 +164,11 @@ namespace Volcano.Game
                             {
                                 if (Tiles[i].Owner == Player.One)
                                 {
-                                    twoDeltas[Constants.ConnectingTiles[i][adjacent]] -= 1;
+                                    twoDeltas[Constants.ConnectingTiles[i][adjacent]] += VolcanoGame.Settings.EruptOverflowEnemyTileAmount;
                                 }
                                 else
                                 {
-                                    oneDeltas[Constants.ConnectingTiles[i][adjacent]] -= 1;
+                                    oneDeltas[Constants.ConnectingTiles[i][adjacent]] += VolcanoGame.Settings.EruptOverflowEnemyTileAmount;
                                 }
                             }
                         }
@@ -200,8 +200,18 @@ namespace Volcano.Game
                             // If we subtracted this tile enough to get a negative number, then switch the owner to the opposite player
                             if (Tiles[i].Value < 0)
                             {
-                                Tiles[i].Value = -Tiles[i].Value;
-                                Tiles[i].Owner = Tiles[i].Owner == Player.One ? Player.Two : Player.One;
+                                if (VolcanoGame.Settings.EruptOverflowAllowCapture)
+                                {
+                                    // Capture the tile
+                                    Tiles[i].Value = -Tiles[i].Value;
+                                    Tiles[i].Owner = Tiles[i].Owner == Player.One ? Player.Two : Player.One;
+                                }
+                                else
+                                {
+                                    // Clear the tile
+                                    Tiles[i].Value = 0;
+                                    Tiles[i].Owner = Player.Empty;
+                                }
                             }
                         }
 
@@ -212,7 +222,7 @@ namespace Volcano.Game
                         }
 
                         // Did this change trigger a chain reaction?
-                        if (Tiles[i].Value >= Constants.MaxVolcanoLevel)
+                        if (Tiles[i].Value >= VolcanoGame.Settings.MaxVolcanoLevel)
                         {
                             done = false;
                         }
@@ -225,7 +235,7 @@ namespace Volcano.Game
         {
             for (int i = 0; i < 80; i++)
             {
-                if (Tiles[i].Owner != Player.Empty && Tiles[Tiles[i].Antipode].Owner == Tiles[i].Owner && Tiles[i].Value > Constants.MaxMagmaChamberLevel)
+                if (Tiles[i].Owner != Player.Empty && Tiles[Tiles[i].Antipode].Owner == Tiles[i].Owner && Tiles[i].Value > VolcanoGame.Settings.MaxMagmaChamberLevel)
                 {
                     List<int> path = pathFinder.FindPath(this, i, Tiles[i].Antipode).Path;
 
@@ -244,16 +254,17 @@ namespace Volcano.Game
         /// <returns></returns>
         public List<Move> GetMoves()
         {
-            return GetMoves(true, true, Constants.MaxVolcanoLevel);
+            return GetMoves(true, true, true, VolcanoGame.Settings.MaxVolcanoLevel);
         }
 
         /// <summary>
         /// Get a list of all valid moves for the current player on the current board state.
         /// </summary>
         /// <returns></returns>
-        public List<Move> GetMoves(bool growthMoves, bool expandMoves, int maxGrowthValue)
+        public List<Move> GetMoves(bool growthMoves, bool expandMoves, bool captureMoves, int maxGrowthValue)
         {
             List<Move> moves = new List<Move>();
+            Player opponent = Player == Player.One ? Player.Two : Player.One;
 
             // TODO: order moves for alpha/beta pruning by 1) growing existing tiles, 2) claiming adjacent tiles, and then 3) claiming remaining tiles
 
@@ -273,6 +284,16 @@ namespace Volcano.Game
 
                     // Claim new tiles
                     if (expandMoves && Tiles[i].Owner == Player.Empty)
+                    {
+                        moves.Add(new Move(i, MoveType.SingleGrow));
+                    }
+
+                    // Capture enemy tiles
+                    if (captureMoves && VolcanoGame.Settings.AllowMagmaChamberCaptures && Tiles[i].Owner == opponent && Tiles[i].Value <= VolcanoGame.Settings.MaxMagmaChamberLevel)
+                    {
+                        moves.Add(new Move(i, MoveType.SingleGrow));
+                    }
+                    if (captureMoves && VolcanoGame.Settings.AllowVolcanoCaptures && Tiles[i].Owner == opponent && Tiles[i].Value > VolcanoGame.Settings.MaxMagmaChamberLevel)
                     {
                         moves.Add(new Move(i, MoveType.SingleGrow));
                     }

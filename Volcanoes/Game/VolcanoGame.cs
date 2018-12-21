@@ -23,15 +23,14 @@ namespace Volcano.Game
 
         public List<int> MoveHistory { get; private set; }
         
-        public bool Thinking
-        {
-            get
-            {
-                return _worker.IsBusy;
-            }
-        }
+        public bool Thinking { get { return _worker.IsBusy; } }
 
         public int NodesPerSecond { get { return _lastSearch?.NodesPerSecond ?? 0; } }
+
+        // DI? What's that...
+        private static Lazy<GameSettings> _settings = new Lazy<GameSettings>(() => GameSettings.LoadOrDefault("volcano.json"));
+
+        public static GameSettings Settings { get { return _settings.Value; } }
 
         public VolcanoGame()
         {

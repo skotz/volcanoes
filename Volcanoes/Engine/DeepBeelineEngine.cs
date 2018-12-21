@@ -100,7 +100,7 @@ namespace Volcano.Engine
 
         private List<Move> GetFilteredMoves(Board position)
         {
-            List<Move> allMoves = position.GetMoves(true, true, Constants.MaxMagmaChamberLevel + 1);
+            List<Move> allMoves = position.GetMoves(true, true, true, VolcanoGame.Settings.MaxMagmaChamberLevel + 1);
             if (allMoves.Count == 0)
             {
                 return allMoves;
@@ -162,7 +162,7 @@ namespace Volcano.Engine
                 {
                     foreach (int i in best.Path)
                     {
-                        if (position.Tiles[i].Owner == position.Player && position.Tiles[i].Value <= Constants.MaxMagmaChamberLevel)
+                        if (position.Tiles[i].Owner == position.Player && position.Tiles[i].Value <= VolcanoGame.Settings.MaxMagmaChamberLevel)
                         {
                             Move move = allMoves.Where(x => x.TileIndex == i).FirstOrDefault();
                             if (move != null)

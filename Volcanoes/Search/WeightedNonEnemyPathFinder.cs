@@ -23,7 +23,7 @@ namespace Volcano.Search
         protected override int GetDistance(Board state, int first, int second)
         {
             // Friendly volcano tiles are a free pass
-            if (state.Tiles[first].Value > Constants.MaxMagmaChamberLevel && state.Tiles[second].Value > Constants.MaxMagmaChamberLevel)
+            if (state.Tiles[first].Value > VolcanoGame.Settings.MaxMagmaChamberLevel && state.Tiles[second].Value > VolcanoGame.Settings.MaxMagmaChamberLevel)
             {
                 return 0;
             }
