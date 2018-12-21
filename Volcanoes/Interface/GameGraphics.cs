@@ -130,6 +130,17 @@ namespace Volcano.Interface
         {
             Resize();
 
+            if (_settings.IdealPanelWidth <= 100 || _settings.IdealPanelHeight <= 20)
+            {
+                using (Graphics g3 = _panel.CreateGraphics())
+                {
+                    g3.Clear(SystemColors.ControlDark);
+                    g3.DrawString(":)", new Font("Tahoma", 8f, FontStyle.Regular), Brushes.White, new Point(1, 1));
+                }
+
+                return;
+            }
+
             int hoverTile = GetTileIndex(mouseLocation);
             Board gameState = game.CurrentState;
 
