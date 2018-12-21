@@ -77,8 +77,8 @@ namespace Volcano.Search
                 fScore[i] = int.MaxValue;
             }
 
-            // For the first node, that value is completely heuristic.
-            fScore[startingIndex] = Math.Abs(endingIndex - startingIndex);
+            // For the first node, that value is completely heuristic. (All antipode paths are known to be 12 tiles long.)
+            fScore[startingIndex] = 12;
 
             while (openSet.Count > 0)
             {
@@ -143,7 +143,7 @@ namespace Volcano.Search
                     // This path is the best until now. Record it!
                     cameFrom[neighbor] = current;
                     gScore[neighbor] = tentative_gScore;
-                    fScore[neighbor] = gScore[neighbor] + Math.Abs(neighbor - startingIndex);
+                    fScore[neighbor] = gScore[neighbor] /* + Math.Abs(neighbor - startingIndex) */;
                 }
             }
 
