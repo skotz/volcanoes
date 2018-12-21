@@ -29,7 +29,7 @@ namespace Volcano.Interface
         public Color PlayerTwoMagmaChamberTileColor { get; set; } = Color.FromArgb(255, 151, 0);
 
         public Color EmptyTileColor { get; set; } = Color.Gray;
-        public Color BackgroundColor { get; set; } = Color.White;
+        public Color BackgroundColor { get; set; } = SystemColors.Control;
         public Color HoverTileBorderColor { get; set; } = Color.FromArgb(230, 0, 113);
         public Color HoverAdjacentTileBorderColor { get; set; } = Color.LightGray;
         public Color HoverAntipodeTileBorderColor { get; set; } = Color.FromArgb(0, 219, 48);

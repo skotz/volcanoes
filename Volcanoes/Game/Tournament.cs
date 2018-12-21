@@ -16,6 +16,7 @@ namespace Volcano.Game
         private string _file;
         private string _dataFile;
         private EngineHelper _engines;
+        private List<string> _players;
 
         private BackgroundWorker worker;
 
@@ -27,12 +28,13 @@ namespace Volcano.Game
 
         private bool allowSelfPlay = false;
 
-        public Tournament(int rounds, string resultsFile, string dataFile, EngineHelper engines)
+        public Tournament(int rounds, string resultsFile, string dataFile, EngineHelper engines, List<string> players)
         {
             _rounds = rounds;
             _file = resultsFile;
             _dataFile = dataFile;
             _engines = engines;
+            _players = players;
 
             worker = new BackgroundWorker();
             worker.WorkerReportsProgress = true;
@@ -55,15 +57,15 @@ namespace Volcano.Game
             List<TournamentResult> results = new List<TournamentResult>();
 
             int completedGames = 0;
-            int totalGames = _rounds * _engines.EngineNames.Count * (_engines.EngineNames.Count - 1);
+            int totalGames = _rounds * _players.Count * (_players.Count - 1);
 
             // Just in case one of the engines decides to error out or take forever
             int maxTurns = 200;
             int maxSeconds = 5 * 60;
 
-            foreach (var engine1 in _engines.EngineNames)
+            foreach (var engine1 in _players)
             {
-                foreach (var engine2 in _engines.EngineNames)
+                foreach (var engine2 in _players)
                 {
                     if (engine1 != engine2 || allowSelfPlay)
                     {
@@ -165,12 +167,12 @@ namespace Volcano.Game
             }
 
             List<TournamentResultLine> lines = new List<TournamentResultLine>();
-            foreach (var engine1 in _engines.EngineNames)
+            foreach (var engine1 in _players)
             {
                 decimal score = 0m;
                 TournamentResultLine line = new TournamentResultLine();
                 line.Name = engine1;
-                foreach (var engine2 in _engines.EngineNames)
+                foreach (var engine2 in _players)
                 {
                     if (engine1 != engine2 || allowSelfPlay)
                     {

@@ -21,6 +21,7 @@ namespace Volcano
         VolcanoGame game;
         EngineHelper engines;
 
+        int totalAutoPlay = 0;
         int autoPlay = 0;
 
         public GameForm()
@@ -43,13 +44,20 @@ namespace Volcano
             engines.Add<BeeLineEngine>("Bee Line");
             engines.Add<DeepBeelineEngine>("Deep Beeline");
 
+            cbPlayerOne.Items.Add("Human");
+            cbPlayerTwo.Items.Add("Human");
+            cbPlayerOne.SelectedIndex = 0;
+            cbPlayerTwo.SelectedIndex = 0;
             foreach (string engine in engines.EngineNames)
             {
-                ddlPlayerOne.Items.Add(engine);
-                ddlPlayerTwo.Items.Add(engine);
+                cbPlayerOne.Items.Add(engine);
+                cbPlayerTwo.Items.Add(engine);
             }
 
             ConfigureComputer();
+
+            menuStrip1.Renderer = new MenuProfessionalRenderer(new MenuColorTable());
+            toolStrip1.Renderer = new MenuProfessionalRenderer(new MenuColorTable());
         }
 
         private void gameTimer_Tick(object sender, EventArgs e)
@@ -90,16 +98,29 @@ namespace Volcano
 
         private void ConfigureComputer()
         {
-            game.RegisterEngine(Player.One, engines.GetEngine(ddlPlayerOne.Text));
-            game.RegisterEngine(Player.Two, engines.GetEngine(ddlPlayerTwo.Text));
+            game.RegisterEngine(Player.One, engines.GetEngine(cbPlayerOne.Text));
+            game.RegisterEngine(Player.Two, engines.GetEngine(cbPlayerTwo.Text));
 
             game.ComputerPlay();
         }
 
-        private void btnRunTests_Click(object sender, EventArgs e)
+        private void selfPlayToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            autoPlay = 1000;
-            StartNewGame();
+            var selfPlayForm = new SelfPlayForm(engines.EngineNames);
+            var dr = selfPlayForm.ShowDialog();
+            if (dr == DialogResult.OK)
+            {
+                autoPlay = totalAutoPlay = selfPlayForm.GamesToPlay;
+
+                cbPlayerOne.Text = selfPlayForm.EngineOne;
+                cbPlayerTwo.Text = selfPlayForm.EngineTwo;
+
+                lblStatusBar.Text = "0/" + totalAutoPlay;
+                progStatus.Value = 0;
+                progStatus.Visible = true;
+
+                StartNewGame();
+            }
         }
 
         private void Game_OnGameOver(Player winner)
@@ -113,20 +134,18 @@ namespace Volcano
 
                 StartNewGame();
             }
-        }
 
-        private void btnTournament_Click(object sender, EventArgs e)
-        {
-            btnTournament.Enabled = false;
-            progStatus.Value = 0;
-            progStatus.Visible = true;
+            if (totalAutoPlay > 0)
+            {
+                lblStatusBar.Text = Math.Min(totalAutoPlay - autoPlay, totalAutoPlay) + "/" + totalAutoPlay;
+                progStatus.Value = (int)(100m * (totalAutoPlay - autoPlay) / totalAutoPlay);
+            }
 
-            string date = DateTime.Now.ToString("yyyyMMddhhmmss");
-
-            Tournament tourney = new Tournament((int)numRounds.Value, "tourney-table-" + date + ".csv", "tourney-data-" + date + ".csv", engines);
-            tourney.OnTournamentCompleted += Tourney_OnTournamentCompleted;
-            tourney.OnTournamentStatus += Tourney_OnTournamentStatus;
-            tourney.Start();
+            if (autoPlay == 0)
+            {
+                lblStatusBar.Text = "Autoplay finished";
+                progStatus.Visible = false;
+            }
         }
 
         private void Tourney_OnTournamentStatus(TournamentStatus status)
@@ -138,11 +157,38 @@ namespace Volcano
         private void Tourney_OnTournamentCompleted()
         {
             progStatus.Visible = false;
-            btnTournament.Enabled = true;
+            newTournamentToolStripMenuItem.Enabled = true;
 
             lblStatusBar.Text = "Tournament finished";
 
             MessageBox.Show("Tournament complete! Round robin cross table saved to file.");
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Designed by Simon Dorfman\r\nDeveloped by Scott Clayton", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void newTournamentToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var form = new TournamentForm(engines.EngineNames);
+            var dr = form.ShowDialog();
+            if (dr == DialogResult.OK)
+            {
+                progStatus.Value = 0;
+                progStatus.Visible = true;
+
+                newTournamentToolStripMenuItem.Enabled = false;
+                progStatus.Value = 0;
+                progStatus.Visible = true;
+
+                string date = DateTime.Now.ToString("yyyyMMddhhmmss");
+
+                Tournament tourney = new Tournament(form.Rounds, "tourney-table-" + date + ".csv", "tourney-data-" + date + ".csv", engines, form.Engines);
+                tourney.OnTournamentCompleted += Tourney_OnTournamentCompleted;
+                tourney.OnTournamentStatus += Tourney_OnTournamentStatus;
+                tourney.Start();
+            }
         }
     }
 }

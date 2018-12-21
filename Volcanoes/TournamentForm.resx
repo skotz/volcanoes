@@ -117,51 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <metadata name="gameTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
-  <metadata name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>130, 17</value>
-  </metadata>
-  <metadata name="menuStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>246, 17</value>
-  </metadata>
-  <metadata name="menuStrip1.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="newGameToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABcAAAAXCAYAAADgKtSgAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAP
-        6wAAD+sB1njgFgAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAHYSURBVEhL3ZRP
-        KINhHMcnETuQg1KU5eBPyllJ9m7SpDdSs/d9Xq0VraFciLLawZGDJOUm5aBdJPtzcHBWHJVWEheKA0tr
-        Ueb7vvst7569W7Ptwre+tT2/7+/z/Nsz0/+X0+mslmV5Dx+r0iMVFMDzcIox5qahygjAJoCfVTj8hF00
-        Uql8AbhLYM2YbJNK5QmwXvhTD4c/4G6KlC5AznVQvc8oUpoAmOKAWcbxjFP0d8Kl1QNwxwM533o8njpq
-        KV5Y1TCag0XYRi3FS47a+1hI8Ephm4+FrKv5rESs/dRSnLAah3I42iaHhVc4VcBxz77DgvwQtRaWoigN
-        CD9KkrQsR4QVA+CPI9YlZAM4wntRFM2EyC+Et2D1suJsgbUDcpMD1WyLsTnWgdw75QOEMJbL5epBSH0g
-        mV/DgRQSxozhVgdWfKTLJrBbC6FyhUBUF1b9hYZBOSSEs8G2YxzfgFrn8kFCZQuFCS6oGau7coftnYAm
-        CZ6cPhG6ULvks6qx+xFCpoUHU4tCjA/qPAvohgrHMa1jNz6DTMbXXq+3htDag1kzCOn9MuOfVC/3wu13
-        tuJ75u/X0Jh8UQNj1c0YeIAT+gBvLGBbPBXNaNwxqnN+A7dFm+APymT6BvCqstSm/W1+AAAAAElFTkSu
-        QmCC
-</value>
-  </data>
-  <metadata name="toolStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>361, 17</value>
-  </metadata>
-  <data name="btnNewGame.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABcAAAAXCAYAAADgKtSgAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHsSURBVEhL3VRNKARhGF6JcCAHpShy8JNyVhuzs8SWKbK7
-        M9/MxJa04eBCFOXgyEGScpNc5ELMcHBwVhyVlMSF4oAkUdYzs+/Uh2+1fi489TTT9z7v877zzft9vv+P
-        aDSaqWnaAl4zkiu/CF3XB8AE2E1LvwPDMArD4fAVmV/iKwoo9HNgO+bJ2OM0hX4GxlgtzJ55c3zFE57V
-        JPk+YLLLG3tE0R2SfA8wUEXGHvEv2kn6NUQikVwYnL435Kmq6kksFsuhlPSBrprR+WoaDFJK+mBbwTrD
-        kuPMDvbpm4HRVDS3pHpKSQ/oJmQuh0r1Df+NbsuJVGS2fBdbbC3HFkmU+jlM08yH+AKzPczswIjI1CPi
-        Q9BOgGeKouSRRWpAOAM6o3ZnDBhlbLPxSGSs2vKx0W9UYObvHb1ThCzEQLc1dEDcaUCBJWYF2kTmzJJC
-        0Kx4WvAB+eVk9REQbHNihy9IaNAsyeaNNUtewzT5nTivd6aHrN4CwQ5eyPGgy26q1Nf8j645nua6XIWi
-        +wJtAustZJkEbrlsHIhjkZjYi583ldyOwCQ67BNoXCJ2GI/Hs8ja7XrsvYgnurnuGe8s02xpr3ssUsJd
-        v0KiwKBrjGNehIVz8IEXCDirbCh5SJwTxN4QxW+xG8VugT8In+8VTSCxd5RYINEAAAAASUVORK5CYII=
-</value>
-  </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         AAABAAkAEBAAAAEAIABoBAAAlgAAABgYAAABACAAiAkAAP4EAAAgIAAAAQAgAKgQAACGDgAAMDAAAAEA

@@ -23,6 +23,8 @@ namespace Volcano.Game
 
         private static Lazy<int[][]> _fastestPaths = new Lazy<int[][]>(GetFastestPaths);
 
+        private static Lazy<Dictionary<string, int>> _reverseNameToIndex = new Lazy<Dictionary<string, int>>(GetTileIndexes);
+
         /// <summary>
         /// An array mapping a source tile index to it's three connecting triangle indexes.
         /// E.G., ConnectingTiles[55] = { 33, 52, 74 } since tile 55 connects to tiles 33, 51, and 74.
@@ -50,6 +52,8 @@ namespace Volcano.Game
         /// An array mapping a source tile index to a path to it's antipode.
         /// </summary>
         public static int[][] FastestPaths { get { return _fastestPaths.Value; } }
+
+        public static Dictionary<string, int> TileIndexes { get { return _reverseNameToIndex.Value; } }
 
         private static int[][] GetConnectingTiles()
         {
@@ -331,6 +335,18 @@ namespace Volcano.Game
             }
 
             return paths;
+        }
+
+        private static Dictionary<string, int> GetTileIndexes()
+        {
+            Dictionary<string, int> indexes = new Dictionary<string, int>();
+
+            for (int i = 0; i < 80; i++)
+            {
+                indexes.Add(TileNames[i], i);
+            }
+
+            return indexes;
         }
     }
 }
