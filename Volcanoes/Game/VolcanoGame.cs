@@ -19,10 +19,10 @@ namespace Volcano.Game
         private SearchResult _lastSearch;
 
         public event GameOverHandler OnGameOver;
-        public delegate void GameOverHandler(Player winner);
+        public delegate void GameOverHandler(Player winner, VictoryType type);
 
         public List<int> MoveHistory { get; private set; }
-
+        
         public bool Thinking
         {
             get
@@ -71,7 +71,7 @@ namespace Volcano.Game
 
                 if (CurrentState.State == GameState.GameOver)
                 {
-                    OnGameOver?.Invoke(CurrentState.Winner);
+                    OnGameOver?.Invoke(CurrentState.Winner, VictoryType.AntipodePathCreation);
                 }
                 else
                 {
@@ -106,16 +106,25 @@ namespace Volcano.Game
         private void BackgroundWorkCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             _lastSearch = (SearchResult)e.Result;
-            CurrentState.MakeMove(_lastSearch.BestMove);
-            MoveHistory.Add(_lastSearch.BestMove.TileIndex);
 
-            if (CurrentState.State == GameState.GameOver)
+            if (_lastSearch.BestMove != null)
             {
-                OnGameOver?.Invoke(CurrentState.Winner);
+                CurrentState.MakeMove(_lastSearch.BestMove);
+                MoveHistory.Add(_lastSearch.BestMove.TileIndex);
+
+                if (CurrentState.State == GameState.GameOver)
+                {
+                    OnGameOver?.Invoke(CurrentState.Winner, VictoryType.AntipodePathCreation);
+                }
+                else
+                {
+                    ComputerPlay();
+                }
             }
             else
             {
-                ComputerPlay();
+                // If an engine doesn't find a move, then he adjourns the game
+                OnGameOver?.Invoke(CurrentState.Player == Player.One ? Player.Two : Player.One, VictoryType.ArenaAdjudication);
             }
         }
     }

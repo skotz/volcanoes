@@ -61,6 +61,7 @@
     <Compile Include="Engine\LongestPathEngine.cs" />
     <Compile Include="Engine\DeepBeelineEngine.cs" />
     <Compile Include="Engine\MiniMaxAlphaBetaEngine.cs" />
+    <Compile Include="Game\VictoryType.cs" />
     <Compile Include="Interface\MenuColorTable.cs" />
     <Compile Include="Interface\MenuProfessionalRenderer.cs" />
     <Compile Include="Search\KittyPathFinder.cs" />

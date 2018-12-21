@@ -74,6 +74,9 @@ namespace Volcano.Game
                             Stopwatch killswitch = Stopwatch.StartNew();
                             VolcanoGame game = new VolcanoGame();
 
+                            VictoryType victory = VictoryType.None;
+                            game.OnGameOver += (p, v) => victory = v;
+
                             try
                             {
                                 game.RegisterEngine(Player.One, _engines.GetEngine(engine1));
@@ -81,7 +84,7 @@ namespace Volcano.Game
                                 game.StartNewGame();
                                 game.ComputerPlay();
 
-                                while (game.CurrentState.Winner == Player.Empty && game.CurrentState.Turn < maxTurns && killswitch.ElapsedMilliseconds < maxSeconds * 1000)
+                                while (victory == VictoryType.None && game.CurrentState.Winner == Player.Empty && game.CurrentState.Turn < maxTurns && killswitch.ElapsedMilliseconds < maxSeconds * 1000)
                                 {
                                     System.Threading.Thread.Sleep(100);
                                 }
@@ -97,6 +100,10 @@ namespace Volcano.Game
                                     {
                                         termination = TournamentTerminationType.AdjudicateTime;
                                     }
+                                }
+                                if (victory == VictoryType.ArenaAdjudication)
+                                {
+                                    termination = TournamentTerminationType.IllegalMove;
                                 }
 
                                 lock (results)
@@ -296,7 +303,8 @@ namespace Volcano.Game
         AdjudicateTime,
         AdjudicateMoves,
         PlayerOneError,
-        PlayerTwoError
+        PlayerTwoError,
+        IllegalMove
     }
 
     class TournamentResultLine

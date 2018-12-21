@@ -123,7 +123,7 @@ namespace Volcano
             }
         }
 
-        private void Game_OnGameOver(Player winner)
+        private void Game_OnGameOver(Player winner, VictoryType type)
         {
             if (autoPlay-- > 0)
             {
