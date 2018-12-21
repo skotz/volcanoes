@@ -19,8 +19,6 @@ opposite sides of the [Pentakis Icosidodecahedron](https://en.wikipedia.org/wiki
          * Enemy tiles regress one level on the growth track
 
 ### Progression of play
-The game progresses as follows.
-
 1. Player one's turn
 2. Player two's turn
 3. Growth (every non-empty tile on the board is advanced one level on the growth track)
