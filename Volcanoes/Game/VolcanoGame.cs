@@ -21,6 +21,8 @@ namespace Volcano.Game
         public event GameOverHandler OnGameOver;
         public delegate void GameOverHandler(Player winner);
 
+        public List<int> MoveHistory { get; private set; }
+
         public bool Thinking
         {
             get
@@ -34,6 +36,7 @@ namespace Volcano.Game
         public VolcanoGame()
         {
             CurrentState = new Board();
+            MoveHistory = new List<int>();
 
             _worker = new BackgroundWorker();
             _worker.DoWork += BackgroundWork;
@@ -43,6 +46,7 @@ namespace Volcano.Game
         public void StartNewGame()
         {
             CurrentState = new Board();
+            MoveHistory = new List<int>();
         }
 
         public void RegisterEngine(Player player, IEngine engine)
@@ -63,6 +67,7 @@ namespace Volcano.Game
             if (CurrentState.IsValidMove(move))
             {
                 CurrentState.MakeMove(move);
+                MoveHistory.Add(move.TileIndex);
 
                 if (CurrentState.State == GameState.GameOver)
                 {
@@ -102,6 +107,7 @@ namespace Volcano.Game
         {
             _lastSearch = (SearchResult)e.Result;
             CurrentState.MakeMove(_lastSearch.BestMove);
+            MoveHistory.Add(_lastSearch.BestMove.TileIndex);
 
             if (CurrentState.State == GameState.GameOver)
             {

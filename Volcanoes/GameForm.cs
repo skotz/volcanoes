@@ -118,15 +118,29 @@ namespace Volcano
         private void btnTournament_Click(object sender, EventArgs e)
         {
             btnTournament.Enabled = false;
+            progStatus.Value = 0;
+            progStatus.Visible = true;
 
-            Tournament tourney = new Tournament(100, "tourney.csv", engines);
+            string date = DateTime.Now.ToString("yyyyMMddhhmmss");
+
+            Tournament tourney = new Tournament((int)numRounds.Value, "tourney-table-" + date + ".csv", "tourney-data-" + date + ".csv", engines);
             tourney.OnTournamentCompleted += Tourney_OnTournamentCompleted;
+            tourney.OnTournamentStatus += Tourney_OnTournamentStatus;
             tourney.Start();
+        }
+
+        private void Tourney_OnTournamentStatus(TournamentStatus status)
+        {
+            lblStatusBar.Text = status.CompletedGames + "/" + status.TotalGames + " tournament games completed";
+            progStatus.Value = (int)status.PercentageComplete;
         }
 
         private void Tourney_OnTournamentCompleted()
         {
+            progStatus.Visible = false;
             btnTournament.Enabled = true;
+
+            lblStatusBar.Text = "Tournament finished";
 
             MessageBox.Show("Tournament complete! Round robin cross table saved to file.");
         }

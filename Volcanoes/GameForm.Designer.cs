@@ -40,10 +40,21 @@
             this.btnRunTests = new System.Windows.Forms.Button();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.btnTournament = new System.Windows.Forms.Button();
+            this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.lblStatusBar = new System.Windows.Forms.ToolStripStatusLabel();
+            this.progStatus = new System.Windows.Forms.ToolStripProgressBar();
+            this.numRounds = new System.Windows.Forms.NumericUpDown();
+            this.label3 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
+            this.toolStripContainer1.ContentPanel.SuspendLayout();
+            this.toolStripContainer1.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numRounds)).BeginInit();
             this.SuspendLayout();
             // 
             // gamePanel
@@ -51,7 +62,7 @@
             this.gamePanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.gamePanel.Location = new System.Drawing.Point(0, 0);
             this.gamePanel.Name = "gamePanel";
-            this.gamePanel.Size = new System.Drawing.Size(1063, 565);
+            this.gamePanel.Size = new System.Drawing.Size(1063, 543);
             this.gamePanel.TabIndex = 0;
             this.gamePanel.Click += new System.EventHandler(this.gamePanel_Click);
             // 
@@ -132,6 +143,8 @@
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.label3);
+            this.splitContainer1.Panel1.Controls.Add(this.numRounds);
             this.splitContainer1.Panel1.Controls.Add(this.btnTournament);
             this.splitContainer1.Panel1.Controls.Add(this.label2);
             this.splitContainer1.Panel1.Controls.Add(this.ddlPlayerOne);
@@ -143,7 +156,7 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.gamePanel);
-            this.splitContainer1.Size = new System.Drawing.Size(1063, 609);
+            this.splitContainer1.Size = new System.Drawing.Size(1063, 587);
             this.splitContainer1.SplitterDistance = 40;
             this.splitContainer1.TabIndex = 7;
             // 
@@ -157,12 +170,79 @@
             this.btnTournament.UseVisualStyleBackColor = true;
             this.btnTournament.Click += new System.EventHandler(this.btnTournament_Click);
             // 
+            // toolStripContainer1
+            // 
+            // 
+            // toolStripContainer1.BottomToolStripPanel
+            // 
+            this.toolStripContainer1.BottomToolStripPanel.Controls.Add(this.statusStrip1);
+            // 
+            // toolStripContainer1.ContentPanel
+            // 
+            this.toolStripContainer1.ContentPanel.Controls.Add(this.splitContainer1);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1063, 587);
+            this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.toolStripContainer1.Location = new System.Drawing.Point(0, 0);
+            this.toolStripContainer1.Name = "toolStripContainer1";
+            this.toolStripContainer1.Size = new System.Drawing.Size(1063, 609);
+            this.toolStripContainer1.TabIndex = 8;
+            this.toolStripContainer1.Text = "toolStripContainer1";
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Dock = System.Windows.Forms.DockStyle.None;
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.progStatus,
+            this.lblStatusBar});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 0);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(1063, 22);
+            this.statusStrip1.TabIndex = 0;
+            // 
+            // lblStatusBar
+            // 
+            this.lblStatusBar.Name = "lblStatusBar";
+            this.lblStatusBar.Size = new System.Drawing.Size(39, 17);
+            this.lblStatusBar.Text = "Ready";
+            // 
+            // progStatus
+            // 
+            this.progStatus.Name = "progStatus";
+            this.progStatus.Size = new System.Drawing.Size(100, 16);
+            this.progStatus.Visible = false;
+            // 
+            // numRounds
+            // 
+            this.numRounds.Location = new System.Drawing.Point(712, 12);
+            this.numRounds.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numRounds.Name = "numRounds";
+            this.numRounds.Size = new System.Drawing.Size(58, 20);
+            this.numRounds.TabIndex = 7;
+            this.numRounds.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(662, 15);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(44, 13);
+            this.label3.TabIndex = 8;
+            this.label3.Text = "Rounds";
+            // 
             // GameForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1063, 609);
-            this.Controls.Add(this.splitContainer1);
+            this.Controls.Add(this.toolStripContainer1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "GameForm";
             this.Text = "Volcanoes";
@@ -171,6 +251,14 @@
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            this.toolStripContainer1.BottomToolStripPanel.ResumeLayout(false);
+            this.toolStripContainer1.BottomToolStripPanel.PerformLayout();
+            this.toolStripContainer1.ContentPanel.ResumeLayout(false);
+            this.toolStripContainer1.ResumeLayout(false);
+            this.toolStripContainer1.PerformLayout();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numRounds)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -187,6 +275,12 @@
         private System.Windows.Forms.Button btnRunTests;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.Button btnTournament;
+        private System.Windows.Forms.ToolStripContainer toolStripContainer1;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel lblStatusBar;
+        private System.Windows.Forms.ToolStripProgressBar progStatus;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.NumericUpDown numRounds;
     }
 }
 
