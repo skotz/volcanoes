@@ -31,11 +31,11 @@ namespace Volcano.Search
             // Friendly magma chambers are cheap
             if (state.Tiles[first].Value >= 1 && state.Tiles[second].Value >= 1)
             {
-                return 1;
+                return 0;
             }
 
             // Empty tiles are expensive
-            return 100;
+            return 1;
         }
     }
 }

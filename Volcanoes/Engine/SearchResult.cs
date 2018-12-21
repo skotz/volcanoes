@@ -15,6 +15,8 @@ namespace Volcano.Engine
 
         public long Milliseconds { get; set; }
 
+        public decimal HashPercentage { get; set; }
+
         public Move BestMove { get; set; }
 
         public int NodesPerSecond

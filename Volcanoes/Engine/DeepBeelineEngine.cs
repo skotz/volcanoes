@@ -14,13 +14,19 @@ namespace Volcano.Engine
         private long evaluations;
         private int searchDepth;
 
-        private int maxTilesToPick = 20;
+        private int hashHits;
+        private int hashMisses;
+
+        private int maxTilesToPick = 3;
 
         private Random random = new Random();
         private PathFinder pathFinder = new WeightedNonEnemyPathFinder();
 
+        private bool enableHash = false;
+        private PositionHash hash = new PositionHash();
+
         public DeepBeelineEngine()
-            : this(4)
+            : this(6)
         {
         }
 
@@ -33,11 +39,14 @@ namespace Volcano.Engine
         {
             Stopwatch timer = Stopwatch.StartNew();
             evaluations = 0;
-            
+            hashHits = 0;
+            hashMisses = 0;
+
             SearchResult result = AlphaBetaSearch(state, searchDepth, int.MinValue, int.MaxValue);
 
             result.Evaluations = evaluations;
             result.Milliseconds = timer.ElapsedMilliseconds;
+            result.HashPercentage = hashHits + hashMisses > 0 ? hashHits / ((decimal)hashHits + hashMisses) : 0m;
 
             return result;
         }
@@ -45,6 +54,18 @@ namespace Volcano.Engine
         private int EvaluatePosition(Board position)
         {
             evaluations++;
+
+            // Check the hash table to see if we already calculated this path for this board
+            if (enableHash)
+            {
+                int? saved = hash.Get(position);
+                if (saved != null)
+                {
+                    hashHits++;
+                    return (int)saved;
+                }
+                hashMisses++;
+            }
 
             // For each tile, figure out how long it'll take to get to it's antipode
             PathResult[] playerOnePaths = new PathResult[80];
@@ -66,7 +87,15 @@ namespace Volcano.Engine
             PathResult two = playerTwoPaths.Where(x => x != null).OrderBy(x => x.Distance).FirstOrDefault();
 
             // Positive scores are good for player one and negative are good for player two
-            return (two?.Distance - one?.Distance) ?? 0;
+            int score = (two?.Distance - one?.Distance) ?? 0;
+
+            if (enableHash)
+            {
+                // Save the hash to speed up future evaluations
+                hash.Set(position, score);
+            }
+
+            return score;
         }
 
         private List<Move> GetFilteredMoves(Board position)
@@ -79,16 +108,22 @@ namespace Volcano.Engine
 
             // For each tile we own, figure out how long it'll take to get to it's antipode
             PathResult[] paths = new PathResult[80];
+            PathResult[] enemyPaths = new PathResult[80];
             for (int i = 0; i < 80; i++)
             {
                 if (position.Tiles[i].Owner == position.Player)
                 {
                     paths[i] = pathFinder.FindPath(position, i, position.Tiles[i].Antipode);
                 }
+                else if (position.Tiles[i].Owner != Player.Empty)
+                {
+                    enemyPaths[i] = pathFinder.FindPath(position, i, position.Tiles[i].Antipode);
+                }
             }
 
             // Of all the calculated paths, find the one that's fastest
             PathResult best = paths.Where(x => x != null && x.Distance != 0).OrderBy(x => x.Distance).FirstOrDefault();
+            PathResult bestEnemy = enemyPaths.Where(x => x != null && x.Distance != 0).OrderBy(x => x.Distance).FirstOrDefault();
 
             List<Move> moves = new List<Move>();
             if (best != null)
@@ -102,6 +137,22 @@ namespace Volcano.Engine
                         if (move != null)
                         {
                             moves.Add(move);
+                        }
+                    }
+                }
+
+                if (bestEnemy != null)
+                {
+                    // Create a list of moves that are on the enemy's best path
+                    foreach (int i in bestEnemy.Path)
+                    {
+                        if (position.Tiles[i].Owner == Player.Empty)
+                        {
+                            Move move = allMoves.Where(x => x.TileIndex == i).FirstOrDefault();
+                            if (move != null)
+                            {
+                                moves.Insert(0, move);
+                            }
                         }
                     }
                 }

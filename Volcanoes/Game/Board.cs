@@ -20,7 +20,7 @@ namespace Volcano.Game
 
         public List<int> Eruptions { get; private set; }
 
-        private PathFinder pathFinder;
+        private static PathFinder pathFinder = new PathFinder();
 
         public GameState State
         {
@@ -38,7 +38,6 @@ namespace Volcano.Game
             Winner = Player.Empty;
             WinningPath = new List<int>();
             Eruptions = new List<int>();
-            pathFinder = new PathFinder();
 
             for (int i = 0; i < 80; i++)
             {
@@ -59,7 +58,6 @@ namespace Volcano.Game
             Winner = copy.Winner;
             WinningPath = copy.WinningPath;
             Eruptions = new List<int>();
-            pathFinder = new PathFinder();
         }
 
         /// <summary>
@@ -77,6 +75,11 @@ namespace Volcano.Game
         /// <param name="move"></param>
         public void MakeMove(Move move, bool checkForWin)
         {
+            if (move == null)
+            {
+                return;
+            }
+
             if (move.MoveType == MoveType.AllGrow)
             {
                 for (int i = 0; i < 80; i++)

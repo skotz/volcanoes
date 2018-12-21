@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Volcano.Search;
 
 namespace Volcano.Game
 {
@@ -19,6 +20,8 @@ namespace Volcano.Game
         private static Lazy<int[]> _antipodes = new Lazy<int[]>(GetAntipodes);
 
         private static Lazy<int[][]> _kittyCornerTiles = new Lazy<int[][]>(GetKittyCornerTiles);
+
+        private static Lazy<int[][]> _fastestPaths = new Lazy<int[][]>(GetFastestPaths);
 
         /// <summary>
         /// An array mapping a source tile index to it's three connecting triangle indexes.
@@ -42,6 +45,11 @@ namespace Volcano.Game
         /// NOTE: Currently there are only mappings for "A" tiles (not B, C, or D)
         /// </summary>
         public static int[][] KittyCornerTiles { get { return _kittyCornerTiles.Value; } }
+
+        /// <summary>
+        /// An array mapping a source tile index to a path to it's antipode.
+        /// </summary>
+        public static int[][] FastestPaths { get { return _fastestPaths.Value; } }
 
         private static int[][] GetConnectingTiles()
         {
@@ -243,7 +251,7 @@ namespace Volcano.Game
         private static int[][] GetKittyCornerTiles()
         {
             int[][] corners = new int[80][];
-            
+
             for (int outer = 0; outer < 5; outer++)
             {
                 // A
@@ -258,7 +266,7 @@ namespace Volcano.Game
                 i++;
                 corners[i] = new int[3] { i, i, i };
             }
-            
+
             for (int outer = 5; outer < 10; outer++)
             {
                 // A
@@ -274,7 +282,7 @@ namespace Volcano.Game
                 i++;
                 corners[i] = new int[3] { i, i, i };
             }
-            
+
             for (int outer = 10; outer < 15; outer++)
             {
                 // A
@@ -290,7 +298,7 @@ namespace Volcano.Game
                 i++;
                 corners[i] = new int[3] { i, i, i };
             }
-            
+
             for (int outer = 15; outer < 20; outer++)
             {
                 // A
@@ -309,6 +317,20 @@ namespace Volcano.Game
             }
 
             return corners;
+        }
+
+        private static int[][] GetFastestPaths()
+        {
+            PathFinder pathFinder = new UnrestrictedPathFinder();
+            int[][] paths = new int[80][];
+            Board board = new Board();
+
+            for (int i = 0; i < 80; i++)
+            {
+                paths[i] = pathFinder.FindPath(board, i, Antipodes[i]).Path.ToArray();
+            }
+
+            return paths;
         }
     }
 }

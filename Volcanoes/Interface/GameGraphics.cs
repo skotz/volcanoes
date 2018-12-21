@@ -154,6 +154,8 @@ namespace Volcano.Interface
                         {
                             DrawTileMainText(g, i, gameState.Tiles[i].Index.ToString());
                         }
+
+                        //DrawTileMainText(g, i, Constants.FastestPaths[i].Length.ToString());
                     }
                     else
                     {
@@ -212,6 +214,12 @@ namespace Volcano.Interface
             {
                 tileColor = Color.FromArgb(64, tileColor);
             }
+
+            //// Tile on the shortest unhindered path to the antipode
+            //if (hoverIndex >= 0 && Constants.FastestPaths[hoverIndex].Any(x => x == index))
+            //{
+            //    tileColor = Color.LightBlue;
+            //}
 
             Brush brush = new SolidBrush(tileColor);
 
