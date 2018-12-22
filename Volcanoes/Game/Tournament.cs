@@ -59,10 +59,6 @@ namespace Volcano.Game
             int completedGames = 0;
             int totalGames = _rounds * _players.Count * (_players.Count - 1);
 
-            // Just in case one of the engines decides to error out or take forever
-            int maxTurns = 200;
-            int maxSeconds = 5 * 60;
-
             foreach (var engine1 in _players)
             {
                 foreach (var engine2 in _players)
@@ -84,7 +80,7 @@ namespace Volcano.Game
                                 game.StartNewGame();
                                 game.ComputerPlay();
 
-                                while (victory == VictoryType.None && game.CurrentState.Winner == Player.Empty && game.CurrentState.Turn < maxTurns && killswitch.ElapsedMilliseconds < maxSeconds * 1000)
+                                while (victory == VictoryType.None && game.CurrentState.Winner == Player.Empty && game.CurrentState.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns && killswitch.ElapsedMilliseconds < VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000)
                                 {
                                     System.Threading.Thread.Sleep(100);
                                 }
@@ -92,11 +88,11 @@ namespace Volcano.Game
                                 var termination = TournamentTerminationType.Normal;
                                 if (game.CurrentState.Winner == Player.Empty)
                                 {
-                                    if (game.CurrentState.Turn >= maxTurns)
+                                    if (game.CurrentState.Turn >= VolcanoGame.Settings.TournamentAdjudicateMaxTurns)
                                     {
                                         termination = TournamentTerminationType.AdjudicateMoves;
                                     }
-                                    else if (killswitch.ElapsedMilliseconds >= maxSeconds * 1000)
+                                    else if (killswitch.ElapsedMilliseconds >= VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000)
                                     {
                                         termination = TournamentTerminationType.AdjudicateTime;
                                     }

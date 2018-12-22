@@ -21,6 +21,9 @@ namespace Volcano.Game
         public bool AllowMagmaChamberCaptures { get; set; } = false;
         public bool AllowVolcanoCaptures { get; set; } = false;
 
+        public int TournamentAdjudicateMaxTurns { get; set; } = 500;
+        public int TournamentAdjudicateMaxSeconds { get; set; } = 60 * 5;
+
         [JsonIgnore]
         public string CustomSettingsFile { get; set; }
         public string CustomSettingsTitle { get; set; } = "";
