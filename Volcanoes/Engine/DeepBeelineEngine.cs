@@ -233,7 +233,7 @@ namespace Volcano.Engine
             {
                 // Copy the board and make a move
                 Board copy = new Board(position);
-                copy.MakeMove(move, false);
+                copy.MakeMove(move, false, true);
                 
                 // Find opponents best counter move
                 SearchResult child = AlphaBetaSearch(copy, depth - 1, alpha, beta);

@@ -24,6 +24,9 @@ namespace Volcano
         int totalAutoPlay = 0;
         int autoPlay = 0;
 
+        List<int> transcript;
+        int transcriptMove;
+
         public GameForm()
         {
             InitializeComponent();
@@ -31,6 +34,7 @@ namespace Volcano
             graphics = new GameGraphics(gamePanel, GameGraphicsSettings.Default);
             game = new VolcanoGame();
             game.OnGameOver += Game_OnGameOver;
+            game.OnMoveMade += Game_OnMoveMade;
 
             gameTimer.Start();
 
@@ -58,6 +62,7 @@ namespace Volcano
 
             menuStrip1.Renderer = new MenuProfessionalRenderer(new MenuColorTable());
             toolStrip1.Renderer = new MenuProfessionalRenderer(new MenuColorTable());
+            toolStripContainer1.ContentPanel.RenderMode = ToolStripRenderMode.System;
 
             if (!string.IsNullOrEmpty(VolcanoGame.Settings.CustomSettingsFile))
             {
@@ -65,14 +70,26 @@ namespace Volcano
             }
         }
 
+        private void Game_OnMoveMade(bool growthHappened)
+        {
+            if (transcriptMove == game.MoveHistory.Count - (growthHappened ? 3 : 2))
+            {
+                transcriptMove = game.MoveHistory.Count - 1;
+            }
+
+            lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
+        }
+
         private void gameTimer_Tick(object sender, EventArgs e)
         {
-            graphics.Draw(game, gamePanel.PointToClient(Cursor.Position));
+            Point mouse = gamePanel.PointToClient(Cursor.Position);
+            graphics.Draw(game, mouse, transcriptMove);
         }
 
         private void gamePanel_Click(object sender, EventArgs e)
         {
-            if (game.CurrentState.State == GameState.InProgress && !game.Thinking)
+            bool reviewMode = game.MoveHistory.Count > 0 && transcriptMove != game.MoveHistory.Count - 1;
+            if (game.CurrentState.State == GameState.InProgress && !game.Thinking && !reviewMode)
             {
                 Point mouse = gamePanel.PointToClient(Cursor.Position);
                 int tileIndex = graphics.GetTileIndex(mouse);
@@ -89,6 +106,10 @@ namespace Volcano
         {
             game.StartNewGame();
             ConfigureComputer();
+
+            transcriptMove = 0;
+            transcript = new List<int>();
+            lblTranscriptMove.Text = "0/0";
         }
 
         private void ddlPlayerOne_SelectedIndexChanged(object sender, EventArgs e)
@@ -200,6 +221,73 @@ namespace Volcano
         {
             VolcanoGame.Settings.Save("volcano.json");
             MessageBox.Show("Rules exported as volcano.json!\r\nEdit the settings and reload to play with custom rules.", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void saveGameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                File.WriteAllText(saveFileDialog1.FileName, game.GetTranscript(true));
+            }
+        }
+
+        private void loadTranscriptToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                if (game.LoadTranscript(File.ReadAllText(openFileDialog1.FileName)))
+                {
+                    transcriptMove = game.MoveHistory.Count - 1;
+                    lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
+                }
+                else
+                {
+                    MessageBox.Show("Failed to load transcript!", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void btnNavBack_Click(object sender, EventArgs e)
+        {
+            transcriptMove = Math.Max(Math.Min(transcriptMove - 1, game.MoveHistory.Count - 1), 0);
+            lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
+        }
+
+        private void btnNavNext_Click(object sender, EventArgs e)
+        {
+            transcriptMove = Math.Max(Math.Min(transcriptMove + 1, game.MoveHistory.Count - 1), 0);
+            lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
+        }
+
+        private void btnNavStart_Click(object sender, EventArgs e)
+        {
+            transcriptMove = 0;
+            lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
+        }
+
+        private void btnNavEnd_Click(object sender, EventArgs e)
+        {
+            transcriptMove = game.MoveHistory.Count - 1;
+            lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
+        }
+
+        private void fromStringToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (game.LoadTranscript(Clipboard.GetText()))
+            {
+                transcriptMove = game.MoveHistory.Count - 1;
+                lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
+            }
+            else
+            {
+                MessageBox.Show("Failed to load transcript!", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void importRulesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            File.Move("volcano.json", "volcano.json." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak");
+            MessageBox.Show("Rules will be reset to their defaults when you restart.", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }

@@ -168,7 +168,7 @@ namespace Volcano.Game
 
         private static string[] GetTileNames()
         {
-            string[] names = new string[80];
+            string[] names = new string[81];
 
             for (int outer = 0; outer < 20; outer++)
             {
@@ -197,6 +197,9 @@ namespace Volcano.Game
                     }
                 }
             }
+
+            // For growth
+            names[80] = "G";
 
             return names;
         }
@@ -337,7 +340,8 @@ namespace Volcano.Game
         {
             Dictionary<string, int> indexes = new Dictionary<string, int>();
 
-            for (int i = 0; i < 80; i++)
+            // The 80th index is a pseudo tile for the growth phase
+            for (int i = 0; i < 81; i++)
             {
                 indexes.Add(TileNames[i], i);
             }

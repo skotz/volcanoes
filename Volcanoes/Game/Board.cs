@@ -64,20 +64,20 @@ namespace Volcano.Game
         /// Make a given move on the board. 
         /// </summary>
         /// <param name="move"></param>
-        public void MakeMove(Move move)
+        public bool MakeMove(Move move)
         {
-            MakeMove(move, true);
+            return MakeMove(move, true, true);
         }
 
         /// <summary>
         /// Make a given move on the board. 
         /// </summary>
         /// <param name="move"></param>
-        public void MakeMove(Move move, bool checkForWin)
+        public bool MakeMove(Move move, bool checkForWin, bool autoGrow)
         {
             if (move == null)
             {
-                return;
+                return false;
             }
 
             if (move.MoveType == MoveType.AllGrow)
@@ -108,11 +108,14 @@ namespace Volcano.Game
                 Turn++;
                 Player = GetPlayerForTurn(Turn);
 
-                if (GetMoveTypeForTurn(Turn) == MoveType.AllGrow)
+                if (autoGrow && GetMoveTypeForTurn(Turn) == MoveType.AllGrow)
                 {
                     MakeMove(new Move(-1, MoveType.AllGrow));
+                    return true;
                 }
             }
+
+            return false;
         }
 
         private void ProcessEruptions()

@@ -87,7 +87,7 @@ namespace Volcano.Interface
                                 break;
                         }
                     }
-                    
+
                     PointF[] points;
                     if (upright)
                     {
@@ -119,14 +119,14 @@ namespace Volcano.Interface
                 }
             }
         }
-        
+
         public void Resize()
         {
-            _settings.UpdateBestTileWidth(_panel.Size);            
+            _settings.UpdateBestTileWidth(_panel.Size);
             InitializeTiles();
         }
 
-        public void Draw(VolcanoGame game, Point mouseLocation)
+        public void Draw(VolcanoGame game, Point mouseLocation, int moveNumber)
         {
             Resize();
 
@@ -141,19 +141,25 @@ namespace Volcano.Interface
                 return;
             }
 
+            bool reviewMode = game.MoveHistory.Count > 0 && moveNumber != game.MoveHistory.Count - 1;
+
             int hoverTile = GetTileIndex(mouseLocation);
-            Board gameState = game.CurrentState;
+            Board gameState = reviewMode ? game.GetPreviousState(moveNumber) : game.CurrentState;
+
+            int lastPlayIndex = game.MoveHistory.Count >= moveNumber && moveNumber - 1 >= 0 ? game.MoveHistory[moveNumber - 1] : -1;
+
+            Color background = reviewMode ? _settings.ReviewBackgroundColor : _settings.BackgroundColor;
 
             using (Bitmap b = new Bitmap(_settings.IdealPanelWidth, _settings.IdealPanelHeight))
             using (Graphics g = Graphics.FromImage(b))
             {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
 
-                g.Clear(_settings.BackgroundColor);
+                g.Clear(background);
 
                 for (int i = 0; i < 80; i++)
                 {
-                    DrawTile(g, gameState, i, hoverTile);
+                    DrawTile(g, gameState, i, hoverTile, lastPlayIndex);
 
                     if (gameState.Tiles[i].Owner == Player.Empty)
                     {
@@ -190,9 +196,9 @@ namespace Volcano.Interface
                 using (Graphics g2 = Graphics.FromImage(b2))
                 using (Graphics g3 = _panel.CreateGraphics())
                 {
-                    g2.Clear(_settings.BackgroundColor);
+                    g2.Clear(background);
                     g2.DrawImage(b, (_panel.Width - _settings.IdealPanelWidth) / 2, (_panel.Height - _settings.IdealPanelHeight) / 2, _settings.IdealPanelWidth, _settings.IdealPanelHeight);
-                    
+
                     Color playerColor = gameState.Player == Player.One ? _settings.PlayerOneVolcanoTileColor : _settings.PlayerTwoVolcanoTileColor;
                     g2.DrawString("Turn " + gameState.Turn, new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(5, 5));
                     if (gameState.State == GameState.GameOver)
@@ -207,7 +213,7 @@ namespace Volcano.Interface
             }
         }
 
-        private void DrawTile(Graphics g, Board gameState, int index, int hoverIndex)
+        private void DrawTile(Graphics g, Board gameState, int index, int hoverIndex, int lastPlayIndex)
         {
             Color tileColor = _settings.EmptyTileColor;
 
@@ -242,6 +248,13 @@ namespace Volcano.Interface
             //    Pen pen = new Pen(_settings.RecentEruptionTileBorderColor, _settings.TileHorizontalSpacing);
             //    g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
             //}
+
+            // Tile most recently played on
+            if (lastPlayIndex == index || (lastPlayIndex == 80 && gameState.Tiles[index].Value > 0))
+            {
+                Pen pen = new Pen(_settings.LastPlayedTileBorderColor, _settings.TileHorizontalSpacing);
+                g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
+            }
 
             if (hoverIndex >= 0)
             {

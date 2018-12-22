@@ -21,6 +21,9 @@ namespace Volcano.Game
         public event GameOverHandler OnGameOver;
         public delegate void GameOverHandler(Player winner, VictoryType type);
 
+        public event MoveMadeHandler OnMoveMade;
+        public delegate void MoveMadeHandler(bool growthHappened);
+
         public List<int> MoveHistory { get; private set; }
         
         public bool Thinking { get { return _worker.IsBusy; } }
@@ -48,6 +51,53 @@ namespace Volcano.Game
             MoveHistory = new List<int>();
         }
 
+        public bool LoadTranscript(string transcript)
+        {
+            CurrentState = new Board();
+            MoveHistory = new List<int>();
+
+            if (!string.IsNullOrEmpty(transcript))
+            {
+                string[] lines = transcript.Split(new string[] { "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string line in lines)
+                {
+                    string[] moves = line.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                    if (moves.Length > 0 && Constants.TileIndexes.ContainsKey(moves[0]))
+                    {
+                        foreach (string move in moves)
+                        {
+                            if (Constants.TileIndexes.ContainsKey(move))
+                            {
+                                int index = Constants.TileIndexes[move];
+                                if (index != 80)
+                                {
+                                    MakeMove(index);
+                                }
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+
+                return MoveHistory.Count > 0;
+            }
+
+            return false;
+        }
+
+        public Board GetPreviousState(int turn)
+        {
+            Board board = new Board();
+            for (int i = 0; i < Math.Min(turn, MoveHistory.Count); i++)
+            {
+                board.MakeMove(new Move(MoveHistory[i], MoveHistory[i] != 80 ? MoveType.SingleGrow : MoveType.AllGrow), true, false);
+            }
+            return board;
+        }
+
         public void RegisterEngine(Player player, IEngine engine)
         {
             if (player == Player.One)
@@ -65,8 +115,14 @@ namespace Volcano.Game
             Move move = new Move(tileIndex, MoveType.SingleGrow);
             if (CurrentState.IsValidMove(move))
             {
-                CurrentState.MakeMove(move);
+                bool growthHappened = CurrentState.MakeMove(move);
+
                 MoveHistory.Add(move.TileIndex);
+                if (growthHappened)
+                {
+                    MoveHistory.Add(80);
+                }
+                OnMoveMade?.Invoke(growthHappened);
 
                 if (CurrentState.State == GameState.GameOver)
                 {
@@ -90,6 +146,27 @@ namespace Volcano.Game
             }
         }
 
+        public string GetTranscript(bool includeHeader)
+        {
+            if (MoveHistory.Count > 0)
+            {
+                StringBuilder sb = new StringBuilder();
+
+                if (includeHeader)
+                {
+                    sb.AppendLine("[Volcanoes Saved Game Transcript v1]");
+                    sb.AppendLine("[Date " + DateTime.Now.ToString("yyyy.MM.dd") + "]");
+                    sb.AppendLine("");
+                }
+
+                sb.AppendLine(MoveHistory.Select(x => Constants.TileNames[x]).Aggregate((c, n) => c + " " + n));
+
+                return sb.ToString();
+            }
+
+            return "";
+        }
+
         private void BackgroundWork(object sender, DoWorkEventArgs e)
         {
             if (CurrentState.Player == Player.One)
@@ -108,8 +185,14 @@ namespace Volcano.Game
 
             if (_lastSearch.BestMove != null)
             {
-                CurrentState.MakeMove(_lastSearch.BestMove);
+                bool growthHappened = CurrentState.MakeMove(_lastSearch.BestMove);
+
                 MoveHistory.Add(_lastSearch.BestMove.TileIndex);
+                if (growthHappened)
+                {
+                    MoveHistory.Add(80);
+                }
+                OnMoveMade?.Invoke(growthHappened);
 
                 if (CurrentState.State == GameState.GameOver)
                 {

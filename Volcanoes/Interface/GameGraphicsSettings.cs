@@ -30,10 +30,13 @@ namespace Volcano.Interface
 
         public Color EmptyTileColor { get; set; } = Color.Gray;
         public Color BackgroundColor { get; set; } = SystemColors.Control;
+        public Color ReviewBackgroundColor { get; set; } = Color.LightGray;
         public Color HoverTileBorderColor { get; set; } = Color.FromArgb(230, 0, 113);
         public Color HoverAdjacentTileBorderColor { get; set; } = Color.LightGray;
         public Color HoverAntipodeTileBorderColor { get; set; } = Color.FromArgb(0, 219, 48);
         public Color RecentEruptionTileBorderColor { get; set; } = Color.Black;
+
+        public Color LastPlayedTileBorderColor { get; set; } = Color.FromArgb(255, 255, 255, 0);
 
         public int IdealPanelWidth { get { return TileWidth * 11 + TileHorizontalSpacing * 20 + TileSpacing * 2 + BoardSpacing * 2; } }
         public int IdealPanelHeight { get { return TileHeight * 6 + TileHorizontalSpacing * 4 + TileSpacing * 7 + BoardSpacing * 2; } }
