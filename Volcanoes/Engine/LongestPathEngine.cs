@@ -20,7 +20,7 @@ namespace Volcano.Engine
             pathFinder = new LongestPathFinder();
         }
         
-        public SearchResult GetBestMove(Board state)
+        public SearchResult GetBestMove(Board state, EngineCancellationToken token)
         {
             timer = Stopwatch.StartNew(); 
             evaluations = 0;

@@ -25,6 +25,8 @@ namespace Volcano.Engine
         private bool enableHash = false;
         private PositionHash hash = new PositionHash();
 
+        private EngineCancellationToken cancellationToken;
+
         public DeepBeelineEngine()
             : this(6)
         {
@@ -35,18 +37,21 @@ namespace Volcano.Engine
             searchDepth = depth;
         }
 
-        public SearchResult GetBestMove(Board state)
+        public SearchResult GetBestMove(Board state, EngineCancellationToken token)
         {
             Stopwatch timer = Stopwatch.StartNew();
             evaluations = 0;
             hashHits = 0;
             hashMisses = 0;
 
+            cancellationToken = token;
+
             SearchResult result = AlphaBetaSearch(state, searchDepth, int.MinValue, int.MaxValue);
 
             result.Evaluations = evaluations;
             result.Milliseconds = timer.ElapsedMilliseconds;
             result.HashPercentage = hashHits + hashMisses > 0 ? hashHits / ((decimal)hashHits + hashMisses) : 0m;
+
 
             return result;
         }
@@ -204,7 +209,7 @@ namespace Volcano.Engine
             }
 
             // We've reached the depth of our search, so return the heuristic evaluation of the position
-            if (depth <= 0)
+            if (depth <= 0 || cancellationToken.Cancelled)
             {
                 return new SearchResult()
                 {

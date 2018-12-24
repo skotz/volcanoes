@@ -43,10 +43,16 @@ namespace Volcano.Game
             _worker = new BackgroundWorker();
             _worker.DoWork += BackgroundWork;
             _worker.RunWorkerCompleted += BackgroundWorkCompleted;
+            _worker.WorkerSupportsCancellation = true;
         }
 
         public void StartNewGame()
         {
+            if (_worker.IsBusy)
+            {
+                _worker.CancelAsync();
+            }
+
             CurrentState = new Board();
             MoveHistory = new List<int>();
         }
@@ -169,44 +175,54 @@ namespace Volcano.Game
 
         private void BackgroundWork(object sender, DoWorkEventArgs e)
         {
+            EngineCancellationToken token = new EngineCancellationToken(_worker);
+
             if (CurrentState.Player == Player.One)
             {
-                e.Result = _playerOneEngine.GetBestMove(CurrentState);
+                e.Result = _playerOneEngine.GetBestMove(CurrentState, token);
             }
             else if (CurrentState.Player == Player.Two)
             {
-                e.Result = _playerTwoEngine.GetBestMove(CurrentState);
+                e.Result = _playerTwoEngine.GetBestMove(CurrentState, token);
+            }
+
+            if (token.Cancelled)
+            {
+                e.Cancel = true;
             }
         }
 
         private void BackgroundWorkCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            _lastSearch = (SearchResult)e.Result;
-
-            if (_lastSearch.BestMove != null)
+            if (!e.Cancelled)
             {
-                bool growthHappened = CurrentState.MakeMove(_lastSearch.BestMove);
+                _lastSearch = (SearchResult)e.Result;
 
-                MoveHistory.Add(_lastSearch.BestMove.TileIndex);
-                if (growthHappened)
+                if (_lastSearch.BestMove != null)
                 {
-                    MoveHistory.Add(80);
-                }
-                OnMoveMade?.Invoke(growthHappened);
+                    bool growthHappened = CurrentState.MakeMove(_lastSearch.BestMove);
 
-                if (CurrentState.State == GameState.GameOver)
-                {
-                    OnGameOver?.Invoke(CurrentState.Winner, VictoryType.AntipodePathCreation);
+                    MoveHistory.Add(_lastSearch.BestMove.TileIndex);
+                    if (growthHappened)
+                    {
+                        MoveHistory.Add(80);
+                    }
+                    OnMoveMade?.Invoke(growthHappened);
+
+                    if (CurrentState.State == GameState.GameOver)
+                    {
+                        OnGameOver?.Invoke(CurrentState.Winner, VictoryType.AntipodePathCreation);
+                    }
+                    else
+                    {
+                        ComputerPlay();
+                    }
                 }
                 else
                 {
-                    ComputerPlay();
+                    // If an engine doesn't find a move, then he adjourns the game
+                    OnGameOver?.Invoke(CurrentState.Player == Player.One ? Player.Two : Player.One, VictoryType.ArenaAdjudication);
                 }
-            }
-            else
-            {
-                // If an engine doesn't find a move, then he adjourns the game
-                OnGameOver?.Invoke(CurrentState.Player == Player.One ? Player.Two : Player.One, VictoryType.ArenaAdjudication);
             }
         }
     }

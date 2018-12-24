@@ -249,12 +249,12 @@ namespace Volcano.Interface
             //    g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
             //}
 
-            // Tile most recently played on
-            if (lastPlayIndex == index || (lastPlayIndex == 80 && gameState.Tiles[index].Value > 0))
-            {
-                Pen pen = new Pen(_settings.LastPlayedTileBorderColor, _settings.TileHorizontalSpacing);
-                g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
-            }
+            //// Tile most recently played on
+            //if (lastPlayIndex == index || (lastPlayIndex == 80 && gameState.Tiles[index].Value > 0))
+            //{
+            //    Pen pen = new Pen(_settings.LastPlayedTileBorderColor, _settings.TileHorizontalSpacing);
+            //    g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
+            //}
 
             if (hoverIndex >= 0)
             {

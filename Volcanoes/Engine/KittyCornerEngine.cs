@@ -17,7 +17,7 @@ namespace Volcano.Engine
         private PathFinder pathFinder = new KittyPathFinder(false);
         private PathFinder playerOnlyPathFinder = new KittyPathFinder(true);
 
-        public SearchResult GetBestMove(Board state)
+        public SearchResult GetBestMove(Board state, EngineCancellationToken token)
         {
             List<Move> moves = state.GetMoves();
 

@@ -11,7 +11,7 @@ namespace Volcano.Engine
     {
         private static Random random = new Random();
 
-        public SearchResult GetBestMove(Board state)
+        public SearchResult GetBestMove(Board state, EngineCancellationToken token)
         {
             List<Move> moves = state.GetMoves();
             List<Move> alphaMoves = moves.Where(x => Constants.TileNames[x.TileIndex].EndsWith("A")).ToList();

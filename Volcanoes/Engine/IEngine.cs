@@ -9,6 +9,6 @@ namespace Volcano.Engine
 {
     interface IEngine
     {
-        SearchResult GetBestMove(Board state);
+        SearchResult GetBestMove(Board state, EngineCancellationToken token);
     }
 }

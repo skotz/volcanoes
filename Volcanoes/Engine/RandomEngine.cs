@@ -11,7 +11,7 @@ namespace Volcano.Engine
     {
         private static Random _random = new Random();
         
-        public SearchResult GetBestMove(Board state)
+        public SearchResult GetBestMove(Board state, EngineCancellationToken token)
         {
             List<Move> moves = state.GetMoves();
             return new SearchResult

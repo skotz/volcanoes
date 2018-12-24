@@ -20,7 +20,7 @@ namespace Volcano.Engine
             searchDepth = depth;
         }
 
-        public SearchResult GetBestMove(Board state)
+        public SearchResult GetBestMove(Board state, EngineCancellationToken token)
         {
             Stopwatch timer = Stopwatch.StartNew();
             evaluations = 0;

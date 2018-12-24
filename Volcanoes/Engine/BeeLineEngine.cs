@@ -16,7 +16,7 @@ namespace Volcano.Engine
 
         private PathFinder pathFinder = new NonEnemyPathFinder();
 
-        public SearchResult GetBestMove(Board state)
+        public SearchResult GetBestMove(Board state, EngineCancellationToken token)
         {
             List<Move> moves = state.GetMoves();
 

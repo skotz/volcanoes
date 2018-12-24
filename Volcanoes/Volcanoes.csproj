@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Engine\BeeLineEngine.cs" />
+    <Compile Include="Engine\EngineCancellationToken.cs" />
     <Compile Include="Engine\EngineMove.cs" />
     <Compile Include="Engine\KittyCornerEngine.cs" />
     <Compile Include="Engine\AlphaEngine.cs" />
