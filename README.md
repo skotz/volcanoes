@@ -27,3 +27,10 @@ opposite sides of the [Pentakis Icosidodecahedron](https://en.wikipedia.org/wiki
 6. Growth
 
 This cycle repeats until a player wins by successfully connecting a pair of antipodes (tiles directly opposite each other). 
+
+## Engines
+Several computer AIs are included with Volcanoes. Here are the current rankings.
+
+![Board Concept](Concept/z-history-20181226.png)
+
+Our goal is to learn strategies for this game through the analysis of games played by computer AIs.
