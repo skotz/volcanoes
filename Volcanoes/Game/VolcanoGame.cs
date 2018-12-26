@@ -198,7 +198,7 @@ namespace Volcano.Game
             {
                 _lastSearch = (SearchResult)e.Result;
 
-                if (_lastSearch.BestMove != null)
+                if (_lastSearch.BestMove != null && CurrentState.IsValidMove(_lastSearch.BestMove))
                 {
                     bool growthHappened = CurrentState.MakeMove(_lastSearch.BestMove);
 

@@ -52,7 +52,6 @@ namespace Volcano.Engine
             result.Milliseconds = timer.ElapsedMilliseconds;
             result.HashPercentage = hashHits + hashMisses > 0 ? hashHits / ((decimal)hashHits + hashMisses) : 0m;
 
-
             return result;
         }
 
@@ -105,9 +104,21 @@ namespace Volcano.Engine
 
         private List<Move> GetFilteredMoves(Board position)
         {
+            // Get all non-volcano moves
             List<Move> allMoves = position.GetMoves(true, true, true, VolcanoGame.Settings.MaxMagmaChamberLevel + 1);
             if (allMoves.Count == 0)
             {
+                // Get all available moves without condition
+                allMoves = position.GetMoves();
+            }
+            if (allMoves.Count == 0)
+            {
+                // There are no valid moves
+                return allMoves;
+            }
+            if (allMoves[0].MoveType == MoveType.AllGrow)
+            {
+                // It's a growth phase, so don't wast time
                 return allMoves;
             }
 
@@ -181,7 +192,13 @@ namespace Volcano.Engine
 
             // If we haven't found a move yet, pick a random one
             if (moves.Count == 0)
-            { 
+            {
+                if (allMoves.Count == 0)
+                {
+                    // Get all available moves without condition
+                    allMoves = position.GetMoves();
+                }
+
                 moves.Add(allMoves[random.Next(allMoves.Count)]);
             }
 
