@@ -47,6 +47,7 @@ namespace Volcano
             engines.Add<KittyCornerEngine>("Kitty Corner");
             engines.Add<BeeLineEngine>("Bee Line");
             engines.Add<DeepBeelineEngine>("Deep Beeline");
+            engines.Add<BarricadeEngine>("Barricade");
 
             cbPlayerOne.Items.Add("Human");
             cbPlayerTwo.Items.Add("Human");

@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Engine\BarricadeEngine.cs" />
     <Compile Include="Engine\BeeLineEngine.cs" />
     <Compile Include="Engine\EngineCancellationToken.cs" />
     <Compile Include="Engine\EngineMove.cs" />
