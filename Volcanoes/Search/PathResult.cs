@@ -10,6 +10,7 @@ namespace Volcano.Search
     {
         public List<int> Path { get; set; }
         public int Distance { get; set; }
+        public bool Found { get; private set; }
 
         public PathResult()
             : this(new List<int>())
@@ -25,6 +26,12 @@ namespace Volcano.Search
         {
             Path = path;
             Distance = distance;
+            Found = (Path?.Count ?? 0) > 0;
+        }
+
+        public PathResult(bool found)
+        {
+            Found = found;
         }
     }
 }

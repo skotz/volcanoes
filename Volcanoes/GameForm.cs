@@ -291,7 +291,15 @@ namespace Volcano
             MessageBox.Show("Rules will be reset to their defaults when you restart.", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private void dEBUGToolStripMenuItem_Click(object sender, EventArgs e)
+        private void GameForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Modifiers == Keys.Control && e.KeyCode == Keys.D)
+            {
+                dEBUGToolStripMenuItem.Visible = true;
+            }
+        }
+
+        private void stressTestPathSearchToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var runs = 10000000;
             var timer = Stopwatch.StartNew();
@@ -308,7 +316,33 @@ namespace Volcano
             decimal knps = (runs / 1000m) / (timer.ElapsedMilliseconds / 1000m);
             string result = runs.ToString("N0") + " searches / " + timer.ElapsedMilliseconds + " milliseconds = " + knps.ToString("N0") + " knps";
 
-            using (StreamWriter w = new StreamWriter("debug.txt", true))
+            using (StreamWriter w = new StreamWriter("debug-search.txt", true))
+            {
+                w.WriteLine(result);
+            }
+
+            MessageBox.Show(result);
+        }
+
+        private void stressTestEngineSearchToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var runs = 1000;
+            var evals = 0L;
+            var timer = Stopwatch.StartNew();
+            var game = new VolcanoGame();
+            game.LoadTranscript("5A 13A G 8B 16A G 2B 15A G 17B 20C G 10B 16D G 18A 7A G 16A 17A G 4B 12C G 11C 10C G 9B 11D G 9A 12B G 13B");
+            var engine = new MonteCarloBeelineEngine();
+
+            for (int i = 0; i < runs; i++)
+            {
+                var best = engine.GetBestMove(game.CurrentState, new EngineCancellationToken(() => false));
+                evals += best.Evaluations;
+            }
+
+            decimal knps = evals / (timer.ElapsedMilliseconds / 1000m);
+            string result = evals.ToString("N0") + " positions / " + timer.ElapsedMilliseconds + " milliseconds = " + knps.ToString("N0") + " nps";
+
+            using (StreamWriter w = new StreamWriter("debug-engine.txt", true))
             {
                 w.WriteLine(result);
             }

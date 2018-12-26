@@ -40,7 +40,17 @@ namespace Volcano.Search
             return 1;
         }
 
+        public bool HasPath(Board state, int startingIndex, int endingIndex)
+        {
+            return FindPath(state, startingIndex, endingIndex, false).Found;
+        }
+
         public PathResult FindPath(Board state, int startingIndex, int endingIndex)
+        {
+            return FindPath(state, startingIndex, endingIndex, true);
+        }
+
+        private PathResult FindPath(Board state, int startingIndex, int endingIndex, bool returnPath)
         {
             // The set of nodes already evaluated
             bool[] closedSet = new bool[80];
@@ -95,18 +105,26 @@ namespace Volcano.Search
                 // If we found a path from the start to the end, reconstruct the path and return it
                 if (current == endingIndex)
                 {
-                    List<int> path = new List<int>();
-                    path.Add(current);
-
-                    while (cameFrom[current] != -1)
+                    if (returnPath)
                     {
-                        current = cameFrom[current];
+                        List<int> path = new List<int>();
                         path.Add(current);
+
+                        while (cameFrom[current] != -1)
+                        {
+                            current = cameFrom[current];
+                            path.Add(current);
+                        }
+
+                        path.Reverse();
+
+                        return new PathResult(path, gScore[endingIndex]);
                     }
-
-                    path.Reverse();
-
-                    return new PathResult(path, gScore[endingIndex]);
+                    else
+                    {
+                        // Just return that we found a path, don't bother piecing it together
+                        return new PathResult(true);
+                    }
                 }
 
                 openSet.Remove(current);

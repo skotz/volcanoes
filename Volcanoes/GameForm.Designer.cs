@@ -51,6 +51,7 @@
             this.tournamentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newTournamentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dEBUGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btnNewGame = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
@@ -69,7 +70,8 @@
             this.btnNavEnd = new System.Windows.Forms.ToolStripButton();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.dEBUGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stressTestPathSearchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stressTestEngineSearchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -260,6 +262,17 @@
             this.aboutToolStripMenuItem.Text = "&About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
+            // dEBUGToolStripMenuItem
+            // 
+            this.dEBUGToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.stressTestPathSearchToolStripMenuItem,
+            this.stressTestEngineSearchToolStripMenuItem});
+            this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
+            this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
+            this.dEBUGToolStripMenuItem.Text = "DEBUG";
+            this.dEBUGToolStripMenuItem.Visible = false;
+            //this.dEBUGToolStripMenuItem.Click += new System.EventHandler(this.dEBUGToolStripMenuItem_Click);
+            // 
             // toolStrip1
             // 
             this.toolStrip1.BackColor = System.Drawing.SystemColors.Control;
@@ -405,13 +418,19 @@
             // 
             this.openFileDialog1.Filter = "Volcanoes Game Transcript|*.vgt";
             // 
-            // dEBUGToolStripMenuItem
+            // stressTestPathSearchToolStripMenuItem
             // 
-            this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
-            this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
-            this.dEBUGToolStripMenuItem.Text = "DEBUG";
-            this.dEBUGToolStripMenuItem.Visible = false;
-            this.dEBUGToolStripMenuItem.Click += new System.EventHandler(this.dEBUGToolStripMenuItem_Click);
+            this.stressTestPathSearchToolStripMenuItem.Name = "stressTestPathSearchToolStripMenuItem";
+            this.stressTestPathSearchToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.stressTestPathSearchToolStripMenuItem.Text = "Stress Test Path Search";
+            this.stressTestPathSearchToolStripMenuItem.Click += new System.EventHandler(this.stressTestPathSearchToolStripMenuItem_Click);
+            // 
+            // stressTestEngineSearchToolStripMenuItem
+            // 
+            this.stressTestEngineSearchToolStripMenuItem.Name = "stressTestEngineSearchToolStripMenuItem";
+            this.stressTestEngineSearchToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.stressTestEngineSearchToolStripMenuItem.Text = "Stress Test Engine Search";
+            this.stressTestEngineSearchToolStripMenuItem.Click += new System.EventHandler(this.stressTestEngineSearchToolStripMenuItem_Click);
             // 
             // GameForm
             // 
@@ -420,9 +439,11 @@
             this.ClientSize = new System.Drawing.Size(1052, 600);
             this.Controls.Add(this.toolStripContainer1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "GameForm";
             this.Text = "Volcanoes";
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.GameForm_KeyDown);
             this.toolStripContainer1.BottomToolStripPanel.ResumeLayout(false);
             this.toolStripContainer1.BottomToolStripPanel.PerformLayout();
             this.toolStripContainer1.ContentPanel.ResumeLayout(false);
@@ -482,6 +503,8 @@
         private System.Windows.Forms.ToolStripButton chkHighlightLastMove;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private System.Windows.Forms.ToolStripMenuItem dEBUGToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stressTestPathSearchToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stressTestEngineSearchToolStripMenuItem;
     }
 }
 
