@@ -43,7 +43,7 @@ namespace Volcano.Search
         public PathResult FindPath(Board state, int startingIndex, int endingIndex)
         {
             // The set of nodes already evaluated
-            List<int> closedSet = new List<int>();
+            bool[] closedSet = new bool[80];
 
             // The set of currently discovered nodes that are not evaluated yet.
             // Initially, only the start node is known.
@@ -54,45 +54,43 @@ namespace Volcano.Search
             // If a node can be reached from many nodes, cameFrom will eventually contain the
             // most efficient previous step.
             int[] cameFrom = new int[80];
-            for (int i = 0; i < 80; i++)
-            {
-                cameFrom[i] = -1;
-            }
 
             // For each node, the cost of getting from the start node to that node.
             int[] gScore = new int[80];
+
             for (int i = 0; i < 80; i++)
             {
+                cameFrom[i] = -1;
                 gScore[i] = int.MaxValue;
             }
 
             // The cost of going from start to start is zero.
             gScore[startingIndex] = 0;
 
-            // For each node, the total cost of getting from the start node to the goal
-            // by passing by that node. That value is partly known, partly heuristic.
-            int[] fScore = new int[80];
-            for (int i = 0; i < 80; i++)
-            {
-                fScore[i] = int.MaxValue;
-            }
+            //// For each node, the total cost of getting from the start node to the goal
+            //// by passing by that node. That value is partly known, partly heuristic.
+            //int[] fScore = new int[80];
+            //for (int i = 0; i < 80; i++)
+            //{
+            //    fScore[i] = int.MaxValue;
+            //}
 
-            // For the first node, that value is completely heuristic. (All antipode paths are known to be 12 tiles long.)
-            fScore[startingIndex] = 12;
+            //// For the first node, that value is completely heuristic. (All antipode paths are known to be 12 tiles long.)
+            //fScore[startingIndex] = 12;
 
             while (openSet.Count > 0)
             {
                 // Get the next item in the open set with the lowest fScore
                 int current = openSet[0];
-                int best = fScore[current];
-                foreach (int i in openSet)
-                {
-                    if (fScore[i] < best)
-                    {
-                        current = i;
-                        best = fScore[i];
-                    }
-                }
+                //int best = fScore[current];
+                //foreach (int i in openSet)
+                //{
+                //    if (fScore[i] < best)
+                //    {
+                //        current = i;
+                //        best = fScore[i];
+                //    }
+                //}
 
                 // If we found a path from the start to the end, reconstruct the path and return it
                 if (current == endingIndex)
@@ -112,12 +110,12 @@ namespace Volcano.Search
                 }
 
                 openSet.Remove(current);
-                closedSet.Add(current);
+                closedSet[current] = true;
 
                 foreach (int neighbor in GetNeighborTiles(state, current))
                 {
                     // Ignore the neighbor which is already evaluated.
-                    if (closedSet.Contains(neighbor))
+                    if (closedSet[neighbor])
                     {
                         continue;
                     }
@@ -143,7 +141,7 @@ namespace Volcano.Search
                     // This path is the best until now. Record it!
                     cameFrom[neighbor] = current;
                     gScore[neighbor] = tentative_gScore;
-                    fScore[neighbor] = gScore[neighbor] /* + Math.Abs(neighbor - startingIndex) */;
+                    //fScore[neighbor] = gScore[neighbor] /* + Math.Abs(neighbor - startingIndex) */;
                 }
             }
 

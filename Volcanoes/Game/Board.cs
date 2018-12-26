@@ -268,9 +268,7 @@ namespace Volcano.Game
         {
             List<Move> moves = new List<Move>();
             Player opponent = Player == Player.One ? Player.Two : Player.One;
-
-            // TODO: order moves for alpha/beta pruning by 1) growing existing tiles, 2) claiming adjacent tiles, and then 3) claiming remaining tiles
-
+            
             if (GetMoveTypeForTurn(Turn) == MoveType.AllGrow)
             {
                 moves.Add(new Move(-1, MoveType.AllGrow));

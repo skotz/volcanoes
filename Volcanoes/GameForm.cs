@@ -12,6 +12,8 @@ using System.Windows.Forms;
 using Volcano.Game;
 using System.IO;
 using Volcano.Engine;
+using System.Diagnostics;
+using Volcano.Search;
 
 namespace Volcano
 {
@@ -287,6 +289,31 @@ namespace Volcano
         {
             File.Move("volcano.json", "volcano.json." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak");
             MessageBox.Show("Rules will be reset to their defaults when you restart.", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void dEBUGToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var runs = 10000000;
+            var timer = Stopwatch.StartNew();
+            var pathFinder = new PathFinder();
+            var board = new Board();
+            var random = new Random();
+
+            for (int i = 0; i < runs; i++)
+            {
+                int index = random.Next(80);
+                pathFinder.FindPath(board, index, Constants.Antipodes[index]);
+            }
+
+            decimal knps = (runs / 1000m) / (timer.ElapsedMilliseconds / 1000m);
+            string result = runs.ToString("N0") + " searches / " + timer.ElapsedMilliseconds + " milliseconds = " + knps.ToString("N0") + " knps";
+
+            using (StreamWriter w = new StreamWriter("debug.txt", true))
+            {
+                w.WriteLine(result);
+            }
+
+            MessageBox.Show(result);
         }
     }
 }
