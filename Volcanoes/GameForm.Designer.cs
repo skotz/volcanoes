@@ -60,6 +60,8 @@
             this.toolStripLabel2 = new System.Windows.Forms.ToolStripLabel();
             this.cbPlayerTwo = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.chkHighlightLastMove = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.btnNavStart = new System.Windows.Forms.ToolStripButton();
             this.btnNavBack = new System.Windows.Forms.ToolStripButton();
             this.lblTranscriptMove = new System.Windows.Forms.ToolStripLabel();
@@ -67,8 +69,6 @@
             this.btnNavEnd = new System.Windows.Forms.ToolStripButton();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            this.chkHighlightLastMove = new System.Windows.Forms.ToolStripButton();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -309,7 +309,7 @@
             // 
             this.cbPlayerOne.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbPlayerOne.Name = "cbPlayerOne";
-            this.cbPlayerOne.Size = new System.Drawing.Size(121, 25);
+            this.cbPlayerOne.Size = new System.Drawing.Size(151, 25);
             // 
             // toolStripSeparator1
             // 
@@ -326,12 +326,27 @@
             // 
             this.cbPlayerTwo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbPlayerTwo.Name = "cbPlayerTwo";
-            this.cbPlayerTwo.Size = new System.Drawing.Size(121, 25);
+            this.cbPlayerTwo.Size = new System.Drawing.Size(151, 25);
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
             this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
+            // 
+            // chkHighlightLastMove
+            // 
+            this.chkHighlightLastMove.CheckOnClick = true;
+            this.chkHighlightLastMove.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.chkHighlightLastMove.Image = ((System.Drawing.Image)(resources.GetObject("chkHighlightLastMove.Image")));
+            this.chkHighlightLastMove.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.chkHighlightLastMove.Name = "chkHighlightLastMove";
+            this.chkHighlightLastMove.Size = new System.Drawing.Size(23, 22);
+            this.chkHighlightLastMove.Text = "Highlight Last Move";
+            // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 25);
             // 
             // btnNavStart
             // 
@@ -387,21 +402,6 @@
             // openFileDialog1
             // 
             this.openFileDialog1.Filter = "Volcanoes Game Transcript|*.vgt";
-            // 
-            // toolStripSeparator6
-            // 
-            this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 25);
-            // 
-            // chkHighlightLastMove
-            // 
-            this.chkHighlightLastMove.CheckOnClick = true;
-            this.chkHighlightLastMove.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.chkHighlightLastMove.Image = ((System.Drawing.Image)(resources.GetObject("chkHighlightLastMove.Image")));
-            this.chkHighlightLastMove.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.chkHighlightLastMove.Name = "chkHighlightLastMove";
-            this.chkHighlightLastMove.Size = new System.Drawing.Size(23, 22);
-            this.chkHighlightLastMove.Text = "Highlight Last Move";
             // 
             // GameForm
             // 

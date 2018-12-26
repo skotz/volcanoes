@@ -40,14 +40,12 @@ namespace Volcano
 
             engines = new EngineHelper();
             engines.Add<RandomEngine>("Random");
-            //engines.Add<LongestPathEngine>("Longest Path L1"); // Garbage AI
-            //engines.Add("MiniMax Alpha-Beta L4", () => new MiniMaxAlphaBetaEngine(4)); // Garbage AI
-            //engines.Add<AlphaEngine>("Alpha Tile"); // Garbage AI
             engines.Add<SkipTileEngine>("Tile Skipper");
             engines.Add<KittyCornerEngine>("Kitty Corner");
             engines.Add<BeeLineEngine>("Bee Line");
             engines.Add<DeepBeelineEngine>("Deep Beeline");
             engines.Add<BarricadeEngine>("Barricade");
+            engines.Add<MonteCarloBeelineEngine>("Monte Carlo Beeline");
 
             cbPlayerOne.Items.Add("Human");
             cbPlayerTwo.Items.Add("Human");

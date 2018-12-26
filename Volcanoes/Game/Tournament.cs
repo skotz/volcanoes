@@ -162,7 +162,14 @@ namespace Volcano.Game
                     string transcript = "";
                     if (result.Moves.Count > 0)
                     {
-                        transcript = result.Moves.Select(x => Constants.TileNames[x]).Aggregate((c, n) => c + " " + n);
+                        try
+                        {
+                            transcript = result.Moves.Select(x => Constants.TileNames[x]).Aggregate((c, n) => c + " " + n);
+                        }
+                        catch (Exception ex)
+                        {
+                            transcript = ex.Message;
+                        }
                     }
 
                     w.WriteLine(result.PlayerOne + "," + result.PlayerTwo + "," + gameResult + "," + result.Termination.ToString() + "," + result.TotalMoves + "," + result.ElapsedMilliseconds + "," + result.FirstTile + "," + transcript);
