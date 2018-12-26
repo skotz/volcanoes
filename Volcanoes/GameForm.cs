@@ -83,7 +83,7 @@ namespace Volcano
         private void gameTimer_Tick(object sender, EventArgs e)
         {
             Point mouse = gamePanel.PointToClient(Cursor.Position);
-            graphics.Draw(game, mouse, transcriptMove);
+            graphics.Draw(game, mouse, transcriptMove, chkHighlightLastMove.Checked);
         }
 
         private void gamePanel_Click(object sender, EventArgs e)

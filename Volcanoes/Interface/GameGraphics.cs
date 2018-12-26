@@ -126,7 +126,7 @@ namespace Volcano.Interface
             InitializeTiles();
         }
 
-        public void Draw(VolcanoGame game, Point mouseLocation, int moveNumber)
+        public void Draw(VolcanoGame game, Point mouseLocation, int moveNumber, bool highlightLastMove)
         {
             Resize();
 
@@ -159,13 +159,13 @@ namespace Volcano.Interface
 
                 for (int i = 0; i < 80; i++)
                 {
-                    DrawTile(g, gameState, i, hoverTile, lastPlayIndex);
+                    DrawTile(g, gameState, i, hoverTile, lastPlayIndex, highlightLastMove);
 
                     if (gameState.Tiles[i].Owner == Player.Empty)
                     {
                         if (_settings.ShowTileNames)
                         {
-                            DrawTileMainText(g, i, gameState.Tiles[i].Name);
+                            DrawTileCenterText(g, i, gameState.Tiles[i].Name);
                         }
                         else if (_settings.ShowTileIndexes)
                         {
@@ -213,7 +213,7 @@ namespace Volcano.Interface
             }
         }
 
-        private void DrawTile(Graphics g, Board gameState, int index, int hoverIndex, int lastPlayIndex)
+        private void DrawTile(Graphics g, Board gameState, int index, int hoverIndex, int lastPlayIndex, bool highlightLastMove)
         {
             Color tileColor = _settings.EmptyTileColor;
 
@@ -249,12 +249,15 @@ namespace Volcano.Interface
             //    g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
             //}
 
-            //// Tile most recently played on
-            //if (lastPlayIndex == index || (lastPlayIndex == 80 && gameState.Tiles[index].Value > 0))
-            //{
-            //    Pen pen = new Pen(_settings.LastPlayedTileBorderColor, _settings.TileHorizontalSpacing);
-            //    g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
-            //}
+            if (highlightLastMove)
+            {
+                // Tile most recently played on
+                if (lastPlayIndex == index || (lastPlayIndex == 80 && gameState.Tiles[index].Value > 0))
+                {
+                    Pen pen = new Pen(_settings.LastPlayedTileBorderColor, _settings.TileHorizontalSpacing);
+                    g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
+                }
+            }
 
             if (hoverIndex >= 0)
             {
@@ -313,21 +316,25 @@ namespace Volcano.Interface
             return -1;
         }
 
+        private void DrawTileCenterText(Graphics g, int index, string text)
+        {
+            DrawTileText(g, index, text, 4, _settings.MainFontSize, true);
+        }
+
         private void DrawTileMainText(Graphics g, int index, string text)
         {
-            int triangleAdjust = (_tiles[index].Upright ? 1 : -1) * _settings.TileHeight / 600;
-            Font font = new Font("Tahoma", _settings.MainFontSize, FontStyle.Bold);
-            SizeF size = g.MeasureString(text, font);
-            Brush brush = new SolidBrush(Color.FromArgb(128, 255, 255, 255));
-            RectangleF location = new RectangleF(new PointF(_tiles[index].BoundingBox.X + _tiles[index].BoundingBox.Width / 2 - size.Width / 2, _tiles[index].BoundingBox.Y + _tiles[index].BoundingBox.Height / 2 - size.Height / 2 + triangleAdjust), size);
-
-            g.DrawString(text, font, brush, location);
+            DrawTileText(g, index, text, 600, _settings.MainFontSize, true);
         }
 
         private void DrawTileSubText(Graphics g, int index, string text)
         {
-            int triangleAdjust = (_tiles[index].Upright ? 1 : -1) * _settings.TileHeight / 3;
-            Font font = new Font("Tahoma", _settings.SubTextFontSize, FontStyle.Regular);
+            DrawTileText(g, index, text, 3, _settings.SubTextFontSize, false);
+        }
+
+        private void DrawTileText(Graphics g, int index, string text, int heightOffset, int fontSize, bool bold)
+        {
+            int triangleAdjust = (_tiles[index].Upright ? 1 : -1) * _settings.TileHeight / heightOffset;
+            Font font = new Font("Tahoma", fontSize, bold ? FontStyle.Bold : FontStyle.Regular);
             SizeF size = g.MeasureString(text, font);
             Brush brush = new SolidBrush(Color.FromArgb(128, 255, 255, 255));
             RectangleF location = new RectangleF(new PointF(_tiles[index].BoundingBox.X + _tiles[index].BoundingBox.Width / 2 - size.Width / 2, _tiles[index].BoundingBox.Y + _tiles[index].BoundingBox.Height / 2 - size.Height / 2 + triangleAdjust), size);

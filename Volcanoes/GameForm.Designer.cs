@@ -40,8 +40,14 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.selfPlayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.saveGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadTranscriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.fromFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.fromStringToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.exportRulesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.importRulesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tournamentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newTournamentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -56,17 +62,13 @@
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.btnNavStart = new System.Windows.Forms.ToolStripButton();
             this.btnNavBack = new System.Windows.Forms.ToolStripButton();
+            this.lblTranscriptMove = new System.Windows.Forms.ToolStripLabel();
             this.btnNavNext = new System.Windows.Forms.ToolStripButton();
             this.btnNavEnd = new System.Windows.Forms.ToolStripButton();
-            this.saveGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.loadTranscriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.lblTranscriptMove = new System.Windows.Forms.ToolStripLabel();
-            this.fromFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.fromStringToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.importRulesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            this.chkHighlightLastMove = new System.Windows.Forms.ToolStripButton();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -169,28 +171,70 @@
             // 
             this.newGameToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("newGameToolStripMenuItem.Image")));
             this.newGameToolStripMenuItem.Name = "newGameToolStripMenuItem";
-            this.newGameToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.newGameToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.newGameToolStripMenuItem.Text = "&New Game";
             this.newGameToolStripMenuItem.Click += new System.EventHandler(this.btnNewGame_Click);
             // 
             // selfPlayToolStripMenuItem
             // 
             this.selfPlayToolStripMenuItem.Name = "selfPlayToolStripMenuItem";
-            this.selfPlayToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.selfPlayToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.selfPlayToolStripMenuItem.Text = "Self &Play";
             this.selfPlayToolStripMenuItem.Click += new System.EventHandler(this.selfPlayToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator5
+            // 
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(152, 6);
+            // 
+            // saveGameToolStripMenuItem
+            // 
+            this.saveGameToolStripMenuItem.Name = "saveGameToolStripMenuItem";
+            this.saveGameToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.saveGameToolStripMenuItem.Text = "&Save Transcript";
+            this.saveGameToolStripMenuItem.Click += new System.EventHandler(this.saveGameToolStripMenuItem_Click);
+            // 
+            // loadTranscriptToolStripMenuItem
+            // 
+            this.loadTranscriptToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fromFileToolStripMenuItem,
+            this.fromStringToolStripMenuItem});
+            this.loadTranscriptToolStripMenuItem.Name = "loadTranscriptToolStripMenuItem";
+            this.loadTranscriptToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.loadTranscriptToolStripMenuItem.Text = "&Load Transcript";
+            // 
+            // fromFileToolStripMenuItem
+            // 
+            this.fromFileToolStripMenuItem.Name = "fromFileToolStripMenuItem";
+            this.fromFileToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.fromFileToolStripMenuItem.Text = "From &File";
+            this.fromFileToolStripMenuItem.Click += new System.EventHandler(this.loadTranscriptToolStripMenuItem_Click);
+            // 
+            // fromStringToolStripMenuItem
+            // 
+            this.fromStringToolStripMenuItem.Name = "fromStringToolStripMenuItem";
+            this.fromStringToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.fromStringToolStripMenuItem.Text = "From &Clipboard";
+            this.fromStringToolStripMenuItem.Click += new System.EventHandler(this.fromStringToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(152, 6);
             // 
             // exportRulesToolStripMenuItem
             // 
             this.exportRulesToolStripMenuItem.Name = "exportRulesToolStripMenuItem";
-            this.exportRulesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exportRulesToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.exportRulesToolStripMenuItem.Text = "&Export Rules";
             this.exportRulesToolStripMenuItem.Click += new System.EventHandler(this.exportRulesToolStripMenuItem_Click);
+            // 
+            // importRulesToolStripMenuItem
+            // 
+            this.importRulesToolStripMenuItem.Name = "importRulesToolStripMenuItem";
+            this.importRulesToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.importRulesToolStripMenuItem.Text = "&Reset Rules";
+            this.importRulesToolStripMenuItem.Click += new System.EventHandler(this.importRulesToolStripMenuItem_Click);
             // 
             // tournamentToolStripMenuItem
             // 
@@ -203,7 +247,7 @@
             // newTournamentToolStripMenuItem
             // 
             this.newTournamentToolStripMenuItem.Name = "newTournamentToolStripMenuItem";
-            this.newTournamentToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.newTournamentToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
             this.newTournamentToolStripMenuItem.Text = "&New Tournament";
             this.newTournamentToolStripMenuItem.Click += new System.EventHandler(this.newTournamentToolStripMenuItem_Click);
             // 
@@ -227,6 +271,8 @@
             this.toolStripLabel2,
             this.cbPlayerTwo,
             this.toolStripSeparator4,
+            this.chkHighlightLastMove,
+            this.toolStripSeparator6,
             this.btnNavStart,
             this.btnNavBack,
             this.lblTranscriptMove,
@@ -307,6 +353,12 @@
             this.btnNavBack.Text = "Previous";
             this.btnNavBack.Click += new System.EventHandler(this.btnNavBack_Click);
             // 
+            // lblTranscriptMove
+            // 
+            this.lblTranscriptMove.Name = "lblTranscriptMove";
+            this.lblTranscriptMove.Size = new System.Drawing.Size(24, 22);
+            this.lblTranscriptMove.Text = "0/0";
+            // 
             // btnNavNext
             // 
             this.btnNavNext.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -327,27 +379,6 @@
             this.btnNavEnd.Text = "Last";
             this.btnNavEnd.Click += new System.EventHandler(this.btnNavEnd_Click);
             // 
-            // saveGameToolStripMenuItem
-            // 
-            this.saveGameToolStripMenuItem.Name = "saveGameToolStripMenuItem";
-            this.saveGameToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.saveGameToolStripMenuItem.Text = "&Save Transcript";
-            this.saveGameToolStripMenuItem.Click += new System.EventHandler(this.saveGameToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator5
-            // 
-            this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(177, 6);
-            // 
-            // loadTranscriptToolStripMenuItem
-            // 
-            this.loadTranscriptToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fromFileToolStripMenuItem,
-            this.fromStringToolStripMenuItem});
-            this.loadTranscriptToolStripMenuItem.Name = "loadTranscriptToolStripMenuItem";
-            this.loadTranscriptToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.loadTranscriptToolStripMenuItem.Text = "&Load Transcript";
-            // 
             // saveFileDialog1
             // 
             this.saveFileDialog1.DefaultExt = "*.vgt";
@@ -357,32 +388,20 @@
             // 
             this.openFileDialog1.Filter = "Volcanoes Game Transcript|*.vgt";
             // 
-            // lblTranscriptMove
+            // toolStripSeparator6
             // 
-            this.lblTranscriptMove.Name = "lblTranscriptMove";
-            this.lblTranscriptMove.Size = new System.Drawing.Size(24, 22);
-            this.lblTranscriptMove.Text = "0/0";
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 25);
             // 
-            // fromFileToolStripMenuItem
+            // chkHighlightLastMove
             // 
-            this.fromFileToolStripMenuItem.Name = "fromFileToolStripMenuItem";
-            this.fromFileToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.fromFileToolStripMenuItem.Text = "From &File";
-            this.fromFileToolStripMenuItem.Click += new System.EventHandler(this.loadTranscriptToolStripMenuItem_Click);
-            // 
-            // fromStringToolStripMenuItem
-            // 
-            this.fromStringToolStripMenuItem.Name = "fromStringToolStripMenuItem";
-            this.fromStringToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.fromStringToolStripMenuItem.Text = "From &Clipboard";
-            this.fromStringToolStripMenuItem.Click += new System.EventHandler(this.fromStringToolStripMenuItem_Click);
-            // 
-            // importRulesToolStripMenuItem
-            // 
-            this.importRulesToolStripMenuItem.Name = "importRulesToolStripMenuItem";
-            this.importRulesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.importRulesToolStripMenuItem.Text = "&Reset Rules";
-            this.importRulesToolStripMenuItem.Click += new System.EventHandler(this.importRulesToolStripMenuItem_Click);
+            this.chkHighlightLastMove.CheckOnClick = true;
+            this.chkHighlightLastMove.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.chkHighlightLastMove.Image = ((System.Drawing.Image)(resources.GetObject("chkHighlightLastMove.Image")));
+            this.chkHighlightLastMove.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.chkHighlightLastMove.Name = "chkHighlightLastMove";
+            this.chkHighlightLastMove.Size = new System.Drawing.Size(23, 22);
+            this.chkHighlightLastMove.Text = "Highlight Last Move";
             // 
             // GameForm
             // 
@@ -450,6 +469,8 @@
         private System.Windows.Forms.ToolStripMenuItem fromFileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem fromStringToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem importRulesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripButton chkHighlightLastMove;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
     }
 }
 
