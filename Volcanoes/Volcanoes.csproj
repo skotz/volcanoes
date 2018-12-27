@@ -62,6 +62,7 @@
     <Compile Include="Engine\BeeLineEngine.cs" />
     <Compile Include="Engine\EngineStatus.cs" />
     <Compile Include="Engine\IStatus.cs" />
+    <Compile Include="Engine\MonteCarloBeelineThreeEngine.cs" />
     <Compile Include="Engine\MonteCarloTreeSearchEngine.cs" />
     <Compile Include="Engine\MonteCarloTwoEngine.cs" />
     <Compile Include="Engine\MonteCarloBeelineEngine.cs" />

@@ -12,35 +12,28 @@ namespace Volcano.Engine
     {
         private Random random;
         private int evaluations;
-
-        private int millisecondsPerMove;
         private int maxIterations;
 
+        private int bufferMilliseconds = 200;
         private EngineCancellationToken cancel;
 
         private Stopwatch statusUpdate;
         private int millisecondsBetweenUpdates = 500;
         public event EventHandler<EngineStatus> OnStatus;
-
+        
         public MonteCarloTreeSearchEngine()
-            : this(5)
-        {
-        }
-
-        public MonteCarloTreeSearchEngine(int secondsPerMove)
         {
             random = new Random();
-            millisecondsPerMove = secondsPerMove * 1000;
             maxIterations = 1000000;
         }
 
-        public SearchResult GetBestMove(Board state, EngineCancellationToken token)
+        public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
             Stopwatch timer = Stopwatch.StartNew();
             statusUpdate = Stopwatch.StartNew();
             evaluations = 0;
 
-            cancel = new EngineCancellationToken(() => token.Cancelled || timer.ElapsedMilliseconds >= millisecondsPerMove);
+            cancel = new EngineCancellationToken(() => token.Cancelled || timer.ElapsedMilliseconds >= maxSeconds * 1000 - bufferMilliseconds);
 
             Move best = MonteCarloTreeSearch(state);
 
@@ -51,10 +44,15 @@ namespace Volcano.Engine
                 Milliseconds = timer.ElapsedMilliseconds
             };
         }
+        
+        protected virtual List<Move> GetMoves(Board state)
+        {
+            return state.GetMoves();
+        }
 
         private Move MonteCarloTreeSearch(Board rootState)
         {
-            var rootNode = new MonteCarloTreeSearchNode(rootState);
+            var rootNode = new MonteCarloTreeSearchNode(rootState, GetMoves);
             
             for (int i = 0; i < maxIterations && !cancel.Cancelled; i++)
             {
@@ -119,6 +117,7 @@ namespace Volcano.Engine
         class MonteCarloTreeSearchNode
         {
             private Board _state;
+            private Func<Board, List<Move>> _getMoves;
 
             public double Wins;
             public double Visits;
@@ -128,14 +127,16 @@ namespace Volcano.Engine
             public List<MonteCarloTreeSearchNode> Children;
             public List<Move> Untried;
 
-            public MonteCarloTreeSearchNode(Board state)
-                : this(state, null, null)
+            public MonteCarloTreeSearchNode(Board state, Func<Board, List<Move>> getMoves)
+                : this(state, null, null, getMoves)
             {
             }
 
-            public MonteCarloTreeSearchNode(Board state, Move move, MonteCarloTreeSearchNode parent)
+            public MonteCarloTreeSearchNode(Board state, Move move, MonteCarloTreeSearchNode parent, Func<Board, List<Move>> getMoves)
             {
                 _state = state;
+                _getMoves = getMoves;
+
                 Move = move;
                 Parent = parent;
 
@@ -145,7 +146,7 @@ namespace Volcano.Engine
 
                 if (_state != null)
                 {
-                    Untried = _state.GetMoves();
+                    Untried = _getMoves(_state);
                     LastToMove = _state.GetPlayerForPreviousTurn();
                 }
                 else
@@ -161,7 +162,7 @@ namespace Volcano.Engine
 
             public MonteCarloTreeSearchNode AddChild(Board state, Move move)
             {
-                var newNode = new MonteCarloTreeSearchNode(state, move, this);
+                var newNode = new MonteCarloTreeSearchNode(state, move, this, _getMoves);
                 Untried.Remove(move);
                 Children.Add(newNode);
                 return newNode;

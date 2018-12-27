@@ -13,7 +13,7 @@ namespace Volcano.Engine
         private PathFinder pathFinder = new WeightedNonEnemyPathFinder();
         private Random random = new Random();
 
-        public SearchResult GetBestMove(Board state, EngineCancellationToken token)
+        public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
             List<Move> moves = state.GetMoves();
             Move best = null;

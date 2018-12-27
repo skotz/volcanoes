@@ -13,6 +13,7 @@ namespace Volcano.Game
     class Tournament
     {
         private int _rounds;
+        private int _secondsPerMove;
         private string _file;
         private string _dataFile;
         private EngineHelper _engines;
@@ -28,9 +29,10 @@ namespace Volcano.Game
 
         private bool allowSelfPlay = false;
 
-        public Tournament(int rounds, string resultsFile, string dataFile, EngineHelper engines, List<string> players)
+        public Tournament(int rounds, int secondsPerMove, string resultsFile, string dataFile, EngineHelper engines, List<string> players)
         {
             _rounds = rounds;
+            _secondsPerMove = secondsPerMove;
             _file = resultsFile;
             _dataFile = dataFile;
             _engines = engines;
@@ -77,6 +79,7 @@ namespace Volcano.Game
                             {
                                 game.RegisterEngine(Player.One, _engines.GetEngine(engine1));
                                 game.RegisterEngine(Player.Two, _engines.GetEngine(engine2));
+                                game.SecondsPerEngineMove = _secondsPerMove;
                                 game.StartNewGame();
                                 game.ComputerPlay();
 

@@ -50,8 +50,9 @@ namespace Volcano
             engines.Add<DeepBeelineEngine>("Deep Beeline");
             engines.Add<BarricadeEngine>("Barricade");
             engines.Add<MonteCarloBeelineEngine>("Monte Carlo Beeline");
-            engines.Add<MonteCarloTwoEngine>("Monte Carlo Two");
+            engines.Add<MonteCarloTwoEngine>("Monte Carlo Beeline 2");
             engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
+            engines.Add<MonteCarloBeelineThreeEngine>("Monte Carlo Beeline 3");
 
             cbPlayerOne.Items.Add("Human");
             cbPlayerTwo.Items.Add("Human");
@@ -62,6 +63,8 @@ namespace Volcano
                 cbPlayerOne.Items.Add(engine);
                 cbPlayerTwo.Items.Add(engine);
             }
+
+            cbSeconds.SelectedIndex = 1;
 
             ConfigureComputer();
 
@@ -110,6 +113,7 @@ namespace Volcano
         private void StartNewGame()
         {
             game.StartNewGame();
+            game.SecondsPerEngineMove = int.Parse(cbSeconds.Text);
             ConfigureComputer();
 
             transcriptMove = 0;
@@ -215,7 +219,7 @@ namespace Volcano
 
                 string date = DateTime.Now.ToString("yyyyMMddhhmmss");
 
-                Tournament tourney = new Tournament(form.Rounds, "tourney-table-" + date + ".csv", "tourney-data-" + date + ".csv", engines, form.Engines);
+                Tournament tourney = new Tournament(form.Rounds, form.SecondsPerMove, "tourney-table-" + date + ".csv", "tourney-data-" + date + ".csv", engines, form.Engines);
                 tourney.OnTournamentCompleted += Tourney_OnTournamentCompleted;
                 tourney.OnTournamentStatus += Tourney_OnTournamentStatus;
                 tourney.Start();
@@ -342,7 +346,7 @@ namespace Volcano
 
             for (int i = 0; i < runs; i++)
             {
-                var best = engine.GetBestMove(game.CurrentState, new EngineCancellationToken(() => false));
+                var best = engine.GetBestMove(game.CurrentState, 1000000, new EngineCancellationToken(() => false));
                 evals += best.Evaluations;
             }
 

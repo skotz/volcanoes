@@ -33,6 +33,8 @@ namespace Volcano.Game
 
         public int NodesPerSecond { get { return _lastSearch?.NodesPerSecond ?? 0; } }
 
+        public int SecondsPerEngineMove { get; set; } = 10;
+
         // DI? What's that...
         private static Lazy<GameSettings> _settings = new Lazy<GameSettings>(() => GameSettings.LoadOrDefault("volcano.json"));
 
@@ -211,11 +213,11 @@ namespace Volcano.Game
 
             if (CurrentState.Player == Player.One)
             {
-                e.Result = _playerOneEngine.GetBestMove(CurrentState, token);
+                e.Result = _playerOneEngine.GetBestMove(CurrentState, SecondsPerEngineMove, token);
             }
             else if (CurrentState.Player == Player.Two)
             {
-                e.Result = _playerTwoEngine.GetBestMove(CurrentState, token);
+                e.Result = _playerTwoEngine.GetBestMove(CurrentState, SecondsPerEngineMove, token);
             }
 
             if (token.Cancelled)

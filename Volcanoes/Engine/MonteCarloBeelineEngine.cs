@@ -34,7 +34,7 @@ namespace Volcano.Engine
             _randomBlitz = randomBlitz;
         }
 
-        public SearchResult GetBestMove(Board state, EngineCancellationToken token)
+        public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
             Stopwatch timer = Stopwatch.StartNew();
             evaluations = 0;

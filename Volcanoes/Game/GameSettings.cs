@@ -22,7 +22,7 @@ namespace Volcano.Game
         public bool AllowVolcanoCaptures { get; set; } = false;
 
         public int TournamentAdjudicateMaxTurns { get; set; } = 500;
-        public int TournamentAdjudicateMaxSeconds { get; set; } = 60 * 5;
+        public int TournamentAdjudicateMaxSeconds { get; set; } = 60 * 30;
 
         [JsonIgnore]
         public string CustomSettingsFile { get; set; }

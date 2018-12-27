@@ -55,7 +55,6 @@
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
             this.cbPlayerOne = new System.Windows.Forms.ToolStripComboBox();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabel2 = new System.Windows.Forms.ToolStripLabel();
             this.cbPlayerTwo = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
@@ -74,6 +73,10 @@
             this.exportRulesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.resetRulesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.cbSeconds = new System.Windows.Forms.ToolStripComboBox();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripLabel3 = new System.Windows.Forms.ToolStripLabel();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -275,6 +278,9 @@
             this.toolStripLabel2,
             this.cbPlayerTwo,
             this.toolStripSeparator4,
+            this.toolStripLabel3,
+            this.cbSeconds,
+            this.toolStripSeparator3,
             this.chkHighlightLastMove,
             this.toolStripSeparator6,
             this.btnNavStart,
@@ -291,10 +297,11 @@
             // 
             // btnNewGame
             // 
+            this.btnNewGame.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnNewGame.Image = ((System.Drawing.Image)(resources.GetObject("btnNewGame.Image")));
             this.btnNewGame.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnNewGame.Name = "btnNewGame";
-            this.btnNewGame.Size = new System.Drawing.Size(85, 22);
+            this.btnNewGame.Size = new System.Drawing.Size(23, 22);
             this.btnNewGame.Text = "New Game";
             this.btnNewGame.Click += new System.EventHandler(this.btnNewGame_Click);
             // 
@@ -313,12 +320,7 @@
             // 
             this.cbPlayerOne.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbPlayerOne.Name = "cbPlayerOne";
-            this.cbPlayerOne.Size = new System.Drawing.Size(151, 25);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            this.cbPlayerOne.Size = new System.Drawing.Size(165, 25);
             // 
             // toolStripLabel2
             // 
@@ -330,7 +332,7 @@
             // 
             this.cbPlayerTwo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbPlayerTwo.Name = "cbPlayerTwo";
-            this.cbPlayerTwo.Size = new System.Drawing.Size(151, 25);
+            this.cbPlayerTwo.Size = new System.Drawing.Size(165, 25);
             // 
             // toolStripSeparator4
             // 
@@ -449,6 +451,36 @@
             this.toolStripSeparator7.Name = "toolStripSeparator7";
             this.toolStripSeparator7.Size = new System.Drawing.Size(202, 6);
             // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            // 
+            // cbSeconds
+            // 
+            this.cbSeconds.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbSeconds.Items.AddRange(new object[] {
+            "2",
+            "5",
+            "10",
+            "20",
+            "30",
+            "60",
+            "120"});
+            this.cbSeconds.Name = "cbSeconds";
+            this.cbSeconds.Size = new System.Drawing.Size(75, 25);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            // 
+            // toolStripLabel3
+            // 
+            this.toolStripLabel3.Name = "toolStripLabel3";
+            this.toolStripLabel3.Size = new System.Drawing.Size(104, 22);
+            this.toolStripLabel3.Text = "Seconds Per Move";
+            // 
             // GameForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -494,7 +526,6 @@
         private System.Windows.Forms.ToolStripComboBox cbPlayerOne;
         private System.Windows.Forms.ToolStripLabel toolStripLabel2;
         private System.Windows.Forms.ToolStripComboBox cbPlayerTwo;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem newGameToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem tournamentToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem newTournamentToolStripMenuItem;
@@ -524,6 +555,10 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
         private System.Windows.Forms.ToolStripMenuItem exportRulesToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem resetRulesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripLabel toolStripLabel3;
+        private System.Windows.Forms.ToolStripComboBox cbSeconds;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
     }
 }
 
