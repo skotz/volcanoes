@@ -8,7 +8,7 @@ using Volcano.Game;
 
 namespace Volcano.Engine
 {
-    class MonteCarloTreeSearchEngine : IEngine
+    class MonteCarloTreeSearchEngine : IEngine, IStatus
     {
         private Random random;
         private int evaluations;
@@ -17,6 +17,10 @@ namespace Volcano.Engine
         private int maxIterations;
 
         private EngineCancellationToken cancel;
+
+        private Stopwatch statusUpdate;
+        private int millisecondsBetweenUpdates = 500;
+        public event EventHandler<EngineStatus> OnStatus;
 
         public MonteCarloTreeSearchEngine()
             : this(5)
@@ -33,6 +37,7 @@ namespace Volcano.Engine
         public SearchResult GetBestMove(Board state, EngineCancellationToken token)
         {
             Stopwatch timer = Stopwatch.StartNew();
+            statusUpdate = Stopwatch.StartNew();
             evaluations = 0;
 
             cancel = new EngineCancellationToken(() => token.Cancelled || timer.ElapsedMilliseconds >= millisecondsPerMove);
@@ -85,6 +90,27 @@ namespace Volcano.Engine
                     node.Update(state.Winner == node.LastToMove ? 1.0 : 0.0);
                     node = node.Parent;
                 }
+
+                // Update Status
+                if (statusUpdate.ElapsedMilliseconds > millisecondsBetweenUpdates && OnStatus != null)
+                {
+                    EngineStatus status = new EngineStatus();
+                    foreach (var child in rootNode.Children)
+                    {
+                        double eval = Math.Round((child.Visits > 0 ? 200.0 * child.Wins / child.Visits : 0) - 100.0, 2);
+                        string pv = "";
+                        var c = child;
+                        while (c != null && c.Move != null && c.Move.TileIndex >= 0 && c.Move.TileIndex < 80)
+                        {
+                            pv += Constants.TileNames[c.Move.TileIndex] + " ";
+                            c = c.Children?.OrderBy(x => x.Visits)?.LastOrDefault();
+                        }
+                        status.Add(child?.Move?.TileIndex ?? 80, eval, pv);
+                    }
+                    status.Sort();
+                    OnStatus(this, status);
+                    statusUpdate = Stopwatch.StartNew();
+                }
             }
 
             return rootNode.Children.OrderBy(x => x.Visits).LastOrDefault().Move;
@@ -93,8 +119,8 @@ namespace Volcano.Engine
         class MonteCarloTreeSearchNode
         {
             private Board _state;
-            private double wins;
 
+            public double Wins;
             public double Visits;
             public MonteCarloTreeSearchNode Parent;
             public Player LastToMove;
@@ -114,7 +140,7 @@ namespace Volcano.Engine
                 Parent = parent;
 
                 Children = new List<MonteCarloTreeSearchNode>();
-                wins = 0.0;
+                Wins = 0.0;
                 Visits = 0.0;
 
                 if (_state != null)
@@ -144,12 +170,12 @@ namespace Volcano.Engine
             public void Update(double result)
             {
                 Visits++;
-                wins += result;
+                Wins += result;
             }
 
             private double UpperConfidenceBound(MonteCarloTreeSearchNode node)
             {
-                return node.wins / node.Visits + Math.Sqrt(2.0 * Math.Log(Visits) / node.Visits);
+                return node.Wins / node.Visits + Math.Sqrt(2.0 * Math.Log(Visits) / node.Visits);
             }
         }
     }

@@ -16,6 +16,8 @@ namespace Volcano
 
         public int Rounds { get; set; }
 
+        public int SecondsPerMove { get; set; }
+
         public TournamentForm(List<string> engines)
         {
             InitializeComponent();
@@ -36,6 +38,8 @@ namespace Volcano
         private void button1_Click(object sender, EventArgs e)
         {
             Rounds = (int)numericUpDown1.Value;
+
+            SecondsPerMove = (int)numSecondsPerMove.Value;
 
             Engines = checkedListBox1.CheckedItems.Cast<string>().ToList();
 

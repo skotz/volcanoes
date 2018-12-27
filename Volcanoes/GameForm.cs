@@ -29,6 +29,8 @@ namespace Volcano
         List<int> transcript;
         int transcriptMove;
 
+        EngineOutputForm outputForm;
+
         public GameForm()
         {
             InitializeComponent();
@@ -133,7 +135,7 @@ namespace Volcano
             game.ComputerPlay();
         }
 
-        private void selfPlayToolStripMenuItem_Click(object sender, EventArgs e)
+        private void selfPlayToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
             var selfPlayForm = new SelfPlayForm(engines.EngineNames);
             var dr = selfPlayForm.ShowDialog();
@@ -289,8 +291,11 @@ namespace Volcano
 
         private void importRulesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            File.Move("volcano.json", "volcano.json." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak");
-            MessageBox.Show("Rules will be reset to their defaults when you restart.", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (File.Exists("volcano.json"))
+            {
+                File.Move("volcano.json", "volcano.json." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak");
+                MessageBox.Show("Rules will be reset to their defaults when you restart.", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         private void GameForm_KeyDown(object sender, KeyEventArgs e)
@@ -350,6 +355,17 @@ namespace Volcano
             }
 
             MessageBox.Show(result);
+        }
+
+        private void outputWindowToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (outputForm != null)
+            {
+                outputForm.Close();
+            }
+
+            outputForm = new EngineOutputForm(game);
+            outputForm.Show();
         }
     }
 }

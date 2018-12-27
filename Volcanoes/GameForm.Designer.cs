@@ -39,19 +39,17 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.selfPlayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.saveGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadTranscriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fromFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fromStringToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.exportRulesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.importRulesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tournamentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newTournamentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.dEBUGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stressTestPathSearchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stressTestEngineSearchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btnNewGame = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
@@ -70,8 +68,12 @@
             this.btnNavEnd = new System.Windows.Forms.ToolStripButton();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.stressTestPathSearchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.stressTestEngineSearchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.engineToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.selfPlayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.outputWindowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportRulesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.resetRulesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -146,6 +148,7 @@
             this.menuStrip1.Dock = System.Windows.Forms.DockStyle.None;
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
+            this.engineToolStripMenuItem,
             this.tournamentToolStripMenuItem,
             this.aboutToolStripMenuItem,
             this.dEBUGToolStripMenuItem});
@@ -160,13 +163,9 @@
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.newGameToolStripMenuItem,
-            this.selfPlayToolStripMenuItem,
             this.toolStripSeparator5,
             this.saveGameToolStripMenuItem,
-            this.loadTranscriptToolStripMenuItem,
-            this.toolStripSeparator3,
-            this.exportRulesToolStripMenuItem,
-            this.importRulesToolStripMenuItem});
+            this.loadTranscriptToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(50, 20);
             this.fileToolStripMenuItem.Text = "&Game";
@@ -175,26 +174,19 @@
             // 
             this.newGameToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("newGameToolStripMenuItem.Image")));
             this.newGameToolStripMenuItem.Name = "newGameToolStripMenuItem";
-            this.newGameToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.newGameToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.newGameToolStripMenuItem.Text = "&New Game";
             this.newGameToolStripMenuItem.Click += new System.EventHandler(this.btnNewGame_Click);
-            // 
-            // selfPlayToolStripMenuItem
-            // 
-            this.selfPlayToolStripMenuItem.Name = "selfPlayToolStripMenuItem";
-            this.selfPlayToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
-            this.selfPlayToolStripMenuItem.Text = "Self &Play";
-            this.selfPlayToolStripMenuItem.Click += new System.EventHandler(this.selfPlayToolStripMenuItem_Click);
             // 
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(152, 6);
+            this.toolStripSeparator5.Size = new System.Drawing.Size(177, 6);
             // 
             // saveGameToolStripMenuItem
             // 
             this.saveGameToolStripMenuItem.Name = "saveGameToolStripMenuItem";
-            this.saveGameToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.saveGameToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.saveGameToolStripMenuItem.Text = "&Save Transcript";
             this.saveGameToolStripMenuItem.Click += new System.EventHandler(this.saveGameToolStripMenuItem_Click);
             // 
@@ -204,7 +196,7 @@
             this.fromFileToolStripMenuItem,
             this.fromStringToolStripMenuItem});
             this.loadTranscriptToolStripMenuItem.Name = "loadTranscriptToolStripMenuItem";
-            this.loadTranscriptToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.loadTranscriptToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.loadTranscriptToolStripMenuItem.Text = "&Load Transcript";
             // 
             // fromFileToolStripMenuItem
@@ -221,25 +213,6 @@
             this.fromStringToolStripMenuItem.Text = "From &Clipboard";
             this.fromStringToolStripMenuItem.Click += new System.EventHandler(this.fromStringToolStripMenuItem_Click);
             // 
-            // toolStripSeparator3
-            // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(152, 6);
-            // 
-            // exportRulesToolStripMenuItem
-            // 
-            this.exportRulesToolStripMenuItem.Name = "exportRulesToolStripMenuItem";
-            this.exportRulesToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
-            this.exportRulesToolStripMenuItem.Text = "&Export Rules";
-            this.exportRulesToolStripMenuItem.Click += new System.EventHandler(this.exportRulesToolStripMenuItem_Click);
-            // 
-            // importRulesToolStripMenuItem
-            // 
-            this.importRulesToolStripMenuItem.Name = "importRulesToolStripMenuItem";
-            this.importRulesToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
-            this.importRulesToolStripMenuItem.Text = "&Reset Rules";
-            this.importRulesToolStripMenuItem.Click += new System.EventHandler(this.importRulesToolStripMenuItem_Click);
-            // 
             // tournamentToolStripMenuItem
             // 
             this.tournamentToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -251,7 +224,7 @@
             // newTournamentToolStripMenuItem
             // 
             this.newTournamentToolStripMenuItem.Name = "newTournamentToolStripMenuItem";
-            this.newTournamentToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.newTournamentToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.newTournamentToolStripMenuItem.Text = "&New Tournament";
             this.newTournamentToolStripMenuItem.Click += new System.EventHandler(this.newTournamentToolStripMenuItem_Click);
             // 
@@ -266,12 +239,28 @@
             // 
             this.dEBUGToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.stressTestPathSearchToolStripMenuItem,
-            this.stressTestEngineSearchToolStripMenuItem});
+            this.stressTestEngineSearchToolStripMenuItem,
+            this.toolStripSeparator7,
+            this.exportRulesToolStripMenuItem1,
+            this.resetRulesToolStripMenuItem});
             this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
             this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
             this.dEBUGToolStripMenuItem.Text = "DEBUG";
             this.dEBUGToolStripMenuItem.Visible = false;
-            //this.dEBUGToolStripMenuItem.Click += new System.EventHandler(this.dEBUGToolStripMenuItem_Click);
+            // 
+            // stressTestPathSearchToolStripMenuItem
+            // 
+            this.stressTestPathSearchToolStripMenuItem.Name = "stressTestPathSearchToolStripMenuItem";
+            this.stressTestPathSearchToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.stressTestPathSearchToolStripMenuItem.Text = "Stress Test Path Search";
+            this.stressTestPathSearchToolStripMenuItem.Click += new System.EventHandler(this.stressTestPathSearchToolStripMenuItem_Click);
+            // 
+            // stressTestEngineSearchToolStripMenuItem
+            // 
+            this.stressTestEngineSearchToolStripMenuItem.Name = "stressTestEngineSearchToolStripMenuItem";
+            this.stressTestEngineSearchToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.stressTestEngineSearchToolStripMenuItem.Text = "Stress Test Engine Search";
+            this.stressTestEngineSearchToolStripMenuItem.Click += new System.EventHandler(this.stressTestEngineSearchToolStripMenuItem_Click);
             // 
             // toolStrip1
             // 
@@ -418,19 +407,47 @@
             // 
             this.openFileDialog1.Filter = "Volcanoes Game Transcript|*.vgt";
             // 
-            // stressTestPathSearchToolStripMenuItem
+            // engineToolStripMenuItem
             // 
-            this.stressTestPathSearchToolStripMenuItem.Name = "stressTestPathSearchToolStripMenuItem";
-            this.stressTestPathSearchToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
-            this.stressTestPathSearchToolStripMenuItem.Text = "Stress Test Path Search";
-            this.stressTestPathSearchToolStripMenuItem.Click += new System.EventHandler(this.stressTestPathSearchToolStripMenuItem_Click);
+            this.engineToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.selfPlayToolStripMenuItem,
+            this.outputWindowToolStripMenuItem});
+            this.engineToolStripMenuItem.Name = "engineToolStripMenuItem";
+            this.engineToolStripMenuItem.Size = new System.Drawing.Size(55, 20);
+            this.engineToolStripMenuItem.Text = "&Engine";
             // 
-            // stressTestEngineSearchToolStripMenuItem
+            // selfPlayToolStripMenuItem
             // 
-            this.stressTestEngineSearchToolStripMenuItem.Name = "stressTestEngineSearchToolStripMenuItem";
-            this.stressTestEngineSearchToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
-            this.stressTestEngineSearchToolStripMenuItem.Text = "Stress Test Engine Search";
-            this.stressTestEngineSearchToolStripMenuItem.Click += new System.EventHandler(this.stressTestEngineSearchToolStripMenuItem_Click);
+            this.selfPlayToolStripMenuItem.Name = "selfPlayToolStripMenuItem";
+            this.selfPlayToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.selfPlayToolStripMenuItem.Text = "Self &Play";
+            this.selfPlayToolStripMenuItem.Click += new System.EventHandler(this.selfPlayToolStripMenuItem_Click_1);
+            // 
+            // outputWindowToolStripMenuItem
+            // 
+            this.outputWindowToolStripMenuItem.Name = "outputWindowToolStripMenuItem";
+            this.outputWindowToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.outputWindowToolStripMenuItem.Text = "Output Window";
+            this.outputWindowToolStripMenuItem.Click += new System.EventHandler(this.outputWindowToolStripMenuItem_Click);
+            // 
+            // exportRulesToolStripMenuItem1
+            // 
+            this.exportRulesToolStripMenuItem1.Name = "exportRulesToolStripMenuItem1";
+            this.exportRulesToolStripMenuItem1.Size = new System.Drawing.Size(205, 22);
+            this.exportRulesToolStripMenuItem1.Text = "Export Rules";
+            this.exportRulesToolStripMenuItem1.Click += new System.EventHandler(this.exportRulesToolStripMenuItem_Click);
+            // 
+            // resetRulesToolStripMenuItem
+            // 
+            this.resetRulesToolStripMenuItem.Name = "resetRulesToolStripMenuItem";
+            this.resetRulesToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.resetRulesToolStripMenuItem.Text = "Reset Rules";
+            this.resetRulesToolStripMenuItem.Click += new System.EventHandler(this.importRulesToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator7
+            // 
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            this.toolStripSeparator7.Size = new System.Drawing.Size(202, 6);
             // 
             // GameForm
             // 
@@ -483,9 +500,6 @@
         private System.Windows.Forms.ToolStripMenuItem newTournamentToolStripMenuItem;
         private System.Windows.Forms.ToolStripButton btnNewGame;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripMenuItem selfPlayToolStripMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripMenuItem exportRulesToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripButton btnNavStart;
         private System.Windows.Forms.ToolStripButton btnNavBack;
@@ -499,12 +513,17 @@
         private System.Windows.Forms.ToolStripLabel lblTranscriptMove;
         private System.Windows.Forms.ToolStripMenuItem fromFileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem fromStringToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem importRulesToolStripMenuItem;
         private System.Windows.Forms.ToolStripButton chkHighlightLastMove;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private System.Windows.Forms.ToolStripMenuItem dEBUGToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem stressTestPathSearchToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem stressTestEngineSearchToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem engineToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem selfPlayToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem outputWindowToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
+        private System.Windows.Forms.ToolStripMenuItem exportRulesToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem resetRulesToolStripMenuItem;
     }
 }
 

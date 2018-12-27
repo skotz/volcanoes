@@ -34,7 +34,10 @@
             this.button1 = new System.Windows.Forms.Button();
             this.checkedListBox1 = new System.Windows.Forms.CheckedListBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.numSecondsPerMove = new System.Windows.Forms.NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numSecondsPerMove)).BeginInit();
             this.SuspendLayout();
             // 
             // numericUpDown1
@@ -70,7 +73,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(203, 212);
+            this.button1.Location = new System.Drawing.Point(203, 260);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 5;
@@ -82,28 +85,61 @@
             // 
             this.checkedListBox1.CheckOnClick = true;
             this.checkedListBox1.FormattingEnabled = true;
-            this.checkedListBox1.Location = new System.Drawing.Point(120, 38);
+            this.checkedListBox1.Location = new System.Drawing.Point(120, 64);
             this.checkedListBox1.Name = "checkedListBox1";
-            this.checkedListBox1.Size = new System.Drawing.Size(158, 154);
+            this.checkedListBox1.Size = new System.Drawing.Size(158, 184);
             this.checkedListBox1.TabIndex = 6;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 38);
+            this.label2.Location = new System.Drawing.Point(12, 64);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(41, 13);
             this.label2.TabIndex = 3;
             this.label2.Text = "Players";
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(12, 40);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(98, 13);
+            this.label3.TabIndex = 3;
+            this.label3.Text = "Seconds Per Move";
+            // 
+            // numSecondsPerMove
+            // 
+            this.numSecondsPerMove.Location = new System.Drawing.Point(120, 38);
+            this.numSecondsPerMove.Maximum = new decimal(new int[] {
+            1000000,
+            0,
+            0,
+            0});
+            this.numSecondsPerMove.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numSecondsPerMove.Name = "numSecondsPerMove";
+            this.numSecondsPerMove.Size = new System.Drawing.Size(158, 20);
+            this.numSecondsPerMove.TabIndex = 4;
+            this.numSecondsPerMove.Value = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            // 
             // TournamentForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(290, 247);
+            this.ClientSize = new System.Drawing.Size(290, 295);
             this.Controls.Add(this.checkedListBox1);
             this.Controls.Add(this.button1);
+            this.Controls.Add(this.numSecondsPerMove);
             this.Controls.Add(this.numericUpDown1);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -114,6 +150,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Volcanoes - Tournament";
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numSecondsPerMove)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -126,5 +163,7 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.CheckedListBox checkedListBox1;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.NumericUpDown numSecondsPerMove;
     }
 }

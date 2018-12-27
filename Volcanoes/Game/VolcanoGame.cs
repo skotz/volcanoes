@@ -24,6 +24,9 @@ namespace Volcano.Game
         public event MoveMadeHandler OnMoveMade;
         public delegate void MoveMadeHandler(bool growthHappened);
 
+        public event EngineStatusHandler OnEngineStatus;
+        public delegate void EngineStatusHandler(Player player, EngineStatus status);
+
         public List<int> MoveHistory { get; private set; }
         
         public bool Thinking { get { return _worker.IsBusy; } }
@@ -44,6 +47,8 @@ namespace Volcano.Game
             _worker.DoWork += BackgroundWork;
             _worker.RunWorkerCompleted += BackgroundWorkCompleted;
             _worker.WorkerSupportsCancellation = true;
+            _worker.WorkerReportsProgress = true;
+            _worker.ProgressChanged += BackgroundWorkProgressChanged;
         }
 
         public void StartNewGame()
@@ -109,11 +114,38 @@ namespace Volcano.Game
             if (player == Player.One)
             {
                 _playerOneEngine = engine;
+
+                var status = _playerOneEngine as IStatus;
+                if (status != null)
+                {
+                    status.OnStatus += Status_OnStatusOne;
+                }
             }
             if (player == Player.Two)
             {
                 _playerTwoEngine = engine;
+
+                var status = _playerTwoEngine as IStatus;
+                if (status != null)
+                {
+                    status.OnStatus += Status_OnStatusTwo;
+                }
             }
+        }
+
+        private void BackgroundWorkProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            OnEngineStatus?.Invoke(e.ProgressPercentage == 1 ? Player.One : Player.Two, e.UserState as EngineStatus);
+        }
+
+        private void Status_OnStatusOne(object sender, EngineStatus e)
+        {
+            _worker.ReportProgress(1, e);
+        }
+
+        private void Status_OnStatusTwo(object sender, EngineStatus e)
+        {
+            _worker.ReportProgress(2, e);
         }
 
         public void MakeMove(int tileIndex)

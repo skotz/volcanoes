@@ -52,8 +52,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EngineOutputForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EngineOutputForm.Designer.cs">
+      <DependentUpon>EngineOutputForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Engine\BarricadeEngine.cs" />
     <Compile Include="Engine\BeeLineEngine.cs" />
+    <Compile Include="Engine\EngineStatus.cs" />
+    <Compile Include="Engine\IStatus.cs" />
     <Compile Include="Engine\MonteCarloTreeSearchEngine.cs" />
     <Compile Include="Engine\MonteCarloTwoEngine.cs" />
     <Compile Include="Engine\MonteCarloBeelineEngine.cs" />
@@ -115,6 +123,9 @@
     <Compile Include="TournamentForm.Designer.cs">
       <DependentUpon>TournamentForm.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="EngineOutputForm.resx">
+      <DependentUpon>EngineOutputForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GameForm.resx">
       <DependentUpon>GameForm.cs</DependentUpon>
     </EmbeddedResource>
