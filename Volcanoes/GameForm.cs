@@ -48,6 +48,7 @@ namespace Volcano
             engines.Add<DeepBeelineEngine>("Deep Beeline");
             engines.Add<BarricadeEngine>("Barricade");
             engines.Add<MonteCarloBeelineEngine>("Monte Carlo Beeline");
+            engines.Add<MonteCarloTwoEngine>("Monte Carlo Two");
 
             cbPlayerOne.Items.Add("Human");
             cbPlayerTwo.Items.Add("Human");

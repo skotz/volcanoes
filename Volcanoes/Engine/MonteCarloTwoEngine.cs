@@ -9,7 +9,7 @@ using Volcano.Search;
 
 namespace Volcano.Engine
 {
-    class MonteCarloBeelineEngine : IEngine
+    class MonteCarloTwoEngine : IEngine
     {
         private long evaluations;
 
@@ -17,17 +17,22 @@ namespace Volcano.Engine
         private int _maxTilesToPick;
         private bool _randomBlitz;
 
+        private int _pruningLayers = 2;
+        private int _pruningIterations = 3;
+        private int _pruningDivisor = 4;
+        private int _pruningDepthPerIteration = 2;
+
         private Random random = new Random();
-        private PathFinder pathFinder = new WeightedNonEnemyPathFinder();
+        private PathFinder pathFinder = new WeightedNonEnemyPathFinder();        
         private EngineCancellationToken cancellationToken;
 
-        public MonteCarloBeelineEngine()
+        public MonteCarloTwoEngine()
             : this(2, 100, true)
         {
             // (4, 5, true)
         }
 
-        public MonteCarloBeelineEngine(int initialDepth, int maxTilesPerDepth, bool randomBlitz)
+        public MonteCarloTwoEngine(int initialDepth, int maxTilesPerDepth, bool randomBlitz)
         {
             _initialDepth = initialDepth;
             _maxTilesToPick = maxTilesPerDepth;
@@ -41,7 +46,7 @@ namespace Volcano.Engine
 
             cancellationToken = token;
 
-            var result = MonteCarlo(state, _initialDepth);
+            var result = MonteCarlo(state, _initialDepth, 0);
 
             result.Result.Evaluations = evaluations;
             result.Result.Milliseconds = timer.ElapsedMilliseconds;
@@ -52,7 +57,7 @@ namespace Volcano.Engine
         private MonteCarloResult Blitz(Board position)
         {
             evaluations++;
-
+            
             // Play the game out and determine the winner
             while (position.Winner == Player.Empty && position.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns)
             {
@@ -219,19 +224,19 @@ namespace Volcano.Engine
             return moves;
         }
 
-        private MonteCarloResult MonteCarlo(Board position, int depth)
+        private MonteCarloResult MonteCarlo(Board position, int depth, int extraDepth)
         {
             // We've been told to cancel our search
             if (cancellationToken.Cancelled)
             {
-                return new MonteCarloResult();
+                return new MonteCarloResult();   
             }
 
             // We've reached the depth of our search, so blitz out the rest of the game and see who wins
-            if (depth <= 0)
+            if (depth + extraDepth <= 0)
             {
                 return Blitz(position);
-            }
+            }            
 
             List<Move> moves = GetFilteredMoves(position);
 
@@ -249,28 +254,48 @@ namespace Volcano.Engine
                 }
             };
 
-            foreach (Move move in moves)
+            bool pruned = true;
+            int pruningIterations = depth > _initialDepth - _pruningLayers ? _pruningIterations : 1;
+            for (int prune = 0; prune < pruningIterations && moves.Count > 0 && pruned; prune++)
             {
-                // Copy the board and make a move
-                Board copy = new Board(position);
-                copy.MakeMove(move, false, true);
-
-                // Recursively make the opponent's moves
-                MonteCarloResult counterMoveResult = MonteCarlo(copy, depth - 1);
-
-                best.PlayerOneWins += counterMoveResult.PlayerOneWins;
-                best.PlayerTwoWins += counterMoveResult.PlayerTwoWins;
-
-                if (position.Player == Player.One && counterMoveResult.PlayerOneScore > best.Result.Score)
+                foreach (Move move in moves)
                 {
-                    best.Result.Score = counterMoveResult.PlayerOneScore;
-                    best.Result.BestMove = move;
+                    // Copy the board and make a move
+                    Board copy = new Board(position);
+                    copy.MakeMove(move, false, true);
+
+                    // Recursively make the opponent's moves
+                    MonteCarloResult counterMoveResult = MonteCarlo(copy, depth - 1, prune * _pruningDepthPerIteration);
+
+                    best.PlayerOneWins += counterMoveResult.PlayerOneWins;
+                    best.PlayerTwoWins += counterMoveResult.PlayerTwoWins;
+
+                    move.Evaluation = position.Player == Player.One ? counterMoveResult.PlayerOneScore : counterMoveResult.PlayerTwoScore;
+
+                    if (position.Player == Player.One && counterMoveResult.PlayerOneScore > best.Result.Score)
+                    {
+                        best.Result.Score = counterMoveResult.PlayerOneScore;
+                        best.Result.BestMove = move;
+                    }
+
+                    if (position.Player == Player.Two && counterMoveResult.PlayerTwoScore > best.Result.Score)
+                    {
+                        best.Result.Score = counterMoveResult.PlayerTwoScore;
+                        best.Result.BestMove = move;
+                    }
                 }
 
-                if (position.Player == Player.Two && counterMoveResult.PlayerTwoScore > best.Result.Score)
+                // Remove the worst moves
+                pruned = false;
+                int newCount = moves.Count / _pruningDivisor;
+                if (newCount >= 2)
                 {
-                    best.Result.Score = counterMoveResult.PlayerTwoScore;
-                    best.Result.BestMove = move;
+                    moves.Sort((c, n) => n.Evaluation.CompareTo(c.Evaluation));
+                    for (int i = moves.Count - 1; i > newCount; i--)
+                    {
+                        moves.RemoveAt(i);
+                        pruned = true;
+                    }
                 }
             }
 
@@ -292,7 +317,7 @@ namespace Volcano.Engine
                 {
                     if (PlayerOneWins + PlayerTwoWins > 0)
                     {
-                        return (int)(PlayerOneWins * factor / (PlayerOneWins + PlayerTwoWins));
+                        return (int)((PlayerOneWins - PlayerTwoWins) * factor / (PlayerOneWins + PlayerTwoWins));
                     }
 
                     return 0;
@@ -305,7 +330,7 @@ namespace Volcano.Engine
                 {
                     if (PlayerOneWins + PlayerTwoWins > 0)
                     {
-                        return (int)(PlayerTwoWins * factor / (PlayerOneWins + PlayerTwoWins));
+                        return (int)((PlayerTwoWins - PlayerOneWins) * factor / (PlayerOneWins + PlayerTwoWins));
                     }
 
                     return 0;

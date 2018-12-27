@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="Engine\BarricadeEngine.cs" />
     <Compile Include="Engine\BeeLineEngine.cs" />
+    <Compile Include="Engine\MonteCarloTwoEngine.cs" />
     <Compile Include="Engine\MonteCarloBeelineEngine.cs" />
     <Compile Include="Engine\EngineCancellationToken.cs" />
     <Compile Include="Engine\EngineMove.cs" />
