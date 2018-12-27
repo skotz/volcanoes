@@ -123,7 +123,7 @@ namespace Volcano.Game
             int phases = 100;
             bool done = false;
             Eruptions = new List<int>();
-            while (!done && phases > 0)
+            while (!done && phases-- > 0)
             {
                 // Phase one: get a list of deltas from eruptions
                 int[] oneDeltas = new int[80];
@@ -230,7 +230,6 @@ namespace Volcano.Game
                         if (Tiles[i].Value >= VolcanoGame.Settings.MaxVolcanoLevel)
                         {
                             done = false;
-                            phases--;
                         }
                     }
                 }

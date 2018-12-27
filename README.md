@@ -31,6 +31,6 @@ This cycle repeats until a player wins by successfully connecting a pair of anti
 ## Engines
 Several computer AIs are included with Volcanoes. Here are the current rankings.
 
-![Board Concept](Concept/z-history-20181226.png)
+![Board Concept](Concept/z-history-20181227.png)
 
 Our goal is to learn strategies for this game through the analysis of games played by computer AIs.
