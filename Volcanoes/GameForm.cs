@@ -49,7 +49,7 @@ namespace Volcano
             engines.Add<BeeLineEngine>("Bee Line");
             engines.Add<DeepBeelineEngine>("Deep Beeline");
             engines.Add<BarricadeEngine>("Barricade");
-            engines.Add<MonteCarloBeelineEngine>("Monte Carlo Beeline");
+            engines.Add<MonteCarloBeelineEngine>("Monte Carlo Beeline 1");
             engines.Add<MonteCarloTwoEngine>("Monte Carlo Beeline 2");
             engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
             engines.Add<MonteCarloBeelineThreeEngine>("Monte Carlo Beeline 3");

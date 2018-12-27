@@ -100,7 +100,7 @@ namespace Volcano.Engine
                         var c = child;
                         while (c != null && c.Move != null && c.Move.TileIndex >= 0 && c.Move.TileIndex < 80)
                         {
-                            pv += Constants.TileNames[c.Move.TileIndex] + " ";
+                            pv += Constants.TileNames[c.Move.TileIndex] + " (" + c.Wins + "/" + c.Visits + ")   ";
                             c = c.Children?.OrderBy(x => x.Visits)?.LastOrDefault();
                         }
                         status.Add(child?.Move?.TileIndex ?? 80, eval, pv);
