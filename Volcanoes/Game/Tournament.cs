@@ -191,11 +191,11 @@ namespace Volcano.Game
                     {
                         decimal wins = results.Where(x => x.PlayerOne == engine1 && x.PlayerTwo == engine2).Sum(x => x.PlayerOneScore) + results.Where(x => x.PlayerOne == engine2 && x.PlayerTwo == engine1).Sum(x => x.PlayerTwoScore);
                         score += wins;
-                        line.Data.Add(engine2, wins.ToString());
+                        line.Data.Add(engine2, wins);
                     }
                     else
                     {
-                        line.Data.Add(engine2, "");
+                        line.Data.Add(engine2, -1);
                     }
                 }
                 decimal total = results.Where(x => x.PlayerOne == engine1 || x.PlayerTwo == engine1).Count();
@@ -205,20 +205,39 @@ namespace Volcano.Game
                 lines.Add(line);
             }
 
-            lines.Sort((c, n) => n.Score.CompareTo(c.Score));
+            lines.Sort((c, n) => n.Sort.CompareTo(c.Sort));
+
+            List<string> names = new List<string>();
+            for (int i = 0; i < lines.Count; i++)
+            {
+                lines[i].CrossTableName = (i + 1) + ". " + lines[i].Name;
+                names.Add((i + 1).ToString());
+
+                lines[i].NeustadtlScore = 0m;
+                foreach (var opponent in lines)
+                {
+                    if (opponent.Name != lines[i].Name)
+                    {
+                        lines[i].NeustadtlScore += opponent.TotalScore * lines[i].Data[opponent.Name];
+                    }
+                }
+            }
 
             using (StreamWriter w = new StreamWriter(_file))
             {
-                w.WriteLine("," + lines.Select(x => x.Name).Aggregate((c, n) => c + "," + n) + ",Wins,Percentage");
+                // cs = common score
+                // ns = neustadtl score (figures in strength of opposition)
+                w.WriteLine("," + names.Aggregate((c, n) => c + "," + n) + ",cs,ns");
                 foreach (var player in lines)
                 {
-                    w.Write(player.Name);
+                    w.Write(player.CrossTableName);
                     foreach (var opponent in lines)
                     {
-                        w.Write("," + player.Data[opponent.Name]);
+                        string val = player.Data[opponent.Name] >= 0 ? player.Data[opponent.Name].ToString() : "";
+                        w.Write("," + val);
                     }
                     w.Write(", " + player.TotalScore);
-                    w.Write(", " + player.TotalPercentage.ToString("0.00"));
+                    w.Write(", " + player.NeustadtlScore.ToString("0.00"));
                     w.WriteLine();
                 }
             }
@@ -316,14 +335,24 @@ namespace Volcano.Game
     class TournamentResultLine
     {
         public string Name { get; set; }
-        public Dictionary<string, string> Data { get; set; }
+        public string CrossTableName { get; set; }
+        public Dictionary<string, decimal> Data { get; set; }
         public decimal Score { get; set; }
         public decimal TotalScore { get; set; }
         public decimal TotalPercentage { get; set; }
+        public decimal NeustadtlScore { get; set; }
+
+        public decimal Sort
+        {
+            get
+            {
+                return Score * 100000 + NeustadtlScore;
+            }
+        }
 
         public TournamentResultLine()
         {
-            Data = new Dictionary<string, string>();
+            Data = new Dictionary<string, decimal>();
         }
     }
 }
