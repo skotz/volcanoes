@@ -11,6 +11,7 @@ namespace Volcano.Game
         None,
         AntipodePathCreation,
         OpponentResignation,
-        ArenaAdjudication
+        ArenaAdjudication,
+        InfiniteEruption
     }
 }

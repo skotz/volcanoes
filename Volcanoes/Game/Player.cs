@@ -10,6 +10,7 @@ namespace Volcano.Game
     {
         One,
         Two,
-        Empty
+        Empty,
+        Draw
     }
 }

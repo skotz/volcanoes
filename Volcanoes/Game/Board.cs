@@ -98,7 +98,7 @@ namespace Volcano.Game
 
             ProcessEruptions();
 
-            if (checkForWin)
+            if (Winner == Player.Empty && checkForWin)
             {
                 SearchForWin();
             }
@@ -120,8 +120,10 @@ namespace Volcano.Game
 
         private void ProcessEruptions()
         {
+            int phases = 100;
             bool done = false;
-            while (!done)
+            Eruptions = new List<int>();
+            while (!done && phases > 0)
             {
                 // Phase one: get a list of deltas from eruptions
                 int[] oneDeltas = new int[80];
@@ -228,9 +230,17 @@ namespace Volcano.Game
                         if (Tiles[i].Value >= VolcanoGame.Settings.MaxVolcanoLevel)
                         {
                             done = false;
+                            phases--;
                         }
                     }
                 }
+            }
+
+            // If we're caught in an infinite loop of volcano eruptions, call the game a draw
+            if (phases <= 0)
+            {
+                Winner = Player.Draw;
+                WinningPath = new List<int>();
             }
         }
 

@@ -53,8 +53,9 @@ namespace Volcano.Engine
         private Move MonteCarloTreeSearch(Board rootState)
         {
             var rootNode = new MonteCarloTreeSearchNode(rootState, GetMoves);
-            
-            for (int i = 0; i < maxIterations && !cancel.Cancelled; i++)
+            var forceWin = false;
+
+            for (int i = 0; i < maxIterations && !cancel.Cancelled && !forceWin; i++)
             {
                 var node = rootNode;
                 var state = new Board(rootState);
@@ -87,6 +88,16 @@ namespace Volcano.Engine
                 {
                     node.Update(state.Winner == node.LastToMove ? 1.0 : 0.0);
                     node = node.Parent;
+                }
+
+                // Cut Short
+                foreach (var child in rootNode.Children)
+                {
+                    // If we have a potential move that has a 100% win rate and it's been visited a lot of times, stop searching
+                    if (child.Visits > 500 && child.Wins == child.Visits)
+                    {
+                        forceWin = true;
+                    }
                 }
 
                 // Update Status

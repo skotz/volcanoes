@@ -44,20 +44,30 @@
             this.loadTranscriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fromFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fromStringToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.engineToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.selfPlayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.outputWindowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tournamentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newTournamentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.dEBUGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stressTestPathSearchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stressTestEngineSearchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            this.exportRulesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.resetRulesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btnNewGame = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
             this.cbPlayerOne = new System.Windows.Forms.ToolStripComboBox();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabel2 = new System.Windows.Forms.ToolStripLabel();
             this.cbPlayerTwo = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripLabel3 = new System.Windows.Forms.ToolStripLabel();
+            this.cbSeconds = new System.Windows.Forms.ToolStripComboBox();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.chkHighlightLastMove = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.btnNavStart = new System.Windows.Forms.ToolStripButton();
@@ -67,16 +77,6 @@
             this.btnNavEnd = new System.Windows.Forms.ToolStripButton();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.engineToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.selfPlayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.outputWindowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.exportRulesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.resetRulesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.cbSeconds = new System.Windows.Forms.ToolStripComboBox();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripLabel3 = new System.Windows.Forms.ToolStripLabel();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -177,19 +177,19 @@
             // 
             this.newGameToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("newGameToolStripMenuItem.Image")));
             this.newGameToolStripMenuItem.Name = "newGameToolStripMenuItem";
-            this.newGameToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.newGameToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.newGameToolStripMenuItem.Text = "&New Game";
             this.newGameToolStripMenuItem.Click += new System.EventHandler(this.btnNewGame_Click);
             // 
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator5.Size = new System.Drawing.Size(152, 6);
             // 
             // saveGameToolStripMenuItem
             // 
             this.saveGameToolStripMenuItem.Name = "saveGameToolStripMenuItem";
-            this.saveGameToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.saveGameToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.saveGameToolStripMenuItem.Text = "&Save Transcript";
             this.saveGameToolStripMenuItem.Click += new System.EventHandler(this.saveGameToolStripMenuItem_Click);
             // 
@@ -199,7 +199,7 @@
             this.fromFileToolStripMenuItem,
             this.fromStringToolStripMenuItem});
             this.loadTranscriptToolStripMenuItem.Name = "loadTranscriptToolStripMenuItem";
-            this.loadTranscriptToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.loadTranscriptToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.loadTranscriptToolStripMenuItem.Text = "&Load Transcript";
             // 
             // fromFileToolStripMenuItem
@@ -216,6 +216,29 @@
             this.fromStringToolStripMenuItem.Text = "From &Clipboard";
             this.fromStringToolStripMenuItem.Click += new System.EventHandler(this.fromStringToolStripMenuItem_Click);
             // 
+            // engineToolStripMenuItem
+            // 
+            this.engineToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.selfPlayToolStripMenuItem,
+            this.outputWindowToolStripMenuItem});
+            this.engineToolStripMenuItem.Name = "engineToolStripMenuItem";
+            this.engineToolStripMenuItem.Size = new System.Drawing.Size(55, 20);
+            this.engineToolStripMenuItem.Text = "&Engine";
+            // 
+            // selfPlayToolStripMenuItem
+            // 
+            this.selfPlayToolStripMenuItem.Name = "selfPlayToolStripMenuItem";
+            this.selfPlayToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.selfPlayToolStripMenuItem.Text = "Self &Play";
+            this.selfPlayToolStripMenuItem.Click += new System.EventHandler(this.selfPlayToolStripMenuItem_Click_1);
+            // 
+            // outputWindowToolStripMenuItem
+            // 
+            this.outputWindowToolStripMenuItem.Name = "outputWindowToolStripMenuItem";
+            this.outputWindowToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.outputWindowToolStripMenuItem.Text = "Output Window";
+            this.outputWindowToolStripMenuItem.Click += new System.EventHandler(this.outputWindowToolStripMenuItem_Click);
+            // 
             // tournamentToolStripMenuItem
             // 
             this.tournamentToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -227,7 +250,7 @@
             // newTournamentToolStripMenuItem
             // 
             this.newTournamentToolStripMenuItem.Name = "newTournamentToolStripMenuItem";
-            this.newTournamentToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.newTournamentToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
             this.newTournamentToolStripMenuItem.Text = "&New Tournament";
             this.newTournamentToolStripMenuItem.Click += new System.EventHandler(this.newTournamentToolStripMenuItem_Click);
             // 
@@ -264,6 +287,25 @@
             this.stressTestEngineSearchToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.stressTestEngineSearchToolStripMenuItem.Text = "Stress Test Engine Search";
             this.stressTestEngineSearchToolStripMenuItem.Click += new System.EventHandler(this.stressTestEngineSearchToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator7
+            // 
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            this.toolStripSeparator7.Size = new System.Drawing.Size(202, 6);
+            // 
+            // exportRulesToolStripMenuItem1
+            // 
+            this.exportRulesToolStripMenuItem1.Name = "exportRulesToolStripMenuItem1";
+            this.exportRulesToolStripMenuItem1.Size = new System.Drawing.Size(205, 22);
+            this.exportRulesToolStripMenuItem1.Text = "Export Rules";
+            this.exportRulesToolStripMenuItem1.Click += new System.EventHandler(this.exportRulesToolStripMenuItem_Click);
+            // 
+            // resetRulesToolStripMenuItem
+            // 
+            this.resetRulesToolStripMenuItem.Name = "resetRulesToolStripMenuItem";
+            this.resetRulesToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.resetRulesToolStripMenuItem.Text = "Reset Rules";
+            this.resetRulesToolStripMenuItem.Click += new System.EventHandler(this.importRulesToolStripMenuItem_Click);
             // 
             // toolStrip1
             // 
@@ -322,6 +364,11 @@
             this.cbPlayerOne.Name = "cbPlayerOne";
             this.cbPlayerOne.Size = new System.Drawing.Size(165, 25);
             // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            // 
             // toolStripLabel2
             // 
             this.toolStripLabel2.Name = "toolStripLabel2";
@@ -338,6 +385,31 @@
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
             this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
+            // 
+            // toolStripLabel3
+            // 
+            this.toolStripLabel3.Name = "toolStripLabel3";
+            this.toolStripLabel3.Size = new System.Drawing.Size(104, 22);
+            this.toolStripLabel3.Text = "Seconds Per Move";
+            // 
+            // cbSeconds
+            // 
+            this.cbSeconds.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbSeconds.Items.AddRange(new object[] {
+            "2",
+            "5",
+            "10",
+            "20",
+            "30",
+            "60",
+            "120"});
+            this.cbSeconds.Name = "cbSeconds";
+            this.cbSeconds.Size = new System.Drawing.Size(75, 25);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
             // 
             // chkHighlightLastMove
             // 
@@ -409,78 +481,6 @@
             // 
             this.openFileDialog1.Filter = "Volcanoes Game Transcript|*.vgt";
             // 
-            // engineToolStripMenuItem
-            // 
-            this.engineToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.selfPlayToolStripMenuItem,
-            this.outputWindowToolStripMenuItem});
-            this.engineToolStripMenuItem.Name = "engineToolStripMenuItem";
-            this.engineToolStripMenuItem.Size = new System.Drawing.Size(55, 20);
-            this.engineToolStripMenuItem.Text = "&Engine";
-            // 
-            // selfPlayToolStripMenuItem
-            // 
-            this.selfPlayToolStripMenuItem.Name = "selfPlayToolStripMenuItem";
-            this.selfPlayToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.selfPlayToolStripMenuItem.Text = "Self &Play";
-            this.selfPlayToolStripMenuItem.Click += new System.EventHandler(this.selfPlayToolStripMenuItem_Click_1);
-            // 
-            // outputWindowToolStripMenuItem
-            // 
-            this.outputWindowToolStripMenuItem.Name = "outputWindowToolStripMenuItem";
-            this.outputWindowToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.outputWindowToolStripMenuItem.Text = "Output Window";
-            this.outputWindowToolStripMenuItem.Click += new System.EventHandler(this.outputWindowToolStripMenuItem_Click);
-            // 
-            // exportRulesToolStripMenuItem1
-            // 
-            this.exportRulesToolStripMenuItem1.Name = "exportRulesToolStripMenuItem1";
-            this.exportRulesToolStripMenuItem1.Size = new System.Drawing.Size(205, 22);
-            this.exportRulesToolStripMenuItem1.Text = "Export Rules";
-            this.exportRulesToolStripMenuItem1.Click += new System.EventHandler(this.exportRulesToolStripMenuItem_Click);
-            // 
-            // resetRulesToolStripMenuItem
-            // 
-            this.resetRulesToolStripMenuItem.Name = "resetRulesToolStripMenuItem";
-            this.resetRulesToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
-            this.resetRulesToolStripMenuItem.Text = "Reset Rules";
-            this.resetRulesToolStripMenuItem.Click += new System.EventHandler(this.importRulesToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator7
-            // 
-            this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(202, 6);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
-            // 
-            // cbSeconds
-            // 
-            this.cbSeconds.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbSeconds.Items.AddRange(new object[] {
-            "2",
-            "5",
-            "10",
-            "20",
-            "30",
-            "60",
-            "120"});
-            this.cbSeconds.Name = "cbSeconds";
-            this.cbSeconds.Size = new System.Drawing.Size(75, 25);
-            // 
-            // toolStripSeparator3
-            // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
-            // 
-            // toolStripLabel3
-            // 
-            this.toolStripLabel3.Name = "toolStripLabel3";
-            this.toolStripLabel3.Size = new System.Drawing.Size(104, 22);
-            this.toolStripLabel3.Text = "Seconds Per Move";
-            // 
             // GameForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -492,6 +492,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "GameForm";
             this.Text = "Volcanoes";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.GameForm_FormClosing);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.GameForm_KeyDown);
             this.toolStripContainer1.BottomToolStripPanel.ResumeLayout(false);
             this.toolStripContainer1.BottomToolStripPanel.PerformLayout();

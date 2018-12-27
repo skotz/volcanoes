@@ -166,7 +166,7 @@ namespace Volcano.Game
 
                 if (CurrentState.State == GameState.GameOver)
                 {
-                    OnGameOver?.Invoke(CurrentState.Winner, VictoryType.AntipodePathCreation);
+                    OnGameOver?.Invoke(CurrentState.Winner, CurrentState.Winner == Player.Draw ? VictoryType.InfiniteEruption : VictoryType.AntipodePathCreation);
                 }
                 else
                 {
@@ -245,7 +245,7 @@ namespace Volcano.Game
 
                     if (CurrentState.State == GameState.GameOver)
                     {
-                        OnGameOver?.Invoke(CurrentState.Winner, VictoryType.AntipodePathCreation);
+                        OnGameOver?.Invoke(CurrentState.Winner, CurrentState.Winner == Player.Draw ? VictoryType.InfiniteEruption : VictoryType.AntipodePathCreation);
                     }
                     else
                     {

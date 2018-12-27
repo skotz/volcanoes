@@ -371,5 +371,17 @@ namespace Volcano
             outputForm = new EngineOutputForm(game);
             outputForm.Show();
         }
+
+        private void GameForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!newTournamentToolStripMenuItem.Enabled)
+            {
+                // I keep closing the game when a tournament is playing...
+                if (MessageBox.Show("Are you sure you want to end the tournament and exit?", "Volcanoes", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
+                {
+                    e.Cancel = true;
+                }
+            }
+        }
     }
 }
