@@ -57,8 +57,8 @@ namespace Volcano.Search
 
             // The set of currently discovered nodes that are not evaluated yet.
             // Initially, only the start node is known.
-            List<int> openSet = new List<int>();
-            openSet.Add(startingIndex);
+            Queue<int> openSet = new Queue<int>();
+            openSet.Enqueue(startingIndex);
 
             // For each node, which node it can most efficiently be reached from.
             // If a node can be reached from many nodes, cameFrom will eventually contain the
@@ -91,7 +91,7 @@ namespace Volcano.Search
             while (openSet.Count > 0)
             {
                 // Get the next item in the open set with the lowest fScore
-                int current = openSet[0];
+                int current = openSet.Dequeue();
                 //int best = fScore[current];
                 //foreach (int i in openSet)
                 //{
@@ -127,7 +127,7 @@ namespace Volcano.Search
                     }
                 }
 
-                openSet.Remove(current);
+                //openSet.Remove(current);
                 closedSet[current] = true;
 
                 foreach (int neighbor in GetNeighborTiles(state, current))
@@ -149,7 +149,7 @@ namespace Volcano.Search
                     // Discover a new node
                     if (!openSet.Contains(neighbor))
                     {
-                        openSet.Add(neighbor);
+                        openSet.Enqueue(neighbor);
                     }
                     else if (tentative_gScore >= gScore[neighbor])
                     {

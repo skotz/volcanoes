@@ -323,6 +323,12 @@ namespace Volcano.Game
                 paths[i] = pathFinder.FindPath(board, i, Antipodes[i]).Path.ToArray();
             }
 
+            if (paths.Any(x => x.Length != 12))
+            {
+                // To prevent me from messing up the path finding algorithm...
+                throw new Exception("Path finder distances are incorrect!");
+            }
+
             return paths;
         }
 
