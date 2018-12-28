@@ -203,7 +203,11 @@ namespace Volcano.Interface
                     g2.DrawString("Turn " + gameState.Turn, new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(5, 5));
                     if (gameState.State == GameState.GameOver)
                     {
-                        g2.DrawString("Game Over!", new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(5, 25));
+                        playerColor = gameState.Winner == Player.One ? _settings.PlayerOneVolcanoTileColor : _settings.PlayerTwoVolcanoTileColor;
+                        string gameOver = "Game Over!";
+                        Font f = new Font("Tahoma", 12f, FontStyle.Bold);
+                        SizeF size = g.MeasureString(gameOver, f);
+                        g2.DrawString(gameOver, f, new SolidBrush(playerColor), new Point(_panel.Width - (int)size.Width - 5, 5));
                     }
                     g2.DrawString(game.NodesPerSecond.ToString() + " NPS", new Font("Tahoma", 12f, FontStyle.Bold), Brushes.Gray, new Point(5, _panel.Height - 25));
 
