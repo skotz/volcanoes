@@ -82,7 +82,7 @@ namespace Volcano.Game
                             if (Constants.TileIndexes.ContainsKey(move))
                             {
                                 int index = Constants.TileIndexes[move];
-                                if (index != 80)
+                                if (index != Constants.AllGrowMove)
                                 {
                                     MakeMove(index);
                                 }
@@ -106,7 +106,7 @@ namespace Volcano.Game
             Board board = new Board();
             for (int i = 0; i < Math.Min(turn, MoveHistory.Count); i++)
             {
-                board.MakeMove(new Move(MoveHistory[i], MoveHistory[i] != 80 ? MoveType.SingleGrow : MoveType.AllGrow), true, false);
+                board.MakeMove(MoveHistory[i], true, false);
             }
             return board;
         }
@@ -150,17 +150,16 @@ namespace Volcano.Game
             _worker.ReportProgress(2, e);
         }
 
-        public void MakeMove(int tileIndex)
+        public void MakeMove(int move)
         {
-            Move move = new Move(tileIndex, MoveType.SingleGrow);
             if (CurrentState.IsValidMove(move))
             {
                 bool growthHappened = CurrentState.MakeMove(move);
 
-                MoveHistory.Add(move.TileIndex);
+                MoveHistory.Add(move);
                 if (growthHappened)
                 {
-                    MoveHistory.Add(80);
+                    MoveHistory.Add(Constants.AllGrowMove);
                 }
                 OnMoveMade?.Invoke(growthHappened);
 
@@ -232,14 +231,14 @@ namespace Volcano.Game
             {
                 _lastSearch = (SearchResult)e.Result;
 
-                if (_lastSearch.BestMove != null && CurrentState.IsValidMove(_lastSearch.BestMove))
+                if (_lastSearch.BestMove >= 0 && CurrentState.IsValidMove(_lastSearch.BestMove))
                 {
                     bool growthHappened = CurrentState.MakeMove(_lastSearch.BestMove);
 
-                    MoveHistory.Add(_lastSearch.BestMove.TileIndex);
+                    MoveHistory.Add(_lastSearch.BestMove);
                     if (growthHappened)
                     {
-                        MoveHistory.Add(80);
+                        MoveHistory.Add(Constants.AllGrowMove);
                     }
                     OnMoveMade?.Invoke(growthHappened);
 

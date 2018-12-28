@@ -56,7 +56,7 @@ namespace Volcano.Engine
             // Play the game out and determine the winner
             while (position.Winner == Player.Empty && position.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns)
             {
-                List<Move> moves = position.GetMoves();
+                List<int> moves = position.GetMoves();
 
                 if (_randomBlitz)
                 {
@@ -88,7 +88,7 @@ namespace Volcano.Engine
                         {
                             if (position.Tiles[i].Owner == Player.Empty)
                             {
-                                position.MakeMove(moves.Where(x => x.TileIndex == i).FirstOrDefault());
+                                position.MakeMove(i);
                                 played = true;
                                 break;
                             }
@@ -110,10 +110,10 @@ namespace Volcano.Engine
             };
         }
 
-        private List<Move> GetFilteredMoves(Board position)
+        private List<int> GetFilteredMoves(Board position)
         {
             // Get all non-volcano moves
-            List<Move> allMoves = position.GetMoves(true, true, true, VolcanoGame.Settings.MaxMagmaChamberLevel + 1);
+            List<int> allMoves = position.GetMoves(true, true, true, VolcanoGame.Settings.MaxMagmaChamberLevel + 1);
             if (allMoves.Count == 0)
             {
                 // Get all available moves without condition
@@ -124,7 +124,7 @@ namespace Volcano.Engine
                 // There are no valid moves
                 return allMoves;
             }
-            if (allMoves[0].MoveType == MoveType.AllGrow)
+            if (allMoves[0] == Constants.AllGrowMove)
             {
                 // It's a growth phase, so don't wast time
                 return allMoves;
@@ -149,7 +149,7 @@ namespace Volcano.Engine
             PathResult best = paths.Where(x => x != null && x.Distance != 0).OrderBy(x => x.Distance).FirstOrDefault();
             PathResult bestEnemy = enemyPaths.Where(x => x != null && x.Distance != 0).OrderBy(x => x.Distance).FirstOrDefault();
 
-            List<Move> moves = new List<Move>();
+            List<int> moves = new List<int>();
             if (best != null)
             {
                 // Create a list of moves that are on the ideal path
@@ -157,10 +157,9 @@ namespace Volcano.Engine
                 {
                     if (position.Tiles[i].Owner == Player.Empty)
                     {
-                        Move move = allMoves.Where(x => x.TileIndex == i).FirstOrDefault();
-                        if (move != null)
+                        if (allMoves.Contains(i))
                         {
-                            moves.Add(move);
+                            moves.Add(i);
                         }
                     }
                 }
@@ -172,10 +171,9 @@ namespace Volcano.Engine
                     {
                         if (position.Tiles[i].Owner == Player.Empty)
                         {
-                            Move move = allMoves.Where(x => x.TileIndex == i).FirstOrDefault();
-                            if (move != null)
+                            if (allMoves.Contains(i))
                             {
-                                moves.Insert(0, move);
+                                moves.Insert(0, i);
                             }
                         }
                     }
@@ -188,10 +186,9 @@ namespace Volcano.Engine
                     {
                         if (position.Tiles[i].Owner == position.Player && position.Tiles[i].Value <= VolcanoGame.Settings.MaxMagmaChamberLevel)
                         {
-                            Move move = allMoves.Where(x => x.TileIndex == i).FirstOrDefault();
-                            if (move != null)
+                            if (allMoves.Contains(i))
                             {
-                                moves.Add(move);
+                                moves.Add(i);
                             }
                         }
                     }
@@ -233,7 +230,7 @@ namespace Volcano.Engine
                 return Blitz(position);
             }
 
-            List<Move> moves = GetFilteredMoves(position);
+            List<int> moves = GetFilteredMoves(position);
 
             // If we have no moves, return the evaluation of the position
             if (moves.Count == 0)
@@ -249,7 +246,7 @@ namespace Volcano.Engine
                 }
             };
 
-            foreach (Move move in moves)
+            foreach (int move in moves)
             {
                 // Copy the board and make a move
                 Board copy = new Board(position);

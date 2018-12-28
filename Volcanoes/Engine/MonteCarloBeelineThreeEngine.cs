@@ -13,10 +13,10 @@ namespace Volcano.Engine
     {
         private PathFinder pathFinder = new WeightedNonEnemyPathFinder();
 
-        protected override List<Move> GetMoves(Board position)
+        protected override List<int> GetMoves(Board position)
         {
             // Get all non-volcano moves
-            List<Move> allMoves = position.GetMoves(true, true, true, VolcanoGame.Settings.MaxMagmaChamberLevel + 1);
+            List<int> allMoves = position.GetMoves(true, true, true, VolcanoGame.Settings.MaxMagmaChamberLevel + 1);
             if (allMoves.Count == 0)
             {
                 // Get all available moves without condition
@@ -27,7 +27,7 @@ namespace Volcano.Engine
                 // There are no valid moves
                 return allMoves;
             }
-            if (allMoves[0].MoveType == MoveType.AllGrow)
+            if (allMoves[0] == Constants.AllGrowMove)
             {
                 // It's a growth phase, so don't wast time
                 return allMoves;
@@ -52,7 +52,7 @@ namespace Volcano.Engine
             PathResult best = paths.Where(x => x != null && x.Distance != 0).OrderBy(x => x.Distance).FirstOrDefault();
             PathResult bestEnemy = enemyPaths.Where(x => x != null && x.Distance != 0).OrderBy(x => x.Distance).FirstOrDefault();
 
-            List<Move> moves = new List<Move>();
+            List<int> moves = new List<int>();
             if (best != null)
             {
                 // Create a list of moves that are on the ideal path
@@ -60,10 +60,9 @@ namespace Volcano.Engine
                 {
                     if (position.Tiles[i].Owner == Player.Empty)
                     {
-                        Move move = allMoves.Where(x => x.TileIndex == i).FirstOrDefault();
-                        if (move != null)
+                        if (allMoves.Contains(i))
                         {
-                            moves.Add(move);
+                            moves.Add(i);
                         }
                     }
                 }
@@ -75,10 +74,9 @@ namespace Volcano.Engine
                     {
                         if (position.Tiles[i].Owner == Player.Empty)
                         {
-                            Move move = allMoves.Where(x => x.TileIndex == i).FirstOrDefault();
-                            if (move != null)
+                            if (allMoves.Contains(i))
                             {
-                                moves.Insert(0, move);
+                                moves.Insert(0, i);
                             }
                         }
                     }
@@ -91,10 +89,9 @@ namespace Volcano.Engine
                     {
                         if (position.Tiles[i].Owner == position.Player && position.Tiles[i].Value <= VolcanoGame.Settings.MaxMagmaChamberLevel)
                         {
-                            Move move = allMoves.Where(x => x.TileIndex == i).FirstOrDefault();
-                            if (move != null)
+                            if (allMoves.Contains(i))
                             {
-                                moves.Add(move);
+                                moves.Add(i);
                             }
                         }
                     }

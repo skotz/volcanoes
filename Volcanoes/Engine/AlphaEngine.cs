@@ -13,8 +13,8 @@ namespace Volcano.Engine
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
-            List<Move> moves = state.GetMoves();
-            List<Move> alphaMoves = moves.Where(x => Constants.TileNames[x.TileIndex].EndsWith("A")).ToList();
+            List<int> moves = state.GetMoves();
+            List<int> alphaMoves = moves.Where(x => Constants.TileNames[x].EndsWith("A")).ToList();
 
             if (alphaMoves.Count > 0)
             {

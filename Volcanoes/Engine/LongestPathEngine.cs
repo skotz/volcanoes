@@ -31,19 +31,19 @@ namespace Volcano.Engine
             Player player = state.Player;
 
             // Get a list of all possible moves, randomly shuffled
-            List<Move> moves = Shuffle(state.GetMoves());
+            List<int> moves = Shuffle(state.GetMoves());
 
-            foreach (Move move in moves)
+            foreach (int move in moves)
             {
                 Board copy = new Board(state);
                 copy.MakeMove(move);
 
-                move.Evaluation = EvaluateLongestPath(copy, player, move.TileIndex);
+                var eval = EvaluateLongestPath(copy, player, move);
 
-                if (move.Evaluation > result.Score)
+                if (eval > result.Score)
                 {
                     result.BestMove = move;
-                    result.Score = move.Evaluation;
+                    result.Score = eval;
                 }
             }
 
@@ -88,7 +88,7 @@ namespace Volcano.Engine
 
         private static Random random = new Random();
 
-        private List<Move> Shuffle(List<Move> list)
+        private List<int> Shuffle(List<int> list)
         {
             int n = list.Count;
 
@@ -96,7 +96,7 @@ namespace Volcano.Engine
             {
                 n--;
                 int k = random.Next(n + 1);
-                Move value = list[k];
+                int value = list[k];
                 list[k] = list[n];
                 list[n] = value;
             }

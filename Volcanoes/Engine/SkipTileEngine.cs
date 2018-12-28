@@ -36,7 +36,7 @@ namespace Volcano.Engine
                         }
                     }
 
-                    result.BestMove = new Move(i, MoveType.SingleGrow);
+                    result.BestMove = i;
 
                     // This tile is two steps away from one and only one of our other tiles, then it's an amazing move
                     if (neighbors.Count == 1)
@@ -46,13 +46,13 @@ namespace Volcano.Engine
                 }
             }
 
-            if (result.BestMove != null)
+            if (result.BestMove >= 0)
             {
                 return result;
             }
             else
             {
-                List<Move> moves = state.GetMoves();
+                List<int> moves = state.GetMoves();
                 result.BestMove = moves[random.Next(moves.Count)];
 
                 return result;

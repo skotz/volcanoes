@@ -337,16 +337,16 @@ namespace Volcano
 
         private void stressTestEngineSearchToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var runs = 1000;
+            var runs = 10;
             var evals = 0L;
             var timer = Stopwatch.StartNew();
             var game = new VolcanoGame();
             game.LoadTranscript("5A 13A G 8B 16A G 2B 15A G 17B 20C G 10B 16D G 18A 7A G 16A 17A G 4B 12C G 11C 10C G 9B 11D G 9A 12B G 13B");
-            var engine = new MonteCarloBeelineEngine();
+            var engine = new MonteCarloTreeSearchEngine();
 
             for (int i = 0; i < runs; i++)
             {
-                var best = engine.GetBestMove(game.CurrentState, 1000000, new EngineCancellationToken(() => false));
+                var best = engine.GetBestMove(game.CurrentState, 1, new EngineCancellationToken(() => false));
                 evals += best.Evaluations;
             }
 

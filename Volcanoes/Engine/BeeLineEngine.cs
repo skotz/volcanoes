@@ -18,7 +18,7 @@ namespace Volcano.Engine
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
-            List<Move> moves = state.GetMoves();
+            List<int> moves = state.GetMoves();
 
             // If we've played at lest once, find a suggested antipode path and try that
             if (bestPathStart >= 0)
@@ -32,11 +32,10 @@ namespace Volcano.Engine
                     {
                         if (state.Tiles[tile].Owner == state.Player || state.Tiles[tile].Owner == Player.Empty)
                         {
-                            Move move = moves.Where(x => x.TileIndex == tile && state.Tiles[x.TileIndex].Owner == Player.Empty).FirstOrDefault();
-                            if (move != null)
+                            if (moves.Any(x => x == tile && state.Tiles[x].Owner == Player.Empty))
                             {
                                 // Return the next move in the path to the antipode
-                                return new SearchResult(move);
+                                return new SearchResult(tile);
                             }
                         }
                         else
@@ -48,8 +47,8 @@ namespace Volcano.Engine
             }
 
             // If all else fails, pick a random move
-            Move best = moves[random.Next(moves.Count)];
-            bestPathStart = best.TileIndex;
+            int best = moves[random.Next(moves.Count)];
+            bestPathStart = best;
             return new SearchResult(best);
         }
 

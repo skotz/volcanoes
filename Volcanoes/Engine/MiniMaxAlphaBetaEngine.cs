@@ -92,7 +92,7 @@ namespace Volcano.Engine
                 Score = maximizingPlayer ? int.MinValue : int.MaxValue
             };
             
-            List<Move> moves = position.GetMoves();
+            List<int> moves = position.GetMoves();
 
             // Remove moves that aren't adjacent to an exiting tile
             for (int i = moves.Count - 1; i >= 0; i--)
@@ -128,7 +128,7 @@ namespace Volcano.Engine
                 };
             }
             
-            foreach (Move move in moves)
+            foreach (int move in moves)
             {
                 // Copy the board and make a move
                 Board copy = new Board(position);
@@ -137,8 +137,8 @@ namespace Volcano.Engine
                 // Find opponents best counter move
                 SearchResult child = AlphaBetaSearch(copy, depth - 1, alpha, beta);
 
-                // Store the evaluation
-                move.Evaluation = child.Score;
+                //// Store the evaluation
+                //move.Evaluation = child.Score;
 
                 if (maximizingPlayer)
                 {

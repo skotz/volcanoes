@@ -15,8 +15,8 @@ namespace Volcano.Engine
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
-            List<Move> moves = state.GetMoves();
-            Move best = null;
+            List<int> moves = state.GetMoves();
+            int best = -3;
 
             // For each tile we own, figure out how long it'll take to get to it's antipode
             PathResult[] selfPaths = new PathResult[80];
@@ -44,9 +44,9 @@ namespace Volcano.Engine
                     // If we're two moves ahead of our opponent, then run to the finish line
                     foreach (int tile in bestSelfPath.Path)
                     {
-                        if (state.Tiles[tile].Owner == Player.Empty)
+                        if (state.Tiles[tile].Owner == Player.Empty && moves.Contains(tile))
                         {
-                            best = moves.Where(x => x.TileIndex == tile).FirstOrDefault();
+                            best = tile;
                             break;
                         }
                     }
@@ -56,9 +56,9 @@ namespace Volcano.Engine
                     // Try to obstruct our opponent's path
                     foreach (int tile in bestEnemyPath.Path)
                     {
-                        if (state.Tiles[tile].Owner == Player.Empty)
+                        if (state.Tiles[tile].Owner == Player.Empty && moves.Contains(tile))
                         {
-                            best = moves.Where(x => x.TileIndex == tile).FirstOrDefault();
+                            best = tile;
                             break;
                         }
                     }
@@ -66,7 +66,7 @@ namespace Volcano.Engine
             }
 
             // When all else fails, pick a random move
-            if (best == null)
+            if (best < 0)
             {
                 best = moves[random.Next(moves.Count)];
             }

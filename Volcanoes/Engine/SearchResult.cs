@@ -17,7 +17,7 @@ namespace Volcano.Engine
 
         public decimal HashPercentage { get; set; }
 
-        public Move BestMove { get; set; }
+        public int BestMove { get; set; }
 
         public int NodesPerSecond
         {
@@ -34,9 +34,10 @@ namespace Volcano.Engine
 
         public SearchResult()
         {
+            BestMove = -3;
         }
 
-        public SearchResult(Move bestMove)
+        public SearchResult(int bestMove)
         {
             BestMove = bestMove;
         }

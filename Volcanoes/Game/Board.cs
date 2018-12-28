@@ -64,7 +64,7 @@ namespace Volcano.Game
         /// Make a given move on the board. 
         /// </summary>
         /// <param name="move"></param>
-        public bool MakeMove(Move move)
+        public bool MakeMove(int move)
         {
             return MakeMove(move, true, true);
         }
@@ -73,14 +73,9 @@ namespace Volcano.Game
         /// Make a given move on the board. 
         /// </summary>
         /// <param name="move"></param>
-        public bool MakeMove(Move move, bool checkForWin, bool autoGrow)
+        public bool MakeMove(int move, bool checkForWin, bool autoGrow)
         {
-            if (move == null)
-            {
-                return false;
-            }
-
-            if (move.MoveType == MoveType.AllGrow)
+            if (move == Constants.AllGrowMove)
             {
                 for (int i = 0; i < 80; i++)
                 {
@@ -90,10 +85,10 @@ namespace Volcano.Game
                     }
                 }
             }
-            else if (move.MoveType == MoveType.SingleGrow)
+            else
             {
-                Tiles[move.TileIndex].Owner = Player;
-                Tiles[move.TileIndex].Value += 1;
+                Tiles[move].Owner = Player;
+                Tiles[move].Value += 1;
             }
 
             ProcessEruptions();
@@ -110,7 +105,7 @@ namespace Volcano.Game
 
                 if (autoGrow && GetMoveTypeForTurn(Turn) == MoveType.AllGrow)
                 {
-                    MakeMove(new Move(-1, MoveType.AllGrow));
+                    MakeMove(Constants.AllGrowMove);
                     return true;
                 }
             }
@@ -264,7 +259,7 @@ namespace Volcano.Game
         /// Get a list of all valid moves for the current player on the current board state.
         /// </summary>
         /// <returns></returns>
-        public List<Move> GetMoves()
+        public List<int> GetMoves()
         {
             return GetMoves(true, true, true, VolcanoGame.Settings.MaxVolcanoLevel);
         }
@@ -273,14 +268,13 @@ namespace Volcano.Game
         /// Get a list of all valid moves for the current player on the current board state.
         /// </summary>
         /// <returns></returns>
-        public List<Move> GetMoves(bool growthMoves, bool expandMoves, bool captureMoves, int maxGrowthValue)
+        public List<int> GetMoves(bool growthMoves, bool expandMoves, bool captureMoves, int maxGrowthValue)
         {
-            List<Move> moves = new List<Move>();
-            Player opponent = Player == Player.One ? Player.Two : Player.One;
+            List<int> moves = new List<int>();
             
             if (GetMoveTypeForTurn(Turn) == MoveType.AllGrow)
             {
-                moves.Add(new Move(-1, MoveType.AllGrow));
+                moves.Add(Constants.AllGrowMove);
             }
             else
             {
@@ -289,23 +283,27 @@ namespace Volcano.Game
                     // Grow existing tiles
                     if (growthMoves && Tiles[i].Owner == Player && Tiles[i].Value < maxGrowthValue)
                     {
-                        moves.Add(new Move(i, MoveType.SingleGrow));
+                        moves.Add(i);
                     }
 
                     // Claim new tiles
                     if (expandMoves && Tiles[i].Owner == Player.Empty)
                     {
-                        moves.Add(new Move(i, MoveType.SingleGrow));
+                        moves.Add(i);
                     }
 
                     // Capture enemy tiles
-                    if (captureMoves && VolcanoGame.Settings.AllowMagmaChamberCaptures && Tiles[i].Owner == opponent && Tiles[i].Value <= VolcanoGame.Settings.MaxMagmaChamberLevel)
+                    if (captureMoves)
                     {
-                        moves.Add(new Move(i, MoveType.SingleGrow));
-                    }
-                    if (captureMoves && VolcanoGame.Settings.AllowVolcanoCaptures && Tiles[i].Owner == opponent && Tiles[i].Value > VolcanoGame.Settings.MaxMagmaChamberLevel)
-                    {
-                        moves.Add(new Move(i, MoveType.SingleGrow));
+                        Player opponent = Player == Player.One ? Player.Two : Player.One;
+                        if (VolcanoGame.Settings.AllowMagmaChamberCaptures && Tiles[i].Owner == opponent && Tiles[i].Value <= VolcanoGame.Settings.MaxMagmaChamberLevel)
+                        {
+                            moves.Add(i);
+                        }
+                        if (VolcanoGame.Settings.AllowVolcanoCaptures && Tiles[i].Owner == opponent && Tiles[i].Value > VolcanoGame.Settings.MaxMagmaChamberLevel)
+                        {
+                            moves.Add(i);
+                        }
                     }
                 }
             }
@@ -313,7 +311,7 @@ namespace Volcano.Game
             return moves;
         }
 
-        public bool IsValidMove(Move move)
+        public bool IsValidMove(int move)
         {
             return GetMoves().Any(x => x == move);
         }

@@ -19,7 +19,7 @@ namespace Volcano.Engine
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
-            List<Move> moves = state.GetMoves();
+            List<int> moves = state.GetMoves();
 
             // See if we have any pair of points that are antipodes connected by kitty corners
             List<int> antipodePath = new List<int>();
@@ -46,12 +46,12 @@ namespace Volcano.Engine
                     adjacentAntipodePath.AddRange(state.Tiles[i].AdjacentIndexes);
                 }
 
-                List<Move> antipodeSupport = moves.Where(x => adjacentAntipodePath.Contains(x.TileIndex) && state.Tiles[x.TileIndex].Owner == Player.Empty).ToList();
+                List<int> antipodeSupport = moves.Where(x => adjacentAntipodePath.Contains(x) && state.Tiles[x].Owner == Player.Empty).ToList();
 
                 if (antipodeSupport.Count > 0)
                 {
                     // There are no more antipode support tiles, so just buff the main path
-                    antipodeSupport = moves.Where(x => adjacentAntipodePath.Contains(x.TileIndex)).ToList();
+                    antipodeSupport = moves.Where(x => adjacentAntipodePath.Contains(x)).ToList();
                 }
 
                 if (antipodeSupport.Count > 0)
@@ -72,11 +72,10 @@ namespace Volcano.Engine
                         {
                             if (state.Tiles[tile].Owner == state.Player || state.Tiles[tile].Owner == Player.Empty)
                             {
-                                Move move = moves.Where(x => x.TileIndex == tile && state.Tiles[x.TileIndex].Owner == Player.Empty).FirstOrDefault();
-                                if (move != null)
+                                if (moves.Any(x => x == tile && state.Tiles[x].Owner == Player.Empty))
                                 {
                                     // Return the next move in the path to the antipode
-                                    return new SearchResult(move);
+                                    return new SearchResult(tile);
                                 }
                             }
                             else
@@ -88,18 +87,18 @@ namespace Volcano.Engine
                 }
 
                 // If we don't have an antipode path, continue connecting A tiles kitty corner until we do
-                List<Move> alphaMoves = moves.Where(x => Constants.TileNames[x.TileIndex].EndsWith("A")).ToList();
+                List<int> alphaMoves = moves.Where(x => Constants.TileNames[x].EndsWith("A")).ToList();
 
                 if (alphaMoves.Count > 0)
                 {
-                    List<Move> primaryKittyCornerMoves = new List<Move>();
-                    List<Move> kittyCornerMoves = new List<Move>();
-                    foreach (Move move in alphaMoves)
+                    List<int> primaryKittyCornerMoves = new List<int>();
+                    List<int> kittyCornerMoves = new List<int>();
+                    foreach (int move in alphaMoves)
                     {
-                        if (state.Tiles[move.TileIndex].Owner == Player.Empty)
+                        if (state.Tiles[move].Owner == Player.Empty)
                         {
                             int adjacentCount = 0;
-                            foreach (int i in state.Tiles[move.TileIndex].KittyCornerIndexes)
+                            foreach (int i in state.Tiles[move].KittyCornerIndexes)
                             {
                                 if (state.Tiles[i].Owner == state.Player)
                                 {
@@ -123,22 +122,22 @@ namespace Volcano.Engine
                     if (primaryKittyCornerMoves.Count > 0)
                     {
                         // Pick a random primary kitty corner move
-                        Move best = primaryKittyCornerMoves[random.Next(primaryKittyCornerMoves.Count)];
-                        bestPathStart = best.TileIndex;
+                        int best = primaryKittyCornerMoves[random.Next(primaryKittyCornerMoves.Count)];
+                        bestPathStart = best;
                         return new SearchResult(best);
                     }
                     else if (kittyCornerMoves.Count > 0)
                     {
                         // Pick a random kitty corner move
-                        Move best = kittyCornerMoves[random.Next(kittyCornerMoves.Count)];
-                        bestPathStart = best.TileIndex;
+                        int best = kittyCornerMoves[random.Next(kittyCornerMoves.Count)];
+                        bestPathStart = best;
                         return new SearchResult(best);
                     }
                     else
                     {
                         // Pick a random A tile
-                        Move best = alphaMoves[random.Next(alphaMoves.Count)];
-                        bestPathStart = best.TileIndex;
+                        int best = alphaMoves[random.Next(alphaMoves.Count)];
+                        bestPathStart = best;
                         return new SearchResult(best);
                     }
                 }

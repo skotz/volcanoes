@@ -35,7 +35,7 @@ namespace Volcano.Engine
 
             cancel = new EngineCancellationToken(() => token.Cancelled || timer.ElapsedMilliseconds >= maxSeconds * 1000 - bufferMilliseconds);
 
-            Move best = MonteCarloTreeSearch(state);
+            int best = MonteCarloTreeSearch(state);
 
             return new SearchResult
             {
@@ -45,12 +45,12 @@ namespace Volcano.Engine
             };
         }
         
-        protected virtual List<Move> GetMoves(Board state)
+        protected virtual List<int> GetMoves(Board state)
         {
             return state.GetMoves();
         }
 
-        private Move MonteCarloTreeSearch(Board rootState)
+        private int MonteCarloTreeSearch(Board rootState)
         {
             var rootNode = new MonteCarloTreeSearchNode(rootState, GetMoves);
             var forceWin = false;
@@ -109,12 +109,12 @@ namespace Volcano.Engine
                         double eval = Math.Round((child.Visits > 0 ? 200.0 * child.Wins / child.Visits : 0) - 100.0, 2);
                         string pv = "";
                         var c = child;
-                        while (c != null && c.Move != null && c.Move.TileIndex >= 0 && c.Move.TileIndex < 80)
+                        while (c != null && c.Move >= 0 && c.Move <= 80)
                         {
-                            pv += Constants.TileNames[c.Move.TileIndex] + " (" + c.Wins + "/" + c.Visits + ")   ";
+                            pv += Constants.TileNames[c.Move] + " (" + c.Wins + "/" + c.Visits + ")   ";
                             c = c.Children?.OrderBy(x => x.Visits)?.LastOrDefault();
                         }
-                        status.Add(child?.Move?.TileIndex ?? 80, eval, pv);
+                        status.Add(child?.Move ?? 80, eval, pv);
                     }
                     status.Sort();
                     OnStatus(this, status);
@@ -128,22 +128,22 @@ namespace Volcano.Engine
         class MonteCarloTreeSearchNode
         {
             private Board _state;
-            private Func<Board, List<Move>> _getMoves;
+            private Func<Board, List<int>> _getMoves;
 
             public double Wins;
             public double Visits;
             public MonteCarloTreeSearchNode Parent;
             public Player LastToMove;
-            public Move Move;
+            public int Move;
             public List<MonteCarloTreeSearchNode> Children;
-            public List<Move> Untried;
+            public List<int> Untried;
 
-            public MonteCarloTreeSearchNode(Board state, Func<Board, List<Move>> getMoves)
-                : this(state, null, null, getMoves)
+            public MonteCarloTreeSearchNode(Board state, Func<Board, List<int>> getMoves)
+                : this(state, -2, null, getMoves)
             {
             }
 
-            public MonteCarloTreeSearchNode(Board state, Move move, MonteCarloTreeSearchNode parent, Func<Board, List<Move>> getMoves)
+            public MonteCarloTreeSearchNode(Board state, int move, MonteCarloTreeSearchNode parent, Func<Board, List<int>> getMoves)
             {
                 _state = state;
                 _getMoves = getMoves;
@@ -162,7 +162,7 @@ namespace Volcano.Engine
                 }
                 else
                 {
-                    Untried = new List<Move>();
+                    Untried = new List<int>();
                 }
             }
 
@@ -171,7 +171,7 @@ namespace Volcano.Engine
                 return Children.OrderBy(x => UpperConfidenceBound(x)).LastOrDefault();
             }
 
-            public MonteCarloTreeSearchNode AddChild(Board state, Move move)
+            public MonteCarloTreeSearchNode AddChild(Board state, int move)
             {
                 var newNode = new MonteCarloTreeSearchNode(state, move, this, _getMoves);
                 Untried.Remove(move);

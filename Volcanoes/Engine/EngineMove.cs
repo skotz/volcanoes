@@ -10,10 +10,10 @@ namespace Volcano.Engine
 {
     class EngineMove
     {
-        public Move Move { get; set; }
+        public int Move { get; set; }
         public PathResult Path { get; set; }
 
-        public EngineMove(Move move, PathResult path)
+        public EngineMove(int move, PathResult path)
         {
             Move = move;
             Path = path;

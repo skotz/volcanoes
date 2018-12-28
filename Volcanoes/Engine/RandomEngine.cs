@@ -13,7 +13,7 @@ namespace Volcano.Engine
         
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
-            List<Move> moves = state.GetMoves();
+            List<int> moves = state.GetMoves();
             return new SearchResult
             {
                 BestMove = moves[_random.Next(moves.Count)]

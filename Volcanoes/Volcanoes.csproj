@@ -101,7 +101,6 @@
     <Compile Include="Game\TileType.cs" />
     <Compile Include="Game\Tournament.cs" />
     <Compile Include="Game\VolcanoGame.cs" />
-    <Compile Include="Game\Move.cs" />
     <Compile Include="Game\MoveType.cs" />
     <Compile Include="Game\Player.cs" />
     <Compile Include="Game\Tile.cs" />
