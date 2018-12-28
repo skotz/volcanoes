@@ -10,48 +10,36 @@ namespace Volcano.Game
     class Constants
     {
         public const int AllGrowMove = 80;
-
-        private static Lazy<int[][]> _connectingTiles = new Lazy<int[][]>(GetConnectingTiles);
-
-        private static Lazy<string[]> _tileNames = new Lazy<string[]>(GetTileNames);
-
-        private static Lazy<int[]> _antipodes = new Lazy<int[]>(GetAntipodes);
-
-        private static Lazy<int[][]> _kittyCornerTiles = new Lazy<int[][]>(GetKittyCornerTiles);
-
-        private static Lazy<int[][]> _fastestPaths = new Lazy<int[][]>(GetFastestPaths);
-
-        private static Lazy<Dictionary<string, int>> _reverseNameToIndex = new Lazy<Dictionary<string, int>>(GetTileIndexes);
-
+       
         /// <summary>
         /// An array mapping a source tile index to it's three connecting triangle indexes.
         /// E.G., ConnectingTiles[55] = { 33, 52, 74 } since tile 55 connects to tiles 33, 51, and 74.
         /// </summary>
-        public static int[][] ConnectingTiles { get { return _connectingTiles.Value; } }
+        public static int[][] ConnectingTiles = GetConnectingTiles();
 
         /// <summary>
         /// An array mapping a source tile index to it's tile name.
         /// E.G., TileNames[5] = "2A"
         /// </summary>
-        public static string[] TileNames { get { return _tileNames.Value; } }
+        public static string[] TileNames = GetTileNames();
 
         /// <summary>
         /// An array mapping a source tile to its antipodes (tile directly opposite on the 3D board shape).
         /// </summary>
-        public static int[] Antipodes { get { return _antipodes.Value; } }
+        public static int[] Antipodes = GetAntipodes();
 
         /// <summary>
         /// An array mapping a source tile index to it's three or four kitty corner tile indexes.
         /// NOTE: Currently there are only mappings for "A" tiles (not B, C, or D)
         /// </summary>
-        public static int[][] KittyCornerTiles { get { return _kittyCornerTiles.Value; } }
+        public static int[][] KittyCornerTiles = GetKittyCornerTiles();
 
         /// <summary>
         /// An array mapping a source tile index to a path to it's antipode.
         /// </summary>
-        public static int[][] FastestPaths { get { return _fastestPaths.Value; } }
+        public static int[][] FastestPaths = GetFastestPaths();
 
-        public static Dictionary<string, int> TileIndexes { get { return _reverseNameToIndex.Value; } }
+        public static Dictionary<string, int> TileIndexes = GetTileIndexes();
 
         private static int[][] GetConnectingTiles()
         {

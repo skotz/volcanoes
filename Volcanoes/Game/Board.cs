@@ -10,15 +10,14 @@ namespace Volcano.Game
 {
     class Board
     {
-        // TODO: tile state can be maintained in a simple list of 80 ints where positive numbers are for blue and negative numbers are for orange
-        public List<Tile> Tiles { get; private set; }
-        public Player Player { get; private set; }
-        public int Turn { get; private set; }
+        public List<Tile> Tiles;
+        public Player Player;
+        public int Turn;
 
-        public Player Winner { get; private set; }
-        public List<int> WinningPath { get; private set; }
+        public Player Winner;
+        public List<int> WinningPath;
 
-        public List<int> Eruptions { get; private set; }
+        //public List<int> Eruptions { get; private set; }
 
         private static PathFinder pathFinder = new PathFinder();
 
@@ -37,7 +36,7 @@ namespace Volcano.Game
             Tiles = new List<Tile>();
             Winner = Player.Empty;
             WinningPath = new List<int>();
-            Eruptions = new List<int>();
+            //Eruptions = new List<int>();
 
             for (int i = 0; i < 80; i++)
             {
@@ -57,7 +56,7 @@ namespace Volcano.Game
             Turn = copy.Turn;
             Winner = copy.Winner;
             WinningPath = copy.WinningPath;
-            Eruptions = new List<int>();
+            //Eruptions = new List<int>();
         }
 
         /// <summary>
@@ -117,7 +116,7 @@ namespace Volcano.Game
         {
             int phases = 100;
             bool done = false;
-            Eruptions = new List<int>();
+            //Eruptions = new List<int>();
             while (!done && phases-- > 0)
             {
                 // Phase one: get a list of deltas from eruptions
@@ -127,7 +126,7 @@ namespace Volcano.Game
                 {
                     if (Tiles[i].Value >= VolcanoGame.Settings.MaxVolcanoLevel)
                     {
-                        Eruptions.Add(i);
+                        //Eruptions.Add(i);
                         for (int adjacent = 0; adjacent < 3; adjacent++)
                         {
                             // Downgrade to a level one volcano
@@ -240,9 +239,13 @@ namespace Volcano.Game
 
         private void SearchForWin()
         {
-            for (int i = 0; i < 80; i++)
+            // We only need to cover the first 40 tiles since their antipodes cover the last 40
+            for (int i = 0; i < 40; i++)
             {
-                if (Tiles[i].Owner != Player.Empty && Tiles[Tiles[i].Antipode].Owner == Tiles[i].Owner && Tiles[i].Value > VolcanoGame.Settings.MaxMagmaChamberLevel)
+                if (Tiles[i].Owner != Player.Empty && 
+                    Tiles[Tiles[i].Antipode].Owner == Tiles[i].Owner && 
+                    Tiles[i].Value > VolcanoGame.Settings.MaxMagmaChamberLevel && 
+                    Tiles[Tiles[i].Antipode].Value > VolcanoGame.Settings.MaxMagmaChamberLevel)
                 {
                     List<int> path = pathFinder.FindPath(this, i, Tiles[i].Antipode).Path;
 
@@ -250,6 +253,7 @@ namespace Volcano.Game
                     {
                         Winner = Tiles[i].Owner;
                         WinningPath = path;
+                        return;
                     }
                 }
             }

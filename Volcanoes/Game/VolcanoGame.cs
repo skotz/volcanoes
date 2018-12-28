@@ -35,10 +35,7 @@ namespace Volcano.Game
 
         public int SecondsPerEngineMove { get; set; } = 10;
 
-        // DI? What's that...
-        private static Lazy<GameSettings> _settings = new Lazy<GameSettings>(() => GameSettings.LoadOrDefault("volcano.json"));
-
-        public static GameSettings Settings { get { return _settings.Value; } }
+        public static GameSettings Settings = GameSettings.LoadOrDefault("volcano.json");
 
         public VolcanoGame()
         {

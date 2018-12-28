@@ -8,9 +8,9 @@ namespace Volcano.Game
 {
     class Tile
     {
-        public Player Owner { get; set; }
-        public int Value { get; set; }
-        public int Index { get; set; }
+        public Player Owner;
+        public int Value;
+        public int Index;
 
         public string Name
         {

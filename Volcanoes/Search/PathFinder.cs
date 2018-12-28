@@ -15,7 +15,7 @@ namespace Volcano.Search
 
         protected virtual int[] GetNeighborTiles(Board state, int tileIndex)
         {
-            return state.Tiles[tileIndex].AdjacentIndexes;
+            return Constants.ConnectingTiles[tileIndex];
         }
 
         protected virtual bool IsTraversableTile(Board state, Player player, int tileIndex)
