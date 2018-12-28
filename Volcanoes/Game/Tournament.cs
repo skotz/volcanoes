@@ -19,6 +19,8 @@ namespace Volcano.Game
         private EngineHelper _engines;
         private List<string> _players;
 
+        int totalGames;
+
         private BackgroundWorker worker;
 
         public event TournamentOverHandler OnTournamentCompleted;
@@ -49,6 +51,8 @@ namespace Volcano.Game
         {
             if (!worker.IsBusy)
             {
+                totalGames = _rounds * _players.Count * (_players.Count - 1);
+                OnTournamentStatus?.Invoke(new TournamentStatus(0, totalGames));
                 worker.RunWorkerAsync();
             }
         }
@@ -59,7 +63,6 @@ namespace Volcano.Game
             List<TournamentResult> results = new List<TournamentResult>();
 
             int completedGames = 0;
-            int totalGames = _rounds * _players.Count * (_players.Count - 1);
 
             foreach (var engine1 in _players)
             {
