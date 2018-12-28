@@ -51,8 +51,8 @@ namespace Volcano
             engines.Add<BarricadeEngine>("Barricade");
             engines.Add<MonteCarloBeelineEngine>("Monte Carlo Beeline 1");
             engines.Add<MonteCarloTwoEngine>("Monte Carlo Beeline 2");
-            engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
             engines.Add<MonteCarloBeelineThreeEngine>("Monte Carlo Beeline 3");
+            engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
 
             cbPlayerOne.Items.Add("Human");
             cbPlayerTwo.Items.Add("Human");

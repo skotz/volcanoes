@@ -112,7 +112,7 @@ namespace Volcano.Engine
                         while (c != null && c.Move >= 0 && c.Move <= 80)
                         {
                             pv += Constants.TileNames[c.Move] + " (" + c.Wins + "/" + c.Visits + ")   ";
-                            c = c.Children?.OrderBy(x => x.Visits)?.LastOrDefault();
+                            c = c.Children?.OrderBy(x => x.Visits)?.ThenBy(x => x.Wins)?.LastOrDefault();
                         }
                         status.Add(child?.Move ?? 80, eval, pv);
                     }
