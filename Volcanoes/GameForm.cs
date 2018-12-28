@@ -23,9 +23,6 @@ namespace Volcano
         VolcanoGame game;
         EngineHelper engines;
 
-        int totalAutoPlay = 0;
-        int autoPlay = 0;
-
         List<int> transcript;
         int transcriptMove;
 
@@ -37,20 +34,14 @@ namespace Volcano
             
             graphics = new GameGraphics(gamePanel, GameGraphicsSettings.Default);
             game = new VolcanoGame();
-            game.OnGameOver += Game_OnGameOver;
             game.OnMoveMade += Game_OnMoveMade;
 
             gameTimer.Start();
 
             engines = new EngineHelper();
             engines.Add<RandomEngine>("Random");
-            //engines.Add<SkipTileEngine>("Tile Skipper");
-            //engines.Add<KittyCornerEngine>("Kitty Corner");
-            //engines.Add<BeeLineEngine>("Bee Line");
             engines.Add<DeepBeelineEngine>("Deep Beeline");
             engines.Add<BarricadeEngine>("Barricade");
-            //engines.Add<MonteCarloBeelineEngine>("Monte Carlo Beeline 1");
-            //engines.Add<MonteCarloTwoEngine>("Monte Carlo Beeline 2");
             engines.Add<MonteCarloBeelineThreeEngine>("Monte Carlo Beeline 3");
             engines.Add<MonteCarloBeelineFourEngine>("Monte Carlo Beeline 4");
             engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
@@ -141,53 +132,9 @@ namespace Volcano
             game.ComputerPlay();
         }
 
-        private void selfPlayToolStripMenuItem_Click_1(object sender, EventArgs e)
-        {
-            var selfPlayForm = new SelfPlayForm(engines.EngineNames);
-            var dr = selfPlayForm.ShowDialog();
-            if (dr == DialogResult.OK)
-            {
-                autoPlay = totalAutoPlay = selfPlayForm.GamesToPlay;
-
-                cbPlayerOne.Text = selfPlayForm.EngineOne;
-                cbPlayerTwo.Text = selfPlayForm.EngineTwo;
-
-                lblStatusBar.Text = "0/" + totalAutoPlay;
-                progStatus.Value = 0;
-                progStatus.Visible = true;
-
-                StartNewGame();
-            }
-        }
-
-        private void Game_OnGameOver(Player winner, VictoryType type)
-        {
-            if (autoPlay-- > 0)
-            {
-                using (StreamWriter w = new StreamWriter("data.csv", true))
-                {
-                    w.WriteLine("\"" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "\"," + game.CurrentState.Turn + "," + winner.ToString());
-                }
-
-                StartNewGame();
-            }
-
-            if (totalAutoPlay > 0)
-            {
-                lblStatusBar.Text = Math.Min(totalAutoPlay - autoPlay, totalAutoPlay) + "/" + totalAutoPlay;
-                progStatus.Value = (int)(100m * (totalAutoPlay - autoPlay) / totalAutoPlay);
-            }
-
-            if (autoPlay == 0)
-            {
-                lblStatusBar.Text = "Autoplay finished";
-                progStatus.Visible = false;
-            }
-        }
-
         private void Tourney_OnTournamentStatus(TournamentStatus status)
         {
-            lblStatusBar.Text = status.CompletedGames + "/" + status.TotalGames + " tournament games completed";
+            lblStatusBar.Text = status.CompletedGames + "/" + status.TotalGames + " games completed";
             progStatus.Value = (int)status.PercentageComplete;
         }
 
@@ -195,15 +142,39 @@ namespace Volcano
         {
             progStatus.Visible = false;
             newTournamentToolStripMenuItem.Enabled = true;
-
-            lblStatusBar.Text = "Tournament finished";
-
-            MessageBox.Show("Tournament complete! Round robin cross table saved to file.");
+            selfPlayToolStripMenuItem.Enabled = true;
+            lblStatusBar.Text += " (finished)";
         }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Designed by Simon Dorfman\r\nDeveloped by Scott Clayton", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void selfPlayToolStripMenuItem_Click_1(object sender, EventArgs e)
+        {
+            var selfPlayForm = new SelfPlayForm(engines.EngineNames);
+            var dr = selfPlayForm.ShowDialog();
+            if (dr == DialogResult.OK)
+            {
+                progStatus.Value = 0;
+                progStatus.Visible = true;
+                newTournamentToolStripMenuItem.Enabled = false;
+                selfPlayToolStripMenuItem.Enabled = false;
+
+                string date = DateTime.Now.ToString("yyyyMMddhhmmss");
+
+                int games = selfPlayForm.GamesToPlay;
+                if (selfPlayForm.Engines.Count == 2)
+                {
+                    games /= 2;
+                }
+
+                Tournament tourney = new Tournament(games, selfPlayForm.SecondsPerMove, "selfplay-table-" + date + ".csv", "selfplay-data-" + date + ".csv", engines, selfPlayForm.Engines, selfPlayForm.Engines.Count == 1);
+                tourney.OnTournamentCompleted += Tourney_OnTournamentCompleted;
+                tourney.OnTournamentStatus += Tourney_OnTournamentStatus;
+                tourney.Start();
+            }
         }
 
         private void newTournamentToolStripMenuItem_Click(object sender, EventArgs e)
@@ -214,14 +185,12 @@ namespace Volcano
             {
                 progStatus.Value = 0;
                 progStatus.Visible = true;
-
                 newTournamentToolStripMenuItem.Enabled = false;
-                progStatus.Value = 0;
-                progStatus.Visible = true;
+                selfPlayToolStripMenuItem.Enabled = false;
 
                 string date = DateTime.Now.ToString("yyyyMMddhhmmss");
 
-                Tournament tourney = new Tournament(form.Rounds, form.SecondsPerMove, "tourney-table-" + date + ".csv", "tourney-data-" + date + ".csv", engines, form.Engines);
+                Tournament tourney = new Tournament(form.Rounds, form.SecondsPerMove, "tourney-table-" + date + ".csv", "tourney-data-" + date + ".csv", engines, form.Engines, form.Engines.Count == 1);
                 tourney.OnTournamentCompleted += Tourney_OnTournamentCompleted;
                 tourney.OnTournamentStatus += Tourney_OnTournamentStatus;
                 tourney.Start();

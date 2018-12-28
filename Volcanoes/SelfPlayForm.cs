@@ -20,6 +20,14 @@ namespace Volcano
             }
         }
 
+        public int SecondsPerMove
+        {
+            get
+            {
+                return (int)numericUpDown2.Value;
+            }
+        }
+
         public string EngineOne
         {
             get
@@ -33,6 +41,20 @@ namespace Volcano
             get
             {
                 return comboBox2.Text;
+            }
+        }
+
+        public List<string> Engines
+        {
+            get
+            {
+                List<string> engines = new List<string>();
+                engines.Add(EngineOne);
+                if (!engines.Contains(EngineTwo))
+                {
+                    engines.Add(EngineTwo);
+                }
+                return engines;
             }
         }
 

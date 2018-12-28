@@ -14,10 +14,11 @@ namespace Volcano.Game
     {
         private int _rounds;
         private int _secondsPerMove;
-        private string _file;
-        private string _dataFile;
+        private string _crossTableFile;
+        private string _gameDataFile;
         private EngineHelper _engines;
         private List<string> _players;
+        private bool _allowSelfPlay;
 
         int totalGames;
 
@@ -29,16 +30,16 @@ namespace Volcano.Game
         public event TournamentStatusHandler OnTournamentStatus;
         public delegate void TournamentStatusHandler(TournamentStatus status);
 
-        private bool allowSelfPlay = false;
 
-        public Tournament(int rounds, int secondsPerMove, string resultsFile, string dataFile, EngineHelper engines, List<string> players)
+        public Tournament(int rounds, int secondsPerMove, string crossTableFile, string gameDataFile, EngineHelper engines, List<string> players, bool allowSelfPlay)
         {
             _rounds = rounds;
             _secondsPerMove = secondsPerMove;
-            _file = resultsFile;
-            _dataFile = dataFile;
+            _crossTableFile = crossTableFile;
+            _gameDataFile = gameDataFile;
             _engines = engines;
             _players = players;
+            _allowSelfPlay = allowSelfPlay;
 
             worker = new BackgroundWorker();
             worker.WorkerReportsProgress = true;
@@ -51,7 +52,7 @@ namespace Volcano.Game
         {
             if (!worker.IsBusy)
             {
-                totalGames = _rounds * _players.Count * (_players.Count - 1);
+                totalGames = _rounds * _players.Count * (_allowSelfPlay ? _players.Count : (_players.Count - 1));
                 OnTournamentStatus?.Invoke(new TournamentStatus(0, totalGames));
                 worker.RunWorkerAsync();
             }
@@ -68,7 +69,7 @@ namespace Volcano.Game
             {
                 foreach (var engine2 in _players)
                 {
-                    if (engine1 != engine2 || allowSelfPlay)
+                    if (engine1 != engine2 || _allowSelfPlay)
                     {
                         games.Add(() =>
                         {
@@ -150,7 +151,7 @@ namespace Volcano.Game
                 Parallel.ForEach(games, x => x());
             }
 
-            using (StreamWriter w = new StreamWriter(_dataFile))
+            using (StreamWriter w = new StreamWriter(_gameDataFile))
             {
                 w.WriteLine("Player One,Player Two,Winner,Termination,Total Moves,Total Milliseconds,Starting Tile Index,Transcript");
                 foreach (var result in results)
@@ -170,7 +171,7 @@ namespace Volcano.Game
                     {
                         try
                         {
-                            transcript = result.Moves.Select(x => Constants.TileNames[x]).Aggregate((c, n) => c + " " + n);
+                            transcript = result.Moves.ToList().Select(x => Constants.TileNames[x]).Aggregate((c, n) => c + " " + n);
                         }
                         catch (Exception ex)
                         {
@@ -190,7 +191,7 @@ namespace Volcano.Game
                 line.Name = engine1;
                 foreach (var engine2 in _players)
                 {
-                    if (engine1 != engine2 || allowSelfPlay)
+                    if (engine1 != engine2 || _allowSelfPlay)
                     {
                         decimal wins = results.Where(x => x.PlayerOne == engine1 && x.PlayerTwo == engine2).Sum(x => x.PlayerOneScore) + results.Where(x => x.PlayerOne == engine2 && x.PlayerTwo == engine1).Sum(x => x.PlayerTwoScore);
                         score += wins;
@@ -226,22 +227,26 @@ namespace Volcano.Game
                 }
             }
 
-            using (StreamWriter w = new StreamWriter(_file))
+            // It doesn't make sense to save a cross table when there's only one person competing
+            if (!string.IsNullOrEmpty(_crossTableFile) && lines.Count > 1)
             {
-                // cs = common score
-                // ns = neustadtl score (figures in strength of opposition)
-                w.WriteLine("," + names.Aggregate((c, n) => c + "," + n) + ",cs,ns");
-                foreach (var player in lines)
+                using (StreamWriter w = new StreamWriter(_crossTableFile))
                 {
-                    w.Write(player.CrossTableName);
-                    foreach (var opponent in lines)
+                    // cs = common score
+                    // ns = neustadtl score (figures in strength of opposition)
+                    w.WriteLine("," + names.Aggregate((c, n) => c + "," + n) + ",cs,ns");
+                    foreach (var player in lines)
                     {
-                        string val = player.Data[opponent.Name] >= 0 ? player.Data[opponent.Name].ToString() : "";
-                        w.Write("," + val);
+                        w.Write(player.CrossTableName);
+                        foreach (var opponent in lines)
+                        {
+                            string val = player.Data[opponent.Name] >= 0 ? player.Data[opponent.Name].ToString() : "";
+                            w.Write("," + val);
+                        }
+                        w.Write(", " + player.TotalScore);
+                        w.Write(", " + player.NeustadtlScore.ToString("0.00"));
+                        w.WriteLine();
                     }
-                    w.Write(", " + player.TotalScore);
-                    w.Write(", " + player.NeustadtlScore.ToString("0.00"));
-                    w.WriteLine();
                 }
             }
         }
