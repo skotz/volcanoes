@@ -44,15 +44,17 @@ namespace Volcano
 
             engines = new EngineHelper();
             engines.Add<RandomEngine>("Random");
-            engines.Add<SkipTileEngine>("Tile Skipper");
-            engines.Add<KittyCornerEngine>("Kitty Corner");
-            engines.Add<BeeLineEngine>("Bee Line");
+            //engines.Add<SkipTileEngine>("Tile Skipper");
+            //engines.Add<KittyCornerEngine>("Kitty Corner");
+            //engines.Add<BeeLineEngine>("Bee Line");
             engines.Add<DeepBeelineEngine>("Deep Beeline");
             engines.Add<BarricadeEngine>("Barricade");
-            engines.Add<MonteCarloBeelineEngine>("Monte Carlo Beeline 1");
-            engines.Add<MonteCarloTwoEngine>("Monte Carlo Beeline 2");
+            //engines.Add<MonteCarloBeelineEngine>("Monte Carlo Beeline 1");
+            //engines.Add<MonteCarloTwoEngine>("Monte Carlo Beeline 2");
             engines.Add<MonteCarloBeelineThreeEngine>("Monte Carlo Beeline 3");
+            engines.Add<MonteCarloBeelineFourEngine>("Monte Carlo Beeline 4");
             engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
+            engines.Add<MonteCarloBarricadeEngine>("Monte Carlo Barricade");
 
             cbPlayerOne.Items.Add("Human");
             cbPlayerTwo.Items.Add("Human");
