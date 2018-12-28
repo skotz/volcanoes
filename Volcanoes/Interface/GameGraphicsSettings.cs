@@ -93,6 +93,24 @@ namespace Volcano.Interface
             }
         }
 
+        public static GameGraphicsSettings LoadOrDefault(string file)
+        {
+            try
+            {
+                if (File.Exists(file))
+                {
+                    string json = File.ReadAllText(file);
+                    return JsonConvert.DeserializeObject<GameGraphicsSettings>(json, new JsonColorConverter());
+                }
+            }
+            catch
+            {
+                // TODO?
+            }
+
+            return Default;
+        }
+
         public void Save(string file)
         {
             string json = JsonConvert.SerializeObject(this, Formatting.Indented, new JsonColorConverter());

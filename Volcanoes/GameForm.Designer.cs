@@ -77,6 +77,9 @@
             this.btnNavEnd = new System.Windows.Forms.ToolStripButton();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.exportThemeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.resetThemeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -268,7 +271,10 @@
             this.stressTestEngineSearchToolStripMenuItem,
             this.toolStripSeparator7,
             this.exportRulesToolStripMenuItem1,
-            this.resetRulesToolStripMenuItem});
+            this.resetRulesToolStripMenuItem,
+            this.toolStripSeparator8,
+            this.exportThemeToolStripMenuItem,
+            this.resetThemeToolStripMenuItem});
             this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
             this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
             this.dEBUGToolStripMenuItem.Text = "DEBUG";
@@ -481,6 +487,25 @@
             // 
             this.openFileDialog1.Filter = "Volcanoes Game Transcript|*.vgt";
             // 
+            // exportThemeToolStripMenuItem
+            // 
+            this.exportThemeToolStripMenuItem.Name = "exportThemeToolStripMenuItem";
+            this.exportThemeToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.exportThemeToolStripMenuItem.Text = "Export Theme";
+            this.exportThemeToolStripMenuItem.Click += new System.EventHandler(this.exportThemeToolStripMenuItem_Click);
+            // 
+            // resetThemeToolStripMenuItem
+            // 
+            this.resetThemeToolStripMenuItem.Name = "resetThemeToolStripMenuItem";
+            this.resetThemeToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.resetThemeToolStripMenuItem.Text = "Reset Theme";
+            this.resetThemeToolStripMenuItem.Click += new System.EventHandler(this.resetThemeToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator8
+            // 
+            this.toolStripSeparator8.Name = "toolStripSeparator8";
+            this.toolStripSeparator8.Size = new System.Drawing.Size(202, 6);
+            // 
             // GameForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -560,6 +585,9 @@
         private System.Windows.Forms.ToolStripLabel toolStripLabel3;
         private System.Windows.Forms.ToolStripComboBox cbSeconds;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem exportThemeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem resetThemeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
     }
 }
 

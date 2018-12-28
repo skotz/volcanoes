@@ -22,6 +22,7 @@ namespace Volcano
         GameGraphics graphics;
         VolcanoGame game;
         EngineHelper engines;
+        GameGraphicsSettings settings;
 
         List<int> transcript;
         int transcriptMove;
@@ -31,8 +32,9 @@ namespace Volcano
         public GameForm()
         {
             InitializeComponent();
-            
-            graphics = new GameGraphics(gamePanel, GameGraphicsSettings.Default);
+
+            settings = GameGraphicsSettings.LoadOrDefault("graphics.json");
+            graphics = new GameGraphics(gamePanel, settings);
             game = new VolcanoGame();
             game.OnMoveMade += Game_OnMoveMade;
 
@@ -69,6 +71,10 @@ namespace Volcano
             {
                 lblStatusBar.Text = VolcanoGame.Settings.CustomSettingsFile + " loaded " + VolcanoGame.Settings.CustomSettingsTitle;
             }
+
+            FileSystemWatcher graphicsSettingsFsw = new FileSystemWatcher(".", "graphics.json");
+            graphicsSettingsFsw.EnableRaisingEvents = true;
+            graphicsSettingsFsw.Changed += GraphicsSettingsFsw_Changed;
         }
 
         private void Game_OnMoveMade(bool growthHappened)
@@ -197,12 +203,6 @@ namespace Volcano
             }
         }
 
-        private void exportRulesToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            VolcanoGame.Settings.Save("volcano.json");
-            MessageBox.Show("Rules exported as volcano.json!\r\nEdit the settings and reload to play with custom rules.", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
         private void saveGameToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
@@ -264,12 +264,43 @@ namespace Volcano
             }
         }
 
+        private void exportRulesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            VolcanoGame.Settings.Save("volcano.json");
+            MessageBox.Show("Rules exported as volcano.json!\r\nEdit the settings and reload to play with custom rules.", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
         private void importRulesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (File.Exists("volcano.json"))
             {
                 File.Move("volcano.json", "volcano.json." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak");
                 MessageBox.Show("Rules will be reset to their defaults when you restart.", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void exportThemeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            graphics.GraphicsSettings.Save("graphics.json");
+            MessageBox.Show("Graphics exported as graphics.json!\r\nEdit the settings and reload to see your changes.", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void resetThemeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (File.Exists("graphics.json"))
+            {
+                File.Move("graphics.json", "graphics.json." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak");
+                settings = GameGraphicsSettings.Default;
+                graphics.GraphicsSettings = settings;
+            }
+        }
+
+        private void GraphicsSettingsFsw_Changed(object sender, FileSystemEventArgs e)
+        {
+            if (File.Exists("graphics.json"))
+            {
+                settings = GameGraphicsSettings.LoadOrDefault("graphics.json");
+                graphics.GraphicsSettings = settings;
             }
         }
 
