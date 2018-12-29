@@ -15,25 +15,34 @@ namespace Volcano.Engine
 
         protected override List<int> GetMoves(Board position)
         {
-            List<int> moves = position.GetMoves();
+            List<int> allMoves = position.GetMoves();
             List<int> candidates = new List<int>();
 
-            // For each tile, figure out how long it'll take to get to it's antipode
+            // For each tile, find an unobstructed path to it's antipode
+            List<PathResult> enemyPaths = new List<PathResult>();
             for (int i = 0; i < 80; i++)
             {
-                if (position.Tiles[i].Owner != Player.Empty && position.Tiles[i].Owner != position.Player)
+                if (position.Tiles[i].Owner != position.Player && position.Tiles[i].Owner != Player.Empty)
                 {
                     var path = pathFinder.FindPath(position, i, position.Tiles[i].Antipode);
-                    if (path != null)
+                    if (path != null && path.Distance != 0)
                     {
-                        // Try to obstruct our opponent's path
-                        foreach (int tile in path.Path)
-                        {
-                            if (moves.Contains(tile))
-                            {
-                                candidates.Add(tile);
-                            }
-                        }
+                        enemyPaths.Add(path);
+                    }
+                }
+            }
+
+            // Of all the calculated paths, find the one that's fastest for each player
+            PathResult bestEnemy = enemyPaths.OrderBy(x => x.Distance).FirstOrDefault();
+
+            // Add tiles on the calculated paths to the candidate moves
+            if (bestEnemy != null)
+            {
+                foreach (int index in bestEnemy.Path)
+                {
+                    if (allMoves.Contains(index))
+                    {
+                        candidates.Add(index);
                     }
                 }
             }
@@ -41,7 +50,7 @@ namespace Volcano.Engine
             // Just return all of the moves
             if (candidates.Count == 0)
             {
-                candidates = moves;
+                candidates = allMoves;
             }
 
             return candidates;
