@@ -127,7 +127,6 @@ namespace Volcano.Engine
 
         class MonteCarloTreeSearchNode
         {
-            private Board _state;
             private Func<Board, List<int>> _getMoves;
 
             public double Wins;
@@ -145,7 +144,6 @@ namespace Volcano.Engine
 
             public MonteCarloTreeSearchNode(Board state, int move, MonteCarloTreeSearchNode parent, Func<Board, List<int>> getMoves)
             {
-                _state = state;
                 _getMoves = getMoves;
 
                 Move = move;
@@ -155,10 +153,10 @@ namespace Volcano.Engine
                 Wins = 0.0;
                 Visits = 0.0;
 
-                if (_state != null)
+                if (state != null)
                 {
-                    Untried = _getMoves(_state);
-                    LastToMove = _state.GetPlayerForPreviousTurn();
+                    Untried = _getMoves(state);
+                    LastToMove = state.GetPlayerForPreviousTurn();
                 }
                 else
                 {
