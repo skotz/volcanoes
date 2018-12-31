@@ -95,13 +95,14 @@ namespace Volcano
 
         private void gamePanel_Click(object sender, EventArgs e)
         {
+            Point mouse = gamePanel.PointToClient(Cursor.Position);
             bool reviewMode = game.MoveHistory.Count > 0 && transcriptMove != game.MoveHistory.Count - 1;
             if (game.CurrentState.State == GameState.InProgress && !game.Thinking && !reviewMode)
             {
-                Point mouse = gamePanel.PointToClient(Cursor.Position);
                 int tileIndex = graphics.GetBoardIndex(mouse);
                 game.MakeMove(tileIndex);
             }
+            graphics.Click(mouse);
         }
 
         private void btnNewGame_Click(object sender, EventArgs e)
@@ -388,11 +389,6 @@ namespace Volcano
                     e.Cancel = true;
                 }
             }
-        }
-
-        private void rotateToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            graphics.RotateBoard();
         }
     }
 }

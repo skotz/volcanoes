@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,9 +14,10 @@ namespace Volcano.Interface
     class GameGraphics
     {
         private Panel _panel;
+        private Size _size;
         private List<GameTile> _tiles;
-
-        private int[][] rotationLoops;
+        private List<GameRotation> _rotations;
+        
         private int[] boardIndexFromTileIndex;
 
         public GameGraphicsSettings GraphicsSettings { get; set; }
@@ -23,17 +25,32 @@ namespace Volcano.Interface
         public GameGraphics(Panel panel, GameGraphicsSettings settings)
         {
             _panel = panel;
+            _size = new Size(0, 0);
             GraphicsSettings = settings;
 
             InitializeTiles();
+            InitializeRotations();
+            InitializeRedirects();
+        }
 
+        private void InitializeRedirects()
+        {
             boardIndexFromTileIndex = new int[80];
             for (int i = 0; i < 80; i++)
             {
                 boardIndexFromTileIndex[i] = i;
             }
+        }
 
-            rotationLoops = new int[16][];
+        private void InitializeRotations()
+        {
+            _rotations = new List<GameRotation>();
+
+            int radius = _tiles[0].BoundingBox.Width / 5;
+            int yOffset = _tiles[0].BoundingBox.Height * 2 / 3;
+            int yOffsetInverted = _tiles[0].BoundingBox.Height - yOffset;
+
+            int[][] rotationLoops = new int[16][];
             rotationLoops[0] = new int[] { 71, 50, 33, 55, 74 };
             rotationLoops[1] = new int[] { 68, 48, 32, 52, 72 };
             rotationLoops[2] = new int[] { 69, 51, 34, 53, 75 };
@@ -50,6 +67,25 @@ namespace Volcano.Interface
             rotationLoops[13] = new int[] { 21, 42, 27, 5, 3 };
             rotationLoops[14] = new int[] { 40, 24, 4, 0, 20 };
             rotationLoops[15] = new int[] { 41, 26, 7, 2, 23 };
+
+            int x = _tiles[74].Location.X - GraphicsSettings.TileHorizontalSpacing;
+            int y = _tiles[74].Location.Y + yOffset;
+            _rotations.Add(new GameRotation
+            {
+                Location = new Point(x - radius, y - radius),
+                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                RotationLoops = rotationLoops,
+                Clockwise = false
+            });
+            x = _tiles[7].Location.X - GraphicsSettings.TileHorizontalSpacing;
+            y = _tiles[7].Location.Y + yOffsetInverted;
+            _rotations.Add(new GameRotation
+            {
+                Location = new Point(x - radius, y - radius),
+                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                RotationLoops = rotationLoops,
+                Clockwise = true
+            });
         }
 
         private void InitializeTiles()
@@ -147,8 +183,8 @@ namespace Volcano.Interface
                 }
             }
         }
-
-        public void RotateBoard()
+        
+        private void RotateBoard(int[][] rotationLoops)
         {
             int[] redirects = new int[80];
 
@@ -170,8 +206,28 @@ namespace Volcano.Interface
 
         public void Resize()
         {
-            GraphicsSettings.UpdateBestTileWidth(_panel.Size);
-            InitializeTiles();
+            if (_size != _panel.Size)
+            {
+                GraphicsSettings.UpdateBestTileWidth(_panel.Size);
+                InitializeTiles();
+                InitializeRotations();
+
+                _size = _panel.Size;
+            }
+        }
+
+        public void Click(Point mouseLocation)
+        {
+            Point mouse = GetOffsetPoint(mouseLocation);
+
+            // See if they clicked a rotation button
+            for (int i = 0; i < _rotations.Count; i++)
+            {
+                if (_rotations[i].IsWithinCircle(mouse))
+                {
+                    RotateBoard(_rotations[i].RotationLoops);
+                }
+            }
         }
 
         public void Draw(VolcanoGame game, Point mouseLocation, int moveNumber, bool highlightLastMove)
@@ -194,6 +250,8 @@ namespace Volcano.Interface
             int hoverTile = GetTileIndex(mouseLocation);
             Board gameState = reviewMode ? game.GetPreviousState(moveNumber) : game.CurrentState;
 
+            Point mouse = GetOffsetPoint(mouseLocation);
+
             int lastPlayIndex = GetTileIndexFromBoardIndex(game.MoveHistory.Count >= moveNumber && moveNumber - 1 >= 0 ? game.MoveHistory[moveNumber - 1] : -1);
 
             Color background = reviewMode ? GraphicsSettings.ReviewBackgroundColor : GraphicsSettings.BackgroundColor;
@@ -202,9 +260,30 @@ namespace Volcano.Interface
             using (Graphics g = Graphics.FromImage(b))
             {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.CompositingQuality = CompositingQuality.HighQuality;
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
                 g.Clear(background);
 
+                // Draw rotation buttons
+                for (int i = 0; i < _rotations.Count; i++)
+                {
+                    float opacity = 0.5f;
+                    if (_rotations[i].IsWithinCircle(mouse))
+                    {
+                        opacity = 1f;
+                    }
+
+                    ColorMatrix matrix = new ColorMatrix();
+                    matrix.Matrix33 = opacity;
+                    ImageAttributes attributes = new ImageAttributes();
+                    attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+
+                    Bitmap image = _rotations[i].Clockwise ? Properties.Resources.rotate_clockwise: Properties.Resources.rotate_counter_clockwise;
+                    g.DrawImage(image, _rotations[i].BoundingBox, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, attributes);
+                }
+
+                // Draw tiles
                 for (int i = 0; i < 80; i++)
                 {
                     DrawTile(g, gameState, i, hoverTile, lastPlayIndex, highlightLastMove);
