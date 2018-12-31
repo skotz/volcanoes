@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,6 +31,8 @@ namespace Volcano.Game
         public List<int> MoveHistory { get; private set; }
         
         public bool Thinking { get { return _worker.IsBusy; } }
+
+        public Exception BackgroundError { get; private set; }
 
         public int NodesPerSecond { get { return _lastSearch?.NodesPerSecond ?? 0; } }
 
@@ -207,13 +210,33 @@ namespace Volcano.Game
         {
             EngineCancellationToken token = new EngineCancellationToken(_worker);
 
-            if (CurrentState.Player == Player.One)
+            try
             {
-                e.Result = _playerOneEngine.GetBestMove(CurrentState, SecondsPerEngineMove, token);
+                BackgroundError = null;
+
+                if (CurrentState.Player == Player.One)
+                {
+                    e.Result = _playerOneEngine.GetBestMove(CurrentState, SecondsPerEngineMove, token);
+                }
+                else if (CurrentState.Player == Player.Two)
+                {
+                    e.Result = _playerTwoEngine.GetBestMove(CurrentState, SecondsPerEngineMove, token);
+                }
             }
-            else if (CurrentState.Player == Player.Two)
+            catch (Exception ex)
             {
-                e.Result = _playerTwoEngine.GetBestMove(CurrentState, SecondsPerEngineMove, token);
+                BackgroundError = ex;
+
+                try
+                {
+                    using (StreamWriter w = new StreamWriter("errors.txt", true))
+                    {
+                        w.WriteLine("Failed to get a move from an engine! :: " + ex.Message);
+                    }
+                }
+                catch { /* TODO */ }
+
+                e.Result = new SearchResult();
             }
 
             if (token.Cancelled)
@@ -251,7 +274,8 @@ namespace Volcano.Game
                 else
                 {
                     // If an engine doesn't find a move, then he adjourns the game
-                    OnGameOver?.Invoke(CurrentState.Player == Player.One ? Player.Two : Player.One, VictoryType.ArenaAdjudication);
+                    CurrentState.Winner = CurrentState.Player == Player.One ? Player.Two : Player.One;
+                    OnGameOver?.Invoke(CurrentState.Winner, VictoryType.ArenaAdjudication);
                 }
             }
         }

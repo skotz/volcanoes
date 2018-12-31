@@ -106,7 +106,25 @@ namespace Volcano.Game
                                 }
                                 if (victory == VictoryType.ArenaAdjudication)
                                 {
-                                    termination = TournamentTerminationType.IllegalMove;
+                                    if (game.BackgroundError != null)
+                                    {
+                                        if (game.CurrentState.Winner == Player.One)
+                                        {
+                                            termination = TournamentTerminationType.PlayerTwoError;
+                                        }
+                                        else if (game.CurrentState.Winner == Player.Two)
+                                        {
+                                            termination = TournamentTerminationType.PlayerOneError;
+                                        }
+                                        else
+                                        {
+                                            termination = TournamentTerminationType.Error;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        termination = TournamentTerminationType.IllegalMove;
+                                    }
                                 }
 
                                 lock (results)
@@ -337,6 +355,7 @@ namespace Volcano.Game
         AdjudicateMoves,
         PlayerOneError,
         PlayerTwoError,
+        Error,
         IllegalMove
     }
 

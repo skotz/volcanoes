@@ -61,6 +61,7 @@
     <Compile Include="Engine\BarricadeEngine.cs" />
     <Compile Include="Engine\BeeLineEngine.cs" />
     <Compile Include="Engine\EngineStatus.cs" />
+    <Compile Include="Engine\ExceptionEngine.cs" />
     <Compile Include="Engine\IStatus.cs" />
     <Compile Include="Engine\MonteCarloBarricadeEngine.cs" />
     <Compile Include="Engine\MonteCarloBeelineFourEngine.cs" />
