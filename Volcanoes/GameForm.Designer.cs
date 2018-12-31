@@ -56,6 +56,9 @@
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.exportRulesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.resetRulesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
+            this.exportThemeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.resetThemeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btnNewGame = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
@@ -77,9 +80,8 @@
             this.btnNavEnd = new System.Windows.Forms.ToolStripButton();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.exportThemeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.resetThemeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
+            this.rotateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -274,7 +276,9 @@
             this.resetRulesToolStripMenuItem,
             this.toolStripSeparator8,
             this.exportThemeToolStripMenuItem,
-            this.resetThemeToolStripMenuItem});
+            this.resetThemeToolStripMenuItem,
+            this.toolStripSeparator9,
+            this.rotateToolStripMenuItem});
             this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
             this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
             this.dEBUGToolStripMenuItem.Text = "DEBUG";
@@ -312,6 +316,25 @@
             this.resetRulesToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.resetRulesToolStripMenuItem.Text = "Reset Rules";
             this.resetRulesToolStripMenuItem.Click += new System.EventHandler(this.importRulesToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator8
+            // 
+            this.toolStripSeparator8.Name = "toolStripSeparator8";
+            this.toolStripSeparator8.Size = new System.Drawing.Size(202, 6);
+            // 
+            // exportThemeToolStripMenuItem
+            // 
+            this.exportThemeToolStripMenuItem.Name = "exportThemeToolStripMenuItem";
+            this.exportThemeToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.exportThemeToolStripMenuItem.Text = "Export Theme";
+            this.exportThemeToolStripMenuItem.Click += new System.EventHandler(this.exportThemeToolStripMenuItem_Click);
+            // 
+            // resetThemeToolStripMenuItem
+            // 
+            this.resetThemeToolStripMenuItem.Name = "resetThemeToolStripMenuItem";
+            this.resetThemeToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.resetThemeToolStripMenuItem.Text = "Reset Theme";
+            this.resetThemeToolStripMenuItem.Click += new System.EventHandler(this.resetThemeToolStripMenuItem_Click);
             // 
             // toolStrip1
             // 
@@ -487,24 +510,17 @@
             // 
             this.openFileDialog1.Filter = "Volcanoes Game Transcript|*.vgt";
             // 
-            // exportThemeToolStripMenuItem
+            // rotateToolStripMenuItem
             // 
-            this.exportThemeToolStripMenuItem.Name = "exportThemeToolStripMenuItem";
-            this.exportThemeToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
-            this.exportThemeToolStripMenuItem.Text = "Export Theme";
-            this.exportThemeToolStripMenuItem.Click += new System.EventHandler(this.exportThemeToolStripMenuItem_Click);
+            this.rotateToolStripMenuItem.Name = "rotateToolStripMenuItem";
+            this.rotateToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.rotateToolStripMenuItem.Text = "Rotate";
+            this.rotateToolStripMenuItem.Click += new System.EventHandler(this.rotateToolStripMenuItem_Click);
             // 
-            // resetThemeToolStripMenuItem
+            // toolStripSeparator9
             // 
-            this.resetThemeToolStripMenuItem.Name = "resetThemeToolStripMenuItem";
-            this.resetThemeToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
-            this.resetThemeToolStripMenuItem.Text = "Reset Theme";
-            this.resetThemeToolStripMenuItem.Click += new System.EventHandler(this.resetThemeToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator8
-            // 
-            this.toolStripSeparator8.Name = "toolStripSeparator8";
-            this.toolStripSeparator8.Size = new System.Drawing.Size(202, 6);
+            this.toolStripSeparator9.Name = "toolStripSeparator9";
+            this.toolStripSeparator9.Size = new System.Drawing.Size(202, 6);
             // 
             // GameForm
             // 
@@ -588,6 +604,8 @@
         private System.Windows.Forms.ToolStripMenuItem exportThemeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem resetThemeToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
+        private System.Windows.Forms.ToolStripMenuItem rotateToolStripMenuItem;
     }
 }
 

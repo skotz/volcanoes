@@ -15,6 +15,9 @@ namespace Volcano.Interface
         private Panel _panel;
         private List<GameTile> _tiles;
 
+        private int[][] rotationLoops;
+        private int[] boardIndexFromTileIndex;
+
         public GameGraphicsSettings GraphicsSettings { get; set; }
 
         public GameGraphics(Panel panel, GameGraphicsSettings settings)
@@ -23,6 +26,30 @@ namespace Volcano.Interface
             GraphicsSettings = settings;
 
             InitializeTiles();
+
+            boardIndexFromTileIndex = new int[80];
+            for (int i = 0; i < 80; i++)
+            {
+                boardIndexFromTileIndex[i] = i;
+            }
+
+            rotationLoops = new int[16][];
+            rotationLoops[0] = new int[] { 71, 50, 33, 55, 74 };
+            rotationLoops[1] = new int[] { 68, 48, 32, 52, 72 };
+            rotationLoops[2] = new int[] { 69, 51, 34, 53, 75 };
+            rotationLoops[3] = new int[] { 70, 49, 35, 54, 73 };
+            rotationLoops[4] = new int[] { 67, 31, 14, 37, 77 };
+            rotationLoops[5] = new int[] { 64, 28, 12, 36, 76 };
+            rotationLoops[6] = new int[] { 65, 29, 15, 38, 78 };
+            rotationLoops[7] = new int[] { 66, 30, 13, 39, 79 };
+            rotationLoops[8] = new int[] { 61, 46, 10, 19, 59 };
+            rotationLoops[9] = new int[] { 60, 44, 8, 16, 56 };
+            rotationLoops[10] = new int[] { 62, 47, 11, 17, 57 };
+            rotationLoops[11] = new int[] { 63, 45, 9, 18, 58 };
+            rotationLoops[12] = new int[] { 43, 25, 6, 1, 22 };
+            rotationLoops[13] = new int[] { 21, 42, 27, 5, 3 };
+            rotationLoops[14] = new int[] { 40, 24, 4, 0, 20 };
+            rotationLoops[15] = new int[] { 41, 26, 7, 2, 23 };
         }
 
         private void InitializeTiles()
@@ -121,6 +148,26 @@ namespace Volcano.Interface
             }
         }
 
+        public void RotateBoard()
+        {
+            int[] redirects = new int[80];
+
+            for (int i = 0; i < 16; i ++)
+            {
+                for (int r = 0; r < 5; r++)
+                {
+                    redirects[rotationLoops[i][r]] = boardIndexFromTileIndex[rotationLoops[i][(r + 1) % 5]];
+                }
+            }
+
+            for (int i = 0; i < 80; i++)
+            {
+                redirects[i] = (redirects[i] + 80) % 80;
+            }
+
+            boardIndexFromTileIndex = redirects;
+        }
+
         public void Resize()
         {
             GraphicsSettings.UpdateBestTileWidth(_panel.Size);
@@ -147,7 +194,7 @@ namespace Volcano.Interface
             int hoverTile = GetTileIndex(mouseLocation);
             Board gameState = reviewMode ? game.GetPreviousState(moveNumber) : game.CurrentState;
 
-            int lastPlayIndex = game.MoveHistory.Count >= moveNumber && moveNumber - 1 >= 0 ? game.MoveHistory[moveNumber - 1] : -1;
+            int lastPlayIndex = GetTileIndexFromBoardIndex(game.MoveHistory.Count >= moveNumber && moveNumber - 1 >= 0 ? game.MoveHistory[moveNumber - 1] : -1);
 
             Color background = reviewMode ? GraphicsSettings.ReviewBackgroundColor : GraphicsSettings.BackgroundColor;
 
@@ -162,24 +209,24 @@ namespace Volcano.Interface
                 {
                     DrawTile(g, gameState, i, hoverTile, lastPlayIndex, highlightLastMove);
 
-                    if (gameState.Tiles[i].Owner == Player.Empty)
+                    if (gameState.Tiles[boardIndexFromTileIndex[i]].Owner == Player.Empty)
                     {
                         if (GraphicsSettings.ShowTileNames)
                         {
-                            DrawTileCenterText(g, i, gameState.Tiles[i].Name);
+                            DrawTileCenterText(g, i, gameState.Tiles[boardIndexFromTileIndex[i]].Name);
                         }
                         else if (GraphicsSettings.ShowTileIndexes)
                         {
-                            DrawTileMainText(g, i, gameState.Tiles[i].Index.ToString());
+                            DrawTileMainText(g, i, gameState.Tiles[boardIndexFromTileIndex[i]].Index.ToString());
                         }
 
                         //DrawTileMainText(g, i, Constants.FastestPaths[i].Length.ToString());
                     }
                     else
                     {
-                        int value = gameState.Tiles[i].Value;
+                        int value = gameState.Tiles[boardIndexFromTileIndex[i]].Value;
 
-                        if (gameState.Tiles[i].Type == TileType.MagmaChamber)
+                        if (gameState.Tiles[boardIndexFromTileIndex[i]].Type == TileType.MagmaChamber)
                         {
                             DrawTileSubText(g, i, "Chamber");
                         }
@@ -218,21 +265,21 @@ namespace Volcano.Interface
             }
         }
 
-        private void DrawTile(Graphics g, Board gameState, int index, int hoverIndex, int lastPlayIndex, bool highlightLastMove)
+        private void DrawTile(Graphics g, Board gameState, int index, int hoverTile, int lastPlayTile, bool highlightLastMove)
         {
             Color tileColor = GraphicsSettings.EmptyTileColor;
 
-            if (gameState.Tiles[index].Owner == Player.One)
+            if (gameState.Tiles[boardIndexFromTileIndex[index]].Owner == Player.One)
             {
-                tileColor = gameState.Tiles[index].Type == TileType.Volcano ? GraphicsSettings.PlayerOneVolcanoTileColor : GraphicsSettings.PlayerOneMagmaChamberTileColor;
+                tileColor = gameState.Tiles[boardIndexFromTileIndex[index]].Type == TileType.Volcano ? GraphicsSettings.PlayerOneVolcanoTileColor : GraphicsSettings.PlayerOneMagmaChamberTileColor;
             }
-            else if (gameState.Tiles[index].Owner == Player.Two)
+            else if (gameState.Tiles[boardIndexFromTileIndex[index]].Owner == Player.Two)
             {
-                tileColor = gameState.Tiles[index].Type == TileType.Volcano ? GraphicsSettings.PlayerTwoVolcanoTileColor : GraphicsSettings.PlayerTwoMagmaChamberTileColor;
+                tileColor = gameState.Tiles[boardIndexFromTileIndex[index]].Type == TileType.Volcano ? GraphicsSettings.PlayerTwoVolcanoTileColor : GraphicsSettings.PlayerTwoMagmaChamberTileColor;
             }
 
             // Winning path
-            if (gameState.WinningPath.Count > 0 && !gameState.WinningPath.Contains(index))
+            if (gameState.WinningPath.Count > 0 && !gameState.WinningPath.Contains(boardIndexFromTileIndex[index]))
             {
                 tileColor = Color.FromArgb(64, tileColor);
             }
@@ -257,24 +304,24 @@ namespace Volcano.Interface
             if (highlightLastMove)
             {
                 // Tile most recently played on
-                if (lastPlayIndex == index || (lastPlayIndex == 80 && gameState.Tiles[index].Value > 0))
+                if (lastPlayTile == index || (lastPlayTile == 80 && gameState.Tiles[boardIndexFromTileIndex[index]].Value > 0))
                 {
                     Pen pen = new Pen(GraphicsSettings.LastPlayedTileBorderColor, GraphicsSettings.TileHorizontalSpacing);
                     g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
                 }
             }
 
-            if (hoverIndex >= 0)
+            if (hoverTile >= 0)
             {
                 // Tile under the mouse pointer
-                if (index == hoverIndex)
+                if (index == hoverTile)
                 {
                     Pen pen = new Pen(GraphicsSettings.HoverTileBorderColor, GraphicsSettings.TileHorizontalSpacing);
                     g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
                 }
 
                 // Tiles directly adjacent to the tile under the mouse pointer
-                if (Constants.ConnectingTiles[hoverIndex].Any(x => x == index))
+                if (Constants.ConnectingTiles[hoverTile].Any(x => x == index))
                 {
                     Pen pen = new Pen(GraphicsSettings.HoverAdjacentTileBorderColor, GraphicsSettings.TileHorizontalSpacing);
                     g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
@@ -288,7 +335,7 @@ namespace Volcano.Interface
                 //}
 
                 // Tile on the opposite side of the board
-                if (gameState.Tiles[hoverIndex].Antipode == index)
+                if (gameState.Tiles[hoverTile].Antipode == index)
                 {
                     Pen pen = new Pen(GraphicsSettings.HoverAntipodeTileBorderColor, GraphicsSettings.TileHorizontalSpacing);
                     g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
@@ -306,7 +353,17 @@ namespace Volcano.Interface
             return GetOffsetPoint(point.X, point.Y);
         }
 
-        public int GetTileIndex(Point location)
+        public int GetBoardIndex(Point location)
+        {
+            int tileIndex = GetTileIndex(location);
+            if (tileIndex >= 0)
+            {
+                return boardIndexFromTileIndex[tileIndex];
+            }
+            return tileIndex;
+        }
+
+        private int GetTileIndex(Point location)
         {
             Point offset = GetOffsetPoint(location);
 
@@ -319,6 +376,20 @@ namespace Volcano.Interface
             }
 
             return -1;
+        }
+
+        private int GetTileIndexFromBoardIndex(int index)
+        {
+            // Look up the redirected tile index from the hover tile index
+            for (int r = 0; r < 80; r++)
+            {
+                if (boardIndexFromTileIndex[r] == index)
+                {
+                    return r;
+                }
+            }
+
+            return index;
         }
 
         private void DrawTileCenterText(Graphics g, int index, string text)

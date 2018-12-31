@@ -99,7 +99,7 @@ namespace Volcano
             if (game.CurrentState.State == GameState.InProgress && !game.Thinking && !reviewMode)
             {
                 Point mouse = gamePanel.PointToClient(Cursor.Position);
-                int tileIndex = graphics.GetTileIndex(mouse);
+                int tileIndex = graphics.GetBoardIndex(mouse);
                 game.MakeMove(tileIndex);
             }
         }
@@ -310,6 +310,10 @@ namespace Volcano
             {
                 dEBUGToolStripMenuItem.Visible = true;
             }
+            //if (e.KeyCode == Keys.R)
+            //{
+            //    graphics.RotateBoard();
+            //}
         }
 
         private void stressTestPathSearchToolStripMenuItem_Click(object sender, EventArgs e)
@@ -384,6 +388,11 @@ namespace Volcano
                     e.Cancel = true;
                 }
             }
+        }
+
+        private void rotateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            graphics.RotateBoard();
         }
     }
 }
