@@ -50,6 +50,7 @@ namespace Volcano.Interface
             int yOffset = _tiles[0].BoundingBox.Height * 2 / 3;
             int yOffsetInverted = _tiles[0].BoundingBox.Height - yOffset;
 
+            // Rotate around 2/7/26/41/23 and 71/50/33/55/74
             int[][] rotationLoops = new int[16][];
             rotationLoops[0] = new int[] { 71, 50, 33, 55, 74 };
             rotationLoops[1] = new int[] { 68, 48, 32, 52, 72 };
@@ -75,7 +76,7 @@ namespace Volcano.Interface
                 Location = new Point(x - radius, y - radius),
                 BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
                 RotationLoops = rotationLoops,
-                Clockwise = false
+                Image = Properties.Resources.rotate_counter_clockwise
             });
             x = _tiles[7].Location.X - GraphicsSettings.TileHorizontalSpacing;
             y = _tiles[7].Location.Y + yOffsetInverted;
@@ -84,7 +85,37 @@ namespace Volcano.Interface
                 Location = new Point(x - radius, y - radius),
                 BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
                 RotationLoops = rotationLoops,
-                Clockwise = true
+                Image = Properties.Resources.rotate_clockwise
+            });
+
+            // Rotate around 1/5/9/13/17 and 61/65/69/73/77
+            int[][] rotationLoopsPoles = new int[16][];
+            rotationLoopsPoles[0] = new int[] { 17, 13, 9, 5, 1 };
+            rotationLoopsPoles[1] = new int[] { 16, 12, 8, 4, 0 };
+            rotationLoopsPoles[2] = new int[] { 19, 15, 11, 7, 3 };
+            rotationLoopsPoles[3] = new int[] { 18, 14, 10, 6, 2 };
+            rotationLoopsPoles[4] = new int[] { 38, 34, 30, 26, 22 };
+            rotationLoopsPoles[5] = new int[] { 39, 35, 31, 27, 23 };
+            rotationLoopsPoles[6] = new int[] { 36, 32, 28, 24, 20 };
+            rotationLoopsPoles[7] = new int[] { 57, 53, 49, 45, 41 };
+            rotationLoopsPoles[8] = new int[] { 37, 33, 29, 25, 21 };
+            rotationLoopsPoles[9] = new int[] { 56, 52, 48, 44, 40 };
+            rotationLoopsPoles[10] = new int[] { 58, 54, 50, 46, 42 };
+            rotationLoopsPoles[11] = new int[] { 59, 55, 51, 47, 43 };
+            rotationLoopsPoles[12] = new int[] { 79, 75, 71, 67, 63 };
+            rotationLoopsPoles[13] = new int[] { 78, 74, 70, 66, 62 };
+            rotationLoopsPoles[14] = new int[] { 76, 72, 68, 64, 60 };
+            rotationLoopsPoles[15] = new int[] { 77, 73, 69, 65, 61 };
+
+            // Right arrow (rotate at poles)
+            x = _tiles[57].Location.X + _tiles[57].BoundingBox.Width + GraphicsSettings.TileHorizontalSpacing * 2;
+            y = _tiles[57].Location.Y + yOffsetInverted;
+            _rotations.Add(new GameRotation
+            {
+                Location = new Point(x - radius, y - radius),
+                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                RotationLoops = rotationLoopsPoles,
+                Image = Properties.Resources.rotate_right
             });
         }
 
@@ -278,9 +309,7 @@ namespace Volcano.Interface
                     matrix.Matrix33 = opacity;
                     ImageAttributes attributes = new ImageAttributes();
                     attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-
-                    Bitmap image = _rotations[i].Clockwise ? Properties.Resources.rotate_clockwise: Properties.Resources.rotate_counter_clockwise;
-                    g.DrawImage(image, _rotations[i].BoundingBox, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, attributes);
+                    g.DrawImage(_rotations[i].Image, _rotations[i].BoundingBox, 0, 0, _rotations[i].Image.Width, _rotations[i].Image.Height, GraphicsUnit.Pixel, attributes);
                 }
 
                 // Draw tiles

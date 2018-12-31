@@ -42,7 +42,7 @@ namespace Volcano.Interface
         public int IdealPanelHeight { get { return TileHeight * 6 + TileHorizontalSpacing * 4 + TileSpacing * 7 + BoardSpacing * 2; } }
 
         public bool ShowTileNames { get; set; } = false;
-        public bool ShowTileIndexes { get; set; } = true;
+        public bool ShowTileIndexes { get; set; } = false;
 
         private GameGraphicsSettings()
         {

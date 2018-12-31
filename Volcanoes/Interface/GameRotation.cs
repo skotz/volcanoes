@@ -15,6 +15,7 @@ namespace Volcano.Interface
         public GraphicsPath Path { get; set; }
         public int[][] RotationLoops { get; set; }
         public bool Clockwise { get; set; }
+        public Bitmap Image { get; set; }
 
         public Rectangle SmallerBox
         {
