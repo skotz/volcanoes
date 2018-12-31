@@ -44,6 +44,8 @@ namespace Volcano.Interface
         public bool ShowTileNames { get; set; } = false;
         public bool ShowTileIndexes { get; set; } = false;
 
+        public bool ShowRotationButtons { get; set; } = true;
+
         private GameGraphicsSettings()
         {
         }

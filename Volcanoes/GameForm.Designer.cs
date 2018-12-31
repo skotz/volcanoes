@@ -38,7 +38,6 @@
             this.lblStatusBar = new System.Windows.Forms.ToolStripStatusLabel();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.newGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.saveGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadTranscriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -60,7 +59,6 @@
             this.exportThemeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetThemeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.btnNewGame = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
             this.cbPlayerOne = new System.Windows.Forms.ToolStripComboBox();
@@ -71,15 +69,17 @@
             this.toolStripLabel3 = new System.Windows.Forms.ToolStripLabel();
             this.cbSeconds = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.chkHighlightLastMove = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnNavStart = new System.Windows.Forms.ToolStripButton();
-            this.btnNavBack = new System.Windows.Forms.ToolStripButton();
             this.lblTranscriptMove = new System.Windows.Forms.ToolStripLabel();
-            this.btnNavNext = new System.Windows.Forms.ToolStripButton();
-            this.btnNavEnd = new System.Windows.Forms.ToolStripButton();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.newGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnNewGame = new System.Windows.Forms.ToolStripButton();
+            this.chkHighlightLastMove = new System.Windows.Forms.ToolStripButton();
+            this.btnNavStart = new System.Windows.Forms.ToolStripButton();
+            this.btnNavBack = new System.Windows.Forms.ToolStripButton();
+            this.btnNavNext = new System.Windows.Forms.ToolStripButton();
+            this.btnNavEnd = new System.Windows.Forms.ToolStripButton();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -175,14 +175,6 @@
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(50, 20);
             this.fileToolStripMenuItem.Text = "&Game";
-            // 
-            // newGameToolStripMenuItem
-            // 
-            this.newGameToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("newGameToolStripMenuItem.Image")));
-            this.newGameToolStripMenuItem.Name = "newGameToolStripMenuItem";
-            this.newGameToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
-            this.newGameToolStripMenuItem.Text = "&New Game";
-            this.newGameToolStripMenuItem.Click += new System.EventHandler(this.btnNewGame_Click);
             // 
             // toolStripSeparator5
             // 
@@ -362,16 +354,6 @@
             this.toolStrip1.Stretch = true;
             this.toolStrip1.TabIndex = 1;
             // 
-            // btnNewGame
-            // 
-            this.btnNewGame.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnNewGame.Image = ((System.Drawing.Image)(resources.GetObject("btnNewGame.Image")));
-            this.btnNewGame.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnNewGame.Name = "btnNewGame";
-            this.btnNewGame.Size = new System.Drawing.Size(23, 22);
-            this.btnNewGame.Text = "New Game";
-            this.btnNewGame.Click += new System.EventHandler(this.btnNewGame_Click);
-            // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
@@ -436,6 +418,44 @@
             this.toolStripSeparator3.Name = "toolStripSeparator3";
             this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
             // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 25);
+            // 
+            // lblTranscriptMove
+            // 
+            this.lblTranscriptMove.Name = "lblTranscriptMove";
+            this.lblTranscriptMove.Size = new System.Drawing.Size(24, 22);
+            this.lblTranscriptMove.Text = "0/0";
+            // 
+            // saveFileDialog1
+            // 
+            this.saveFileDialog1.DefaultExt = "*.vgt";
+            this.saveFileDialog1.Filter = "Volcanoes Game Transcript|*.vgt";
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.Filter = "Volcanoes Game Transcript|*.vgt";
+            // 
+            // newGameToolStripMenuItem
+            // 
+            this.newGameToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("newGameToolStripMenuItem.Image")));
+            this.newGameToolStripMenuItem.Name = "newGameToolStripMenuItem";
+            this.newGameToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.newGameToolStripMenuItem.Text = "&New Game";
+            this.newGameToolStripMenuItem.Click += new System.EventHandler(this.btnNewGame_Click);
+            // 
+            // btnNewGame
+            // 
+            this.btnNewGame.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnNewGame.Image = ((System.Drawing.Image)(resources.GetObject("btnNewGame.Image")));
+            this.btnNewGame.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnNewGame.Name = "btnNewGame";
+            this.btnNewGame.Size = new System.Drawing.Size(23, 22);
+            this.btnNewGame.Text = "New Game";
+            this.btnNewGame.Click += new System.EventHandler(this.btnNewGame_Click);
+            // 
             // chkHighlightLastMove
             // 
             this.chkHighlightLastMove.CheckOnClick = true;
@@ -445,11 +465,6 @@
             this.chkHighlightLastMove.Name = "chkHighlightLastMove";
             this.chkHighlightLastMove.Size = new System.Drawing.Size(23, 22);
             this.chkHighlightLastMove.Text = "Highlight Last Move";
-            // 
-            // toolStripSeparator6
-            // 
-            this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 25);
             // 
             // btnNavStart
             // 
@@ -471,12 +486,6 @@
             this.btnNavBack.Text = "Previous";
             this.btnNavBack.Click += new System.EventHandler(this.btnNavBack_Click);
             // 
-            // lblTranscriptMove
-            // 
-            this.lblTranscriptMove.Name = "lblTranscriptMove";
-            this.lblTranscriptMove.Size = new System.Drawing.Size(24, 22);
-            this.lblTranscriptMove.Text = "0/0";
-            // 
             // btnNavNext
             // 
             this.btnNavNext.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -496,15 +505,6 @@
             this.btnNavEnd.Size = new System.Drawing.Size(23, 22);
             this.btnNavEnd.Text = "Last";
             this.btnNavEnd.Click += new System.EventHandler(this.btnNavEnd_Click);
-            // 
-            // saveFileDialog1
-            // 
-            this.saveFileDialog1.DefaultExt = "*.vgt";
-            this.saveFileDialog1.Filter = "Volcanoes Game Transcript|*.vgt";
-            // 
-            // openFileDialog1
-            // 
-            this.openFileDialog1.Filter = "Volcanoes Game Transcript|*.vgt";
             // 
             // GameForm
             // 

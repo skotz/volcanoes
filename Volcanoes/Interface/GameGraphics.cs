@@ -44,9 +44,11 @@ namespace Volcano.Interface
 
         private void InitializeRotations()
         {
+            // TODO: simplify this mess
             _rotations = new List<GameRotation>();
 
             int radius = _tiles[0].BoundingBox.Width / 5;
+            int xOffset = _tiles[0].BoundingBox.Width + GraphicsSettings.TileHorizontalSpacing;
             int yOffset = _tiles[0].BoundingBox.Height * 2 / 3;
             int yOffsetInverted = _tiles[0].BoundingBox.Height - yOffset;
 
@@ -78,8 +80,8 @@ namespace Volcano.Interface
                 RotationLoops = rotationLoops,
                 Image = Properties.Resources.rotate_counter_clockwise
             });
-            x = _tiles[7].Location.X - GraphicsSettings.TileHorizontalSpacing;
-            y = _tiles[7].Location.Y + yOffsetInverted;
+            x = _tiles[2].Location.X + xOffset;
+            y = _tiles[2].Location.Y + yOffsetInverted;
             _rotations.Add(new GameRotation
             {
                 Location = new Point(x - radius, y - radius),
@@ -116,6 +118,231 @@ namespace Volcano.Interface
                 BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
                 RotationLoops = rotationLoopsPoles,
                 Image = Properties.Resources.rotate_right
+            });
+
+            // The rest of the rotation loops can be generated as a combination of the previous loops
+            int[][] rotationLoops2 = new int[16][];
+            for (int i = 0; i < 16; i++)
+            {
+                rotationLoops2[i] = new int[5];
+                for (int r = 0; r < 5; r++)
+                {
+                    // Copy a pole rotation
+                    rotationLoops2[i][4 - r] = rotationLoopsPoles[i][r];
+
+                    // Find a rotation and apply that too
+                    for (int j = 0; j < 16; j++)
+                    {
+                        for (int k = 0; k < 5; k++)
+                        {
+                            if (rotationLoops2[i][4 - r] == rotationLoops[j][k])
+                            {
+                                rotationLoops2[i][4 - r] = rotationLoops[j][(k - 1 + 5) % 5];
+                                j = 16;
+                                k = 5;
+                            }
+                        }
+                    }
+                }
+            }
+
+            x = _tiles[78].Location.X - GraphicsSettings.TileHorizontalSpacing;
+            y = _tiles[78].Location.Y + yOffset;
+            _rotations.Add(new GameRotation
+            {
+                Location = new Point(x - radius, y - radius),
+                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                RotationLoops = rotationLoops2,
+                Image = Properties.Resources.rotate_counter_clockwise
+            });
+            x = _tiles[6].Location.X + xOffset;
+            y = _tiles[6].Location.Y + yOffsetInverted;
+            _rotations.Add(new GameRotation
+            {
+                Location = new Point(x - radius, y - radius),
+                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                RotationLoops = rotationLoops2,
+                Image = Properties.Resources.rotate_clockwise
+            });
+            
+            int[][] rotationLoop3 = new int[16][];
+            for (int i = 0; i < 16; i++)
+            {
+                rotationLoop3[i] = new int[5];
+                for (int r = 0; r < 5; r++)
+                {
+                    // Copy a pole rotation
+                    rotationLoop3[i][4 - r] = rotationLoopsPoles[i][r];
+
+                    // Find a rotation and apply that too
+                    for (int j = 0; j < 16; j++)
+                    {
+                        for (int k = 0; k < 5; k++)
+                        {
+                            if (rotationLoop3[i][4 - r] == rotationLoops[j][k])
+                            {
+                                rotationLoop3[i][4 - r] = rotationLoops[j][(k - 1 + 5) % 5];
+                                j = 16;
+                                k = 5;
+                            }
+                        }
+                    }
+
+                    // Run the pole rotation again
+                    for (int j = 0; j < 16; j++)
+                    {
+                        for (int k = 0; k < 5; k++)
+                        {
+                            if (rotationLoop3[i][4 - r] == rotationLoopsPoles[j][k])
+                            {
+                                rotationLoop3[i][4 - r] = rotationLoopsPoles[j][(k - 1 + 5) % 5];
+                                j = 16;
+                                k = 5;
+                            }
+                        }
+                    }
+                }
+            }
+
+            x = _tiles[62].Location.X - GraphicsSettings.TileHorizontalSpacing;
+            y = _tiles[62].Location.Y + yOffset;
+            _rotations.Add(new GameRotation
+            {
+                Location = new Point(x - radius, y - radius),
+                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                RotationLoops = rotationLoop3,
+                Image = Properties.Resources.rotate_counter_clockwise
+            });
+            x = _tiles[10].Location.X + xOffset;
+            y = _tiles[10].Location.Y + yOffsetInverted;
+            _rotations.Add(new GameRotation
+            {
+                Location = new Point(x - radius, y - radius),
+                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                RotationLoops = rotationLoop3,
+                Image = Properties.Resources.rotate_clockwise
+            });
+
+            int[][] rotationLoop4 = new int[16][];
+            for (int i = 0; i < 16; i++)
+            {
+                rotationLoop4[i] = new int[5];
+                for (int r = 0; r < 5; r++)
+                {
+                    // Copy a pole rotation
+                    rotationLoop4[i][4 - r] = rotationLoopsPoles[i][r];
+
+                    // Find a rotation and apply that too
+                    for (int j = 0; j < 16; j++)
+                    {
+                        for (int k = 0; k < 5; k++)
+                        {
+                            if (rotationLoop4[i][4 - r] == rotationLoops[j][k])
+                            {
+                                rotationLoop4[i][4 - r] = rotationLoops[j][(k - 1 + 5) % 5];
+                                j = 16;
+                                k = 5;
+                            }
+                        }
+                    }
+
+                    // Run the pole rotation two more times
+                    for (int c = 0; c < 2; c++)
+                    {
+                        for (int j = 0; j < 16; j++)
+                        {
+                            for (int k = 0; k < 5; k++)
+                            {
+                                if (rotationLoop4[i][4 - r] == rotationLoopsPoles[j][k])
+                                {
+                                    rotationLoop4[i][4 - r] = rotationLoopsPoles[j][(k - 1 + 5) % 5];
+                                    j = 16;
+                                    k = 5;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            x = _tiles[66].Location.X - GraphicsSettings.TileHorizontalSpacing;
+            y = _tiles[66].Location.Y + yOffset;
+            _rotations.Add(new GameRotation
+            {
+                Location = new Point(x - radius, y - radius),
+                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                RotationLoops = rotationLoop4,
+                Image = Properties.Resources.rotate_counter_clockwise
+            });
+            x = _tiles[14].Location.X + xOffset;
+            y = _tiles[14].Location.Y + yOffsetInverted;
+            _rotations.Add(new GameRotation
+            {
+                Location = new Point(x - radius, y - radius),
+                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                RotationLoops = rotationLoop4,
+                Image = Properties.Resources.rotate_clockwise
+            });
+
+            int[][] rotationLoop5 = new int[16][];
+            for (int i = 0; i < 16; i++)
+            {
+                rotationLoop5[i] = new int[5];
+                for (int r = 0; r < 5; r++)
+                {
+                    // Copy a pole rotation
+                    rotationLoop5[i][4 - r] = rotationLoopsPoles[i][r];
+
+                    // Find a rotation and apply that too
+                    for (int j = 0; j < 16; j++)
+                    {
+                        for (int k = 0; k < 5; k++)
+                        {
+                            if (rotationLoop5[i][4 - r] == rotationLoops[j][k])
+                            {
+                                rotationLoop5[i][4 - r] = rotationLoops[j][(k - 1 + 5) % 5];
+                                j = 16;
+                                k = 5;
+                            }
+                        }
+                    }
+
+                    // Run the pole rotation three more times
+                    for (int c = 0; c < 3; c++)
+                    {
+                        for (int j = 0; j < 16; j++)
+                        {
+                            for (int k = 0; k < 5; k++)
+                            {
+                                if (rotationLoop5[i][4 - r] == rotationLoopsPoles[j][k])
+                                {
+                                    rotationLoop5[i][4 - r] = rotationLoopsPoles[j][(k - 1 + 5) % 5];
+                                    j = 16;
+                                    k = 5;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            x = _tiles[70].Location.X - GraphicsSettings.TileHorizontalSpacing;
+            y = _tiles[70].Location.Y + yOffset;
+            _rotations.Add(new GameRotation
+            {
+                Location = new Point(x - radius, y - radius),
+                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                RotationLoops = rotationLoop5,
+                Image = Properties.Resources.rotate_counter_clockwise
+            });
+            x = _tiles[18].Location.X + xOffset;
+            y = _tiles[18].Location.Y + yOffsetInverted;
+            _rotations.Add(new GameRotation
+            {
+                Location = new Point(x - radius, y - radius),
+                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                RotationLoops = rotationLoop5,
+                Image = Properties.Resources.rotate_clockwise
             });
         }
 
@@ -251,12 +478,15 @@ namespace Volcano.Interface
         {
             Point mouse = GetOffsetPoint(mouseLocation);
 
-            // See if they clicked a rotation button
-            for (int i = 0; i < _rotations.Count; i++)
+            if (GraphicsSettings.ShowRotationButtons)
             {
-                if (_rotations[i].IsWithinCircle(mouse))
+                // See if they clicked a rotation button
+                for (int i = 0; i < _rotations.Count; i++)
                 {
-                    RotateBoard(_rotations[i].RotationLoops);
+                    if (_rotations[i].IsWithinCircle(mouse))
+                    {
+                        RotateBoard(_rotations[i].RotationLoops);
+                    }
                 }
             }
         }
@@ -297,19 +527,22 @@ namespace Volcano.Interface
                 g.Clear(background);
 
                 // Draw rotation buttons
-                for (int i = 0; i < _rotations.Count; i++)
+                if (GraphicsSettings.ShowRotationButtons)
                 {
-                    float opacity = 0.5f;
-                    if (_rotations[i].IsWithinCircle(mouse))
+                    for (int i = 0; i < _rotations.Count; i++)
                     {
-                        opacity = 1f;
-                    }
+                        float opacity = 0.25f;
+                        if (_rotations[i].IsWithinCircle(mouse))
+                        {
+                            opacity = 1f;
+                        }
 
-                    ColorMatrix matrix = new ColorMatrix();
-                    matrix.Matrix33 = opacity;
-                    ImageAttributes attributes = new ImageAttributes();
-                    attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-                    g.DrawImage(_rotations[i].Image, _rotations[i].BoundingBox, 0, 0, _rotations[i].Image.Width, _rotations[i].Image.Height, GraphicsUnit.Pixel, attributes);
+                        ColorMatrix matrix = new ColorMatrix();
+                        matrix.Matrix33 = opacity;
+                        ImageAttributes attributes = new ImageAttributes();
+                        attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                        g.DrawImage(_rotations[i].Image, _rotations[i].BoundingBox, 0, 0, _rotations[i].Image.Width, _rotations[i].Image.Height, GraphicsUnit.Pixel, attributes);
+                    }
                 }
 
                 // Draw tiles
