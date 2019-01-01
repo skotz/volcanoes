@@ -13,6 +13,8 @@ namespace Volcano.Engine
 
         public long Evaluations { get; set; }
 
+        public long Simulations { get; set; }
+
         public long Milliseconds { get; set; }
 
         public decimal HashPercentage { get; set; }

@@ -11,7 +11,8 @@ namespace Volcano.Engine
     class MonteCarloTreeSearchEngine : IEngine, IStatus
     {
         private Random random;
-        private int evaluations;
+        private int simulationCount;
+        private int visitedNodes;
         private int maxIterations;
 
         private int bufferMilliseconds = 200;
@@ -31,7 +32,8 @@ namespace Volcano.Engine
         {
             Stopwatch timer = Stopwatch.StartNew();
             statusUpdate = Stopwatch.StartNew();
-            evaluations = 0;
+            visitedNodes = 0;
+            simulationCount = 0;
 
             cancel = new EngineCancellationToken(() => token.Cancelled || timer.ElapsedMilliseconds >= maxSeconds * 1000 - bufferMilliseconds);
 
@@ -40,7 +42,8 @@ namespace Volcano.Engine
             return new SearchResult
             {
                 BestMove = best,
-                Evaluations = evaluations,
+                Evaluations = visitedNodes,
+                Simulations = simulationCount,
                 Milliseconds = timer.ElapsedMilliseconds
             };
         }
@@ -59,13 +62,14 @@ namespace Volcano.Engine
             {
                 var node = rootNode;
                 var state = new Board(rootState);
-                evaluations++;
+                simulationCount++;
 
                 // Select
                 while (node.Untried.Count == 0 && node.Children.Count > 0)
                 {
                     node = node.SelectChild();
                     state.MakeMove(node.Move);
+                    visitedNodes++;
                 }
 
                 // Expand
@@ -74,6 +78,7 @@ namespace Volcano.Engine
                     var move = node.Untried[random.Next(node.Untried.Count)];
                     state.MakeMove(move);
                     node = node.AddChild(state, move);
+                    visitedNodes++;
                 }
 
                 // Simulate
@@ -81,6 +86,7 @@ namespace Volcano.Engine
                 {
                     var moves = state.GetMoves();
                     state.MakeMove(moves[random.Next(moves.Count)]);
+                    visitedNodes++;
                 }
 
                 // Backpropagate
@@ -88,6 +94,7 @@ namespace Volcano.Engine
                 {
                     node.Update(state.Winner == node.LastToMove ? 1.0 : 0.0);
                     node = node.Parent;
+                    visitedNodes++;
                 }
 
                 // Cut Short
