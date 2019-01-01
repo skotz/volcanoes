@@ -57,8 +57,8 @@ namespace Volcano.Engine
             {
                 for (int tile = 0; tile < 80; tile++)
                 {
-                    int player = (int)board.Tiles[tile].Owner;
-                    int value = board.Tiles[tile].Value;
+                    int player = board.Tiles[tile] == 0 ? 0 : (board.Tiles[tile] > 0 ? 1 : 2);
+                    int value = Math.Abs(board.Tiles[tile]);
 
                     hash ^= tilesMasks[tile][player][value];
                 }

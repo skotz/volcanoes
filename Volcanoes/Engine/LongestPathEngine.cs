@@ -61,7 +61,7 @@ namespace Volcano.Engine
             List<int> tiles = new List<int>();
             for (int i = 0; i < 80; i++)
             {
-                if (state.Tiles[i].Owner == player)
+                if ((state.Tiles[i] > 0 && player == Player.One) || (state.Tiles[i] < 0 && player == Player.Two))
                 {
                     tiles.Add(i);
                 }

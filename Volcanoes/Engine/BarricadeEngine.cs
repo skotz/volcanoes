@@ -23,11 +23,12 @@ namespace Volcano.Engine
             PathResult[] enemyPaths = new PathResult[80];
             for (int i = 0; i < 80; i++)
             {
-                if (state.Tiles[i].Owner == state.Player)
+                if ((state.Tiles[i] > 0 && state.Player == Player.One) || (state.Tiles[i] < 0 && state.Player == Player.Two))
                 {
                     selfPaths[i] = pathFinder.FindPath(state, i, Constants.Antipodes[i]);
                 }
-                else if (state.Tiles[i].Owner != Player.Empty)
+                else
+                if (state.Tiles[i] != 0)
                 {
                     enemyPaths[i] = pathFinder.FindPath(state, i, Constants.Antipodes[i]);
                 }
@@ -44,7 +45,7 @@ namespace Volcano.Engine
                     // If we're two moves ahead of our opponent, then run to the finish line
                     foreach (int tile in bestSelfPath.Path)
                     {
-                        if (state.Tiles[tile].Owner == Player.Empty && moves.Contains(tile))
+                        if (state.Tiles[tile] == 0 && moves.Contains(tile))
                         {
                             best = tile;
                             break;
@@ -56,7 +57,7 @@ namespace Volcano.Engine
                     // Try to obstruct our opponent's path
                     foreach (int tile in bestEnemyPath.Path)
                     {
-                        if (state.Tiles[tile].Owner == Player.Empty && moves.Contains(tile))
+                        if (state.Tiles[tile] == 0 && moves.Contains(tile))
                         {
                             best = tile;
                             break;

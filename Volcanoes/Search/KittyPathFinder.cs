@@ -18,7 +18,7 @@ namespace Volcano.Search
 
         protected override bool IsTraversableTile(Board state, Player player, int tileIndex)
         {
-            return !_playerOnly || state.Tiles[tileIndex].Owner == player;
+            return !_playerOnly || ((state.Tiles[tileIndex] > 0 && player == Player.One) || (state.Tiles[tileIndex] < 0 && player == Player.Two));
         }
 
         protected override int[] GetNeighborTiles(Board state, int tileIndex)

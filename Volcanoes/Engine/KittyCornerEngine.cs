@@ -25,7 +25,7 @@ namespace Volcano.Engine
             List<int> antipodePath = new List<int>();
             for (int i = 0; i < 80; i++)
             {
-                if (state.Tiles[i].Owner == state.Player)
+                if ((state.Tiles[i] > 0 && state.Player == Player.One) || (state.Tiles[i] < 0 && state.Player == Player.Two))
                 {
                     List<int> path = GetAntipodePath(state, i);
                     if (path.Count > 0)
@@ -46,7 +46,7 @@ namespace Volcano.Engine
                     adjacentAntipodePath.AddRange(Constants.AdjacentIndexes[i]);
                 }
 
-                List<int> antipodeSupport = moves.Where(x => adjacentAntipodePath.Contains(x) && state.Tiles[x].Owner == Player.Empty).ToList();
+                List<int> antipodeSupport = moves.Where(x => adjacentAntipodePath.Contains(x) && state.Tiles[x] == 0).ToList();
 
                 if (antipodeSupport.Count > 0)
                 {
@@ -65,14 +65,14 @@ namespace Volcano.Engine
                 // If we've played at lest once, find a suggested antipode path and try that
                 if (bestPathStart >= 0)
                 {
-                    if (state.Tiles[bestPathStart].Owner == state.Player)
+                    if ((state.Tiles[bestPathStart] > 0 && state.Player == Player.One) || (state.Tiles[bestPathStart] < 0 && state.Player == Player.Two))
                     {
                         List<int> suggestedPath = GetSuggestedAntipodePath(state, bestPathStart);
                         foreach (int tile in suggestedPath)
                         {
-                            if (state.Tiles[tile].Owner == state.Player || state.Tiles[tile].Owner == Player.Empty)
+                            if (((state.Tiles[tile] > 0 && state.Player == Player.One) || (state.Tiles[tile] < 0 && state.Player == Player.Two)) || state.Tiles[tile] == 0)
                             {
-                                if (moves.Any(x => x == tile && state.Tiles[x].Owner == Player.Empty))
+                                if (moves.Any(x => x == tile && state.Tiles[x] == 0))
                                 {
                                     // Return the next move in the path to the antipode
                                     return new SearchResult(tile);
@@ -95,12 +95,12 @@ namespace Volcano.Engine
                     List<int> kittyCornerMoves = new List<int>();
                     foreach (int move in alphaMoves)
                     {
-                        if (state.Tiles[move].Owner == Player.Empty)
+                        if (state.Tiles[move] == 0)
                         {
                             int adjacentCount = 0;
                             foreach (int i in Constants.KittyCornerTiles[move])
                             {
-                                if (state.Tiles[i].Owner == state.Player)
+                                if (state.Tiles[i] == 0)
                                 {
                                     adjacentCount++;
 

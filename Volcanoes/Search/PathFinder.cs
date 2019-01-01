@@ -21,13 +21,13 @@ namespace Volcano.Search
         protected virtual bool IsTraversableTile(Board state, Player player, int tileIndex)
         {
             // Ignore tiles that aren't the player's
-            if (state.Tiles[tileIndex].Owner != player)
+            if ((state.Tiles[tileIndex] > 0 && player != Player.One) || (state.Tiles[tileIndex] < 0 && player != Player.Two))
             {
                 return false;
             }
 
             // Ignore magma chambers
-            if (state.Tiles[tileIndex].Value <= VolcanoGame.Settings.MaxMagmaChamberLevel)
+            if (Math.Abs(state.Tiles[tileIndex]) <= VolcanoGame.Settings.MaxMagmaChamberLevel)
             {
                 return false;
             }
@@ -54,6 +54,8 @@ namespace Volcano.Search
         {
             // The set of nodes already evaluated
             bool[] closedSet = new bool[80];
+
+            Player player = state.Tiles[startingIndex] == 0 ? Player.Empty : (state.Tiles[startingIndex] > 0 ? Player.One : Player.Two);
 
             // The set of currently discovered nodes that are not evaluated yet.
             // Initially, only the start node is known.
@@ -138,7 +140,7 @@ namespace Volcano.Search
                         continue;
                     }
 
-                    if (!IsTraversableTile(state, state.Tiles[startingIndex].Owner, neighbor))
+                    if (!IsTraversableTile(state, player, neighbor))
                     {
                         continue;
                     }

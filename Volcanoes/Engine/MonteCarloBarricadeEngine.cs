@@ -22,7 +22,7 @@ namespace Volcano.Engine
             List<PathResult> enemyPaths = new List<PathResult>();
             for (int i = 0; i < 80; i++)
             {
-                if (position.Tiles[i].Owner != position.Player && position.Tiles[i].Owner != Player.Empty)
+                if ((position.Tiles[i] > 0 && position.Player != Player.One) || (position.Tiles[i] < 0 && position.Player != Player.Two) && position.Tiles[i] != 0)
                 {
                     var path = pathFinder.FindPath(position, i, Constants.Antipodes[i]);
                     if (path != null && path.Distance != 0)
