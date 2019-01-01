@@ -1,7 +1,7 @@
 # Volcanoes
 This is a prototype for a new board game concept being designed by Simon Dorfman and developed by Scott Clayton.
 
-![Board Concept](Concept/z-history-20181231a.png)
+![Board Concept](Concept/History/z-history-20181231a.png)
 
 ## Rules
 The goal of the game is to create an unbroken line of volcanoes which connect points on 
@@ -31,22 +31,22 @@ This cycle repeats until a player wins by successfully connecting a pair of anti
 ## Engines
 Several computer AIs are included with Volcanoes. Here are the current rankings from a recent round robin tournament.
 
-![Engine Cross Table](Concept/z-history-20190101.png)
+![Engine Cross Table](Concept/History/z-history-20190101.png)
 
 Our goal is to learn strategies for this game through the analysis of games played by computer AIs.
 
 ## Features
 Most engines report their progress while searching for the best move.
 
-![Engine Output](Concept/z-history-20181231c.png)
+![Engine Output](Concept/History/z-history-20181231c.png)
 
 The board can be rotated around different axes to make it easier to see paths which wrap around the cyclical board.
 
-![Board Rotation](Concept/z-history-20181231b.gif)
+![Board Rotation](Concept/History/z-history-20181231b.gif)
 
 Run round robin tournaments with the provided engines to get cross tables and detailed result data.
 
-![Board Rotation](Concept/z-history-20181231d.png)
+![Board Rotation](Concept/History/z-history-20181231d.png)
 
 Player One | Player Two | Winner | Termination | Total Moves | Total Milliseconds | Starting Tile Index | Transcript
 --- | --- | --- | --- | --- | --- | --- | ---
