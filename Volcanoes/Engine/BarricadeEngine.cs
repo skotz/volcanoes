@@ -25,11 +25,11 @@ namespace Volcano.Engine
             {
                 if (state.Tiles[i].Owner == state.Player)
                 {
-                    selfPaths[i] = pathFinder.FindPath(state, i, state.Tiles[i].Antipode);
+                    selfPaths[i] = pathFinder.FindPath(state, i, Constants.Antipodes[i]);
                 }
                 else if (state.Tiles[i].Owner != Player.Empty)
                 {
-                    enemyPaths[i] = pathFinder.FindPath(state, i, state.Tiles[i].Antipode);
+                    enemyPaths[i] = pathFinder.FindPath(state, i, Constants.Antipodes[i]);
                 }
             }
 

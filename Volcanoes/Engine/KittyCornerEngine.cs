@@ -43,7 +43,7 @@ namespace Volcano.Engine
                 List<int> adjacentAntipodePath = new List<int>();
                 foreach (int i in antipodePath)
                 {
-                    adjacentAntipodePath.AddRange(state.Tiles[i].AdjacentIndexes);
+                    adjacentAntipodePath.AddRange(Constants.AdjacentIndexes[i]);
                 }
 
                 List<int> antipodeSupport = moves.Where(x => adjacentAntipodePath.Contains(x) && state.Tiles[x].Owner == Player.Empty).ToList();
@@ -98,7 +98,7 @@ namespace Volcano.Engine
                         if (state.Tiles[move].Owner == Player.Empty)
                         {
                             int adjacentCount = 0;
-                            foreach (int i in state.Tiles[move].KittyCornerIndexes)
+                            foreach (int i in Constants.KittyCornerTiles[move])
                             {
                                 if (state.Tiles[i].Owner == state.Player)
                                 {
@@ -149,12 +149,12 @@ namespace Volcano.Engine
 
         private List<int> GetAntipodePath(Board state, int index)
         {
-            return playerOnlyPathFinder.FindPath(state, index, state.Tiles[index].Antipode).Path;
+            return playerOnlyPathFinder.FindPath(state, index, Constants.Antipodes[index]).Path;
         }
 
         private List<int> GetSuggestedAntipodePath(Board state, int index)
         {
-            return pathFinder.FindPath(state, index, state.Tiles[index].Antipode).Path;
+            return pathFinder.FindPath(state, index, Constants.Antipodes[index]).Path;
         }
     }
 }

@@ -554,11 +554,11 @@ namespace Volcano.Interface
                     {
                         if (GraphicsSettings.ShowTileNames)
                         {
-                            DrawTileCenterText(g, i, gameState.Tiles[boardIndexFromTileIndex[i]].Name);
+                            DrawTileCenterText(g, i, Constants.TileNames[boardIndexFromTileIndex[i]]);
                         }
                         else if (GraphicsSettings.ShowTileIndexes)
                         {
-                            DrawTileMainText(g, i, gameState.Tiles[boardIndexFromTileIndex[i]].Index.ToString());
+                            DrawTileMainText(g, i, boardIndexFromTileIndex[i].ToString());
                         }
 
                         //DrawTileMainText(g, i, Constants.FastestPaths[i].Length.ToString());
@@ -567,7 +567,7 @@ namespace Volcano.Interface
                     {
                         int value = gameState.Tiles[boardIndexFromTileIndex[i]].Value;
 
-                        if (gameState.Tiles[boardIndexFromTileIndex[i]].Type == TileType.MagmaChamber)
+                        if (gameState.Tiles[boardIndexFromTileIndex[i]].Value <= VolcanoGame.Settings.MaxMagmaChamberLevel)
                         {
                             DrawTileSubText(g, i, "Chamber");
                         }
@@ -612,11 +612,11 @@ namespace Volcano.Interface
 
             if (gameState.Tiles[boardIndexFromTileIndex[index]].Owner == Player.One)
             {
-                tileColor = gameState.Tiles[boardIndexFromTileIndex[index]].Type == TileType.Volcano ? GraphicsSettings.PlayerOneVolcanoTileColor : GraphicsSettings.PlayerOneMagmaChamberTileColor;
+                tileColor = gameState.Tiles[boardIndexFromTileIndex[index]].Value > VolcanoGame.Settings.MaxMagmaChamberLevel ? GraphicsSettings.PlayerOneVolcanoTileColor : GraphicsSettings.PlayerOneMagmaChamberTileColor;
             }
             else if (gameState.Tiles[boardIndexFromTileIndex[index]].Owner == Player.Two)
             {
-                tileColor = gameState.Tiles[boardIndexFromTileIndex[index]].Type == TileType.Volcano ? GraphicsSettings.PlayerTwoVolcanoTileColor : GraphicsSettings.PlayerTwoMagmaChamberTileColor;
+                tileColor = gameState.Tiles[boardIndexFromTileIndex[index]].Value > VolcanoGame.Settings.MaxMagmaChamberLevel ? GraphicsSettings.PlayerTwoVolcanoTileColor : GraphicsSettings.PlayerTwoMagmaChamberTileColor;
             }
 
             // Winning path
@@ -662,7 +662,7 @@ namespace Volcano.Interface
                 }
 
                 // Tiles directly adjacent to the tile under the mouse pointer
-                if (Constants.ConnectingTiles[hoverTile].Any(x => x == index))
+                if (Constants.AdjacentIndexes[hoverTile].Any(x => x == index))
                 {
                     Pen pen = new Pen(GraphicsSettings.HoverAdjacentTileBorderColor, GraphicsSettings.TileHorizontalSpacing);
                     g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
@@ -676,7 +676,7 @@ namespace Volcano.Interface
                 //}
 
                 // Tile on the opposite side of the board
-                if (gameState.Tiles[hoverTile].Antipode == index)
+                if (Constants.Antipodes[hoverTile] == index)
                 {
                     Pen pen = new Pen(GraphicsSettings.HoverAntipodeTileBorderColor, GraphicsSettings.TileHorizontalSpacing);
                     g.DrawPolygon(pen, _tiles[index].Path.PathPoints);

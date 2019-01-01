@@ -23,7 +23,7 @@ namespace Volcano.Search
 
         protected override int[] GetNeighborTiles(Board state, int tileIndex)
         {
-            return state.Tiles[tileIndex].KittyCornerIndexes;
+            return Constants.KittyCornerTiles[tileIndex];
         }
     }
 }

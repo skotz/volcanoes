@@ -25,7 +25,7 @@ namespace Volcano.Engine
             {
                 if (position.Tiles[i].Owner == position.Player)
                 {
-                    var path = pathFinder.FindPath(position, i, position.Tiles[i].Antipode);
+                    var path = pathFinder.FindPath(position, i, Constants.Antipodes[i]);
                     if (path != null && path.Distance != 0)
                     {
                         selfPaths.Add(path);
@@ -33,7 +33,7 @@ namespace Volcano.Engine
                 }
                 else if (position.Tiles[i].Owner != Player.Empty)
                 {
-                    var path = pathFinder.FindPath(position, i, position.Tiles[i].Antipode);
+                    var path = pathFinder.FindPath(position, i, Constants.Antipodes[i]);
                     if (path != null && path.Distance != 0)
                     {
                         enemyPaths.Add(path);

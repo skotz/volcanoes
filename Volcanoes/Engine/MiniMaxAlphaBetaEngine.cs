@@ -48,11 +48,11 @@ namespace Volcano.Engine
                 {
                     for (int c = 0; c < 3; c++)
                     {
-                        if (position.Tiles[i].Owner == Player.One && position.Tiles[position.Tiles[i].AdjacentIndexes[c]].Owner == Player.One)
+                        if (position.Tiles[i].Owner == Player.One && position.Tiles[Constants.AdjacentIndexes[i][c]].Owner == Player.One)
                         {
                             score++;
                         }
-                        if (position.Tiles[i].Owner == Player.Two && position.Tiles[position.Tiles[i].AdjacentIndexes[c]].Owner == Player.Two)
+                        if (position.Tiles[i].Owner == Player.Two && position.Tiles[Constants.AdjacentIndexes[i][c]].Owner == Player.Two)
                         {
                             score--;
                         }
@@ -105,7 +105,7 @@ namespace Volcano.Engine
 
                 for (int c = 0; c < 3; c++)
                 {
-                    if (position.Tiles[position.Tiles[i].AdjacentIndexes[c]].Value > 0)
+                    if (position.Tiles[Constants.AdjacentIndexes[i][c]].Value > 0)
                     {
                         ok = true;
                         break;

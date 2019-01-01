@@ -42,7 +42,6 @@ namespace Volcano.Game
             {
                 Tiles.Add(new Tile
                 {
-                    Index = i,
                     Owner = Player.Empty,
                     Value = 0
                 });
@@ -140,7 +139,7 @@ namespace Volcano.Game
                     // Downgrade to a level one volcano
                     Tiles[i].Value = VolcanoGame.Settings.MaxMagmaChamberLevel + 1;
 
-                    foreach (int adjacent in Constants.ConnectingTiles[i])
+                    foreach (int adjacent in Constants.AdjacentIndexes[i])
                     {
                         // Blank tile
                         if (Tiles[adjacent].Owner == Player.Empty)
@@ -251,11 +250,11 @@ namespace Volcano.Game
             for (int i = 0; i < 40; i++)
             {
                 if (Tiles[i].Owner != Player.Empty && 
-                    Tiles[Tiles[i].Antipode].Owner == Tiles[i].Owner && 
+                    Tiles[Constants.Antipodes[i]].Owner == Tiles[i].Owner && 
                     Tiles[i].Value > VolcanoGame.Settings.MaxMagmaChamberLevel && 
-                    Tiles[Tiles[i].Antipode].Value > VolcanoGame.Settings.MaxMagmaChamberLevel)
+                    Tiles[Constants.Antipodes[i]].Value > VolcanoGame.Settings.MaxMagmaChamberLevel)
                 {
-                    List<int> path = pathFinder.FindPath(this, i, Tiles[i].Antipode).Path;
+                    List<int> path = pathFinder.FindPath(this, i, Constants.Antipodes[i]).Path;
 
                     if (path.Count > 0)
                     {

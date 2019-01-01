@@ -40,11 +40,11 @@ namespace Volcano.Engine
             {
                 if (position.Tiles[i].Owner == position.Player)
                 {
-                    paths[i] = pathFinder.FindPath(position, i, position.Tiles[i].Antipode);
+                    paths[i] = pathFinder.FindPath(position, i, Constants.Antipodes[i]);
                 }
                 else if (position.Tiles[i].Owner != Player.Empty)
                 {
-                    enemyPaths[i] = pathFinder.FindPath(position, i, position.Tiles[i].Antipode);
+                    enemyPaths[i] = pathFinder.FindPath(position, i, Constants.Antipodes[i]);
                 }
             }
 

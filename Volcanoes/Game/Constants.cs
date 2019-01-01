@@ -15,7 +15,7 @@ namespace Volcano.Game
         /// An array mapping a source tile index to it's three connecting triangle indexes.
         /// E.G., ConnectingTiles[55] = { 33, 52, 74 } since tile 55 connects to tiles 33, 51, and 74.
         /// </summary>
-        public static int[][] ConnectingTiles = GetConnectingTiles();
+        public static int[][] AdjacentIndexes = GetConnectingTiles();
 
         /// <summary>
         /// An array mapping a source tile index to it's tile name.
