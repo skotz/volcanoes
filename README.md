@@ -29,9 +29,9 @@ opposite sides of the [Pentakis Icosidodecahedron](https://en.wikipedia.org/wiki
 This cycle repeats until a player wins by successfully connecting a pair of antipodes (tiles directly opposite each other). 
 
 ## Engines
-Several computer AIs are included with Volcanoes. Here are the current rankings.
+Several computer AIs are included with Volcanoes. Here are the current rankings from a recent round robin tournament.
 
-![Board Concept](Concept/z-history-20181227.png)
+![Engine Cross Table](Concept/z-history-20190101.png)
 
 Our goal is to learn strategies for this game through the analysis of games played by computer AIs.
 

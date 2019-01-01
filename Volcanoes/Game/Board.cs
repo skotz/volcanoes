@@ -114,6 +114,7 @@ namespace Volcano.Game
         private void ProcessEruptions(Queue<int> eruptions)
         {
             int phases = 100;
+            Queue<int> deltaIndexes = new Queue<int>();
             while (eruptions.Count > 0 && phases-- > 0)
             {
                 // Phase one: get a list of deltas from eruptions
@@ -127,6 +128,8 @@ namespace Volcano.Game
 
                     foreach (int adjacent in Constants.AdjacentIndexes[i])
                     {
+                        deltaIndexes.Enqueue(adjacent);
+
                         // Blank tile
                         if (Tiles[adjacent] == 0)
                         {
@@ -169,8 +172,9 @@ namespace Volcano.Game
                 }
 
                 // Phase two: process deltas
-                for (int i = 0; i < 80; i++)
+                while (deltaIndexes.Count > 0)
                 {
+                    int i = deltaIndexes.Dequeue();
                     if (deltas[i] != 0)
                     {
                         bool playerOne = Tiles[i] > 0;
@@ -190,6 +194,9 @@ namespace Volcano.Game
                         {
                             eruptions.Enqueue(i);
                         }
+
+                        // So we don't process it a second time
+                        deltas[i] = 0;
                     }
                 }
             }
