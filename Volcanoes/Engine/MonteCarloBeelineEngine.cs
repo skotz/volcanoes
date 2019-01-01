@@ -69,9 +69,9 @@ namespace Volcano.Engine
                     PathResult best = new PathResult { Distance = int.MaxValue };
                     for (int i = 0; i < 80; i++)
                     {
-                        if (position.Tiles[i].Owner == position.Player)
+                        if ((position.Tiles[i] > 0 && position.Player == Player.One) || (position.Tiles[i] < 0 && position.Player == Player.Two))
                         {
-                            var test = pathFinder.FindPath(position, i, position.Tiles[i].Antipode);
+                            var test = pathFinder.FindPath(position, i, Constants.Antipodes[i]);
 
                             if (test.Distance < best.Distance)
                             {
@@ -86,7 +86,7 @@ namespace Volcano.Engine
                     {
                         foreach (int i in best.Path)
                         {
-                            if (position.Tiles[i].Owner == Player.Empty)
+                            if (position.Tiles[i] == 0)
                             {
                                 position.MakeMove(i);
                                 played = true;
@@ -135,13 +135,13 @@ namespace Volcano.Engine
             PathResult[] enemyPaths = new PathResult[80];
             for (int i = 0; i < 80; i++)
             {
-                if (position.Tiles[i].Owner == position.Player)
+                if ((position.Tiles[i] > 0 && position.Player == Player.One) || (position.Tiles[i] < 0 && position.Player == Player.Two))
                 {
-                    paths[i] = pathFinder.FindPath(position, i, position.Tiles[i].Antipode);
+                    paths[i] = pathFinder.FindPath(position, i, Constants.Antipodes[i]);
                 }
-                else if (position.Tiles[i].Owner != Player.Empty)
+                else if (position.Tiles[i] != 0)
                 {
-                    enemyPaths[i] = pathFinder.FindPath(position, i, position.Tiles[i].Antipode);
+                    enemyPaths[i] = pathFinder.FindPath(position, i, Constants.Antipodes[i]);
                 }
             }
 
@@ -155,7 +155,7 @@ namespace Volcano.Engine
                 // Create a list of moves that are on the ideal path
                 foreach (int i in best.Path)
                 {
-                    if (position.Tiles[i].Owner == Player.Empty)
+                    if (position.Tiles[i] == 0)
                     {
                         if (allMoves.Contains(i))
                         {
@@ -169,7 +169,7 @@ namespace Volcano.Engine
                     // Create a list of moves that are on the enemy's best path
                     foreach (int i in bestEnemy.Path)
                     {
-                        if (position.Tiles[i].Owner == Player.Empty)
+                        if (position.Tiles[i] == 0)
                         {
                             if (allMoves.Contains(i))
                             {
@@ -184,7 +184,7 @@ namespace Volcano.Engine
                 {
                     foreach (int i in best.Path)
                     {
-                        if (position.Tiles[i].Owner == position.Player && position.Tiles[i].Value <= VolcanoGame.Settings.MaxMagmaChamberLevel)
+                        if (((position.Tiles[i] > 0 && position.Player == Player.One) || (position.Tiles[i] < 0 && position.Player == Player.Two)) && Math.Abs(position.Tiles[i]) <= VolcanoGame.Settings.MaxMagmaChamberLevel)
                         {
                             if (allMoves.Contains(i))
                             {

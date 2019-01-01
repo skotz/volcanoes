@@ -18,15 +18,15 @@ namespace Volcano.Engine
             for (int i = 0; i < 80; i++)
             {
                 // Start from a tile we don't own
-                if (state.Tiles[i].Owner == Player.Empty)
+                if (state.Tiles[i] == 0)
                 {
                     List<int> neighbors = new List<int>();
-                    foreach (int adjacent in state.Tiles[i].AdjacentIndexes)
+                    foreach (int adjacent in Constants.AdjacentIndexes[i])
                     {
-                        foreach (int twoStepsAway in state.Tiles[adjacent].AdjacentIndexes)
+                        foreach (int twoStepsAway in Constants.AdjacentIndexes[adjacent])
                         {
                             // If the tile is exactly two steps away from a tile we own
-                            if (twoStepsAway != i && !state.Tiles[i].AdjacentIndexes.Contains(twoStepsAway) && state.Tiles[twoStepsAway].Owner == state.Player)
+                            if (twoStepsAway != i && !Constants.AdjacentIndexes[i].Contains(twoStepsAway) && ((state.Tiles[twoStepsAway] > 0 && state.Player == Player.One) || (state.Tiles[twoStepsAway] < 0 && state.Player == Player.Two)))
                             {
                                 if (!neighbors.Contains(twoStepsAway))
                                 {

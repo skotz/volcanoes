@@ -44,15 +44,15 @@ namespace Volcano.Engine
             // Get points for each connected tile
             for (int i = 0; i < 80; i++)
             {
-                if (position.Tiles[i].Value > 0)
+                if (Math.Abs(position.Tiles[i]) > 0)
                 {
                     for (int c = 0; c < 3; c++)
                     {
-                        if (position.Tiles[i].Owner == Player.One && position.Tiles[position.Tiles[i].AdjacentIndexes[c]].Owner == Player.One)
+                        if (position.Tiles[i] > 0 && position.Tiles[Constants.AdjacentIndexes[i][c]] > 0)
                         {
                             score++;
                         }
-                        if (position.Tiles[i].Owner == Player.Two && position.Tiles[position.Tiles[i].AdjacentIndexes[c]].Owner == Player.Two)
+                        if (position.Tiles[i] < 0 && position.Tiles[Constants.AdjacentIndexes[i][c]] < 0)
                         {
                             score--;
                         }
@@ -98,14 +98,14 @@ namespace Volcano.Engine
             for (int i = moves.Count - 1; i >= 0; i--)
             {
                 bool ok = false;
-                if (position.Tiles[i].Owner == position.Player)
+                if ((position.Tiles[i] > 0 && position.Player == Player.One) || (position.Tiles[i] < 0 && position.Player == Player.Two))
                 {
                     ok = true;
                 }
 
                 for (int c = 0; c < 3; c++)
                 {
-                    if (position.Tiles[position.Tiles[i].AdjacentIndexes[c]].Value > 0)
+                    if (position.Tiles[Constants.AdjacentIndexes[i][c]] != 0)
                     {
                         ok = true;
                         break;

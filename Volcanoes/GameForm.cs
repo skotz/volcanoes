@@ -346,6 +346,7 @@ namespace Volcano
         {
             var runs = 10;
             var evals = 0L;
+            var sims = 0L;
             var timer = Stopwatch.StartNew();
             var game = new VolcanoGame();
             game.LoadTranscript("5A 13A G 8B 16A G 2B 15A G 17B 20C G 10B 16D G 18A 7A G 16A 17A G 4B 12C G 11C 10C G 9B 11D G 9A 12B G 13B");
@@ -355,10 +356,12 @@ namespace Volcano
             {
                 var best = engine.GetBestMove(game.CurrentState, 1, new EngineCancellationToken(() => false));
                 evals += best.Evaluations;
+                sims += best.Simulations;
             }
 
-            decimal knps = evals / (timer.ElapsedMilliseconds / 1000m);
-            string result = evals.ToString("N0") + " positions / " + timer.ElapsedMilliseconds + " milliseconds = " + knps.ToString("N0") + " nps";
+            decimal nps = evals / (timer.ElapsedMilliseconds / 1000m);
+            decimal sps = sims / (timer.ElapsedMilliseconds / 1000m);
+            string result = evals.ToString("N0") + " positions / " + sims.ToString("N0") + " simulations / " + timer.ElapsedMilliseconds + " milliseconds = " + nps.ToString("N0") + " nps / " + sps.ToString("N0") + " sps";
 
             using (StreamWriter w = new StreamWriter("debug-engine.txt", true))
             {

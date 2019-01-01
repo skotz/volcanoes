@@ -107,7 +107,6 @@
     <Compile Include="Game\VolcanoGame.cs" />
     <Compile Include="Game\MoveType.cs" />
     <Compile Include="Game\Player.cs" />
-    <Compile Include="Game\Tile.cs" />
     <Compile Include="Interface\GameGraphics.cs" />
     <Compile Include="Interface\GameGraphicsSettings.cs" />
     <Compile Include="Interface\GameTile.cs" />

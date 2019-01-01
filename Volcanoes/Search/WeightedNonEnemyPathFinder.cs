@@ -12,7 +12,7 @@ namespace Volcano.Search
         protected override bool IsTraversableTile(Board state, Player player, int tileIndex)
         {
             // Ignore enemy tiles
-            if (state.Tiles[tileIndex].Owner != player && state.Tiles[tileIndex].Owner != Player.Empty)
+            if (((state.Tiles[tileIndex] > 0 && player != Player.One) || (state.Tiles[tileIndex] < 0 && player != Player.Two)) && state.Tiles[tileIndex] != 0)
             {
                 return false;
             }
@@ -23,13 +23,13 @@ namespace Volcano.Search
         protected override int GetDistance(Board state, int first, int second)
         {
             // Friendly volcano tiles are a free pass
-            if (state.Tiles[first].Value > VolcanoGame.Settings.MaxMagmaChamberLevel && state.Tiles[second].Value > VolcanoGame.Settings.MaxMagmaChamberLevel)
+            if (Math.Abs(state.Tiles[first]) > VolcanoGame.Settings.MaxMagmaChamberLevel && Math.Abs(state.Tiles[second]) > VolcanoGame.Settings.MaxMagmaChamberLevel)
             {
                 return 0;
             }
             
             // Friendly magma chambers are cheap
-            if (state.Tiles[first].Value >= 1 && state.Tiles[second].Value >= 1)
+            if (Math.Abs(state.Tiles[first]) >= 1 && Math.Abs(state.Tiles[second]) >= 1)
             {
                 return 0;
             }
