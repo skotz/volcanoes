@@ -189,7 +189,7 @@ namespace Volcano.Game
                     {
                         try
                         {
-                            transcript = result.Moves.ToList().Select(x => Constants.TileNames[x]).Aggregate((c, n) => c + " " + n);
+                            transcript = result.Moves.Select(x => Constants.TileNames[x]).Aggregate((c, n) => c + " " + n);
                         }
                         catch (Exception ex)
                         {
@@ -335,11 +335,22 @@ namespace Volcano.Game
                 PlayerTwoScore = 0.5m;
             }
 
-            Moves = state.MoveHistory;
-            TotalMoves = state?.CurrentState?.Turn ?? 0;
-            if (state.MoveHistory.Count > 0)
+            try
             {
-                FirstTile = state.MoveHistory[0];
+                Moves = new List<int>(state.MoveHistory);
+            }
+            catch (Exception ex)
+            {
+                using (StreamWriter w = new StreamWriter("errors.txt", true))
+                {
+                    w.WriteLine("Failed to copy move history! :: " + ex.Message);
+                }
+                Moves = new List<int>();
+            }
+            TotalMoves = state?.CurrentState?.Turn ?? 0;
+            if (Moves.Count > 0)
+            {
+                FirstTile = Moves[0];
             }
         }
 
