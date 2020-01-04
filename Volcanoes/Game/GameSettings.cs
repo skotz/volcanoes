@@ -24,6 +24,8 @@ namespace Volcano.Game
         public int TournamentAdjudicateMaxTurns = 500;
         public int TournamentAdjudicateMaxSeconds = 60 * 30;
 
+        public bool IndicateTranscriptMoveType = false;
+
         [JsonIgnore]
         public string CustomSettingsFile;
         public string CustomSettingsTitle = "";

@@ -16,6 +16,8 @@ namespace Volcano.Game
 
         public Player Winner;
         public List<int> WinningPath;
+
+        public bool LastMoveIncreasedTile;
         
         private static PathFinder pathFinder = new PathFinder();
 
@@ -65,6 +67,8 @@ namespace Volcano.Game
 
             if (move == Constants.AllGrowMove)
             {
+                LastMoveIncreasedTile = false;
+
                 for (int i = 0; i < 80; i++)
                 {
                     if (Tiles[i] != 0)
@@ -79,6 +83,8 @@ namespace Volcano.Game
             }
             else
             {
+                LastMoveIncreasedTile = Tiles[move] != 0;
+
                 Tiles[move] = Player == Player.One ? Tiles[move] + 1 : Tiles[move] - 1;
                 if (Math.Abs(Tiles[move]) >= VolcanoGame.Settings.MaxVolcanoLevel)
                 {

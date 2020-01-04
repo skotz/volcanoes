@@ -74,7 +74,7 @@ namespace Volcano.Game
                 string[] lines = transcript.Split(new string[] { "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
                 foreach (string line in lines)
                 {
-                    string[] moves = line.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                    string[] moves = line.Split(new string[] { " ", "+" }, StringSplitOptions.RemoveEmptyEntries);
                     if (moves.Length > 0 && Constants.TileIndexes.ContainsKey(moves[0]))
                     {
                         foreach (string move in moves)
@@ -185,6 +185,20 @@ namespace Volcano.Game
             }
         }
 
+        public List<Move> GetDetailedMoveList()
+        {
+            var moves = new List<Move>();
+            var board = new Board();
+
+            for (int i = 0; i < MoveHistory.Count; i++)
+            {
+                board.MakeMove(MoveHistory[i], true, false);
+                moves.Add(new Move(MoveHistory[i], board.LastMoveIncreasedTile));
+            }
+
+            return moves;
+        }
+
         public string GetTranscript(bool includeHeader)
         {
             if (MoveHistory.Count > 0)
@@ -198,7 +212,15 @@ namespace Volcano.Game
                     sb.AppendLine("");
                 }
 
-                sb.AppendLine(MoveHistory.Select(x => Constants.TileNames[x]).Aggregate((c, n) => c + " " + n));
+                if (Settings.IndicateTranscriptMoveType)
+                {
+                    var moves = GetDetailedMoveList();
+                    sb.AppendLine(moves.Select(x => x.Tile + (x.Addition ? "+" : "")).Aggregate((c, n) => c + " " + n));
+                }
+                else
+                {
+                    sb.AppendLine(MoveHistory.Select(x => Constants.TileNames[x]).Aggregate((c, n) => c + " " + n));
+                }
 
                 return sb.ToString();
             }
