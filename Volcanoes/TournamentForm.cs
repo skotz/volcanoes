@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Volcano
@@ -17,6 +13,8 @@ namespace Volcano
         public int Rounds { get; set; }
 
         public int SecondsPerMove { get; set; }
+
+        public bool SelfPlay { get; set; }
 
         public TournamentForm(List<string> engines)
         {
@@ -43,7 +41,9 @@ namespace Volcano
 
             Engines = checkedListBox1.CheckedItems.Cast<string>().ToList();
 
-            if (Engines.Count >= 2)
+            SelfPlay = cbSelfPlay.Checked;
+
+            if (Engines.Count >= 2 || (SelfPlay && Engines.Count >= 1))
             {
                 DialogResult = DialogResult.OK;
                 Close();

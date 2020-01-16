@@ -36,6 +36,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.numSecondsPerMove = new System.Windows.Forms.NumericUpDown();
+            this.cbSelfPlay = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numSecondsPerMove)).BeginInit();
             this.SuspendLayout();
@@ -73,7 +74,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(203, 260);
+            this.button1.Location = new System.Drawing.Point(203, 278);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 5;
@@ -130,11 +131,22 @@
             0,
             0});
             // 
+            // cbSelfPlay
+            // 
+            this.cbSelfPlay.AutoSize = true;
+            this.cbSelfPlay.Location = new System.Drawing.Point(120, 254);
+            this.cbSelfPlay.Name = "cbSelfPlay";
+            this.cbSelfPlay.Size = new System.Drawing.Size(95, 17);
+            this.cbSelfPlay.TabIndex = 7;
+            this.cbSelfPlay.Text = "Allow Self Play";
+            this.cbSelfPlay.UseVisualStyleBackColor = true;
+            // 
             // TournamentForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(290, 295);
+            this.ClientSize = new System.Drawing.Size(290, 313);
+            this.Controls.Add(this.cbSelfPlay);
             this.Controls.Add(this.checkedListBox1);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.numSecondsPerMove);
@@ -165,5 +177,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.NumericUpDown numSecondsPerMove;
+        private System.Windows.Forms.CheckBox cbSelfPlay;
     }
 }

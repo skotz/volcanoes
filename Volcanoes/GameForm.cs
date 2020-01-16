@@ -196,8 +196,8 @@ namespace Volcano
                 selfPlayToolStripMenuItem.Enabled = false;
 
                 string date = DateTime.Now.ToString("yyyyMMddhhmmss");
-
-                Tournament tourney = new Tournament(form.Rounds, form.SecondsPerMove, "tourney-table-" + date + ".csv", "tourney-data-" + date + ".csv", engines, form.Engines, form.Engines.Count == 1);
+                 
+                Tournament tourney = new Tournament(form.Rounds, form.SecondsPerMove, "tourney-table-" + date + ".csv", "tourney-data-" + date + ".csv", engines, form.Engines, form.SelfPlay || form.Engines.Count == 1);
                 tourney.OnTournamentCompleted += Tourney_OnTournamentCompleted;
                 tourney.OnTournamentStatus += Tourney_OnTournamentStatus;
                 tourney.Start();
