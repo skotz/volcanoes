@@ -80,6 +80,7 @@
             this.btnNavEnd = new System.Windows.Forms.ToolStripButton();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.chkShowTileLocations = new System.Windows.Forms.ToolStripButton();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -188,7 +189,7 @@
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator5.Size = new System.Drawing.Size(189, 6);
             // 
             // saveGameToolStripMenuItem
             // 
@@ -235,14 +236,14 @@
             // selfPlayToolStripMenuItem
             // 
             this.selfPlayToolStripMenuItem.Name = "selfPlayToolStripMenuItem";
-            this.selfPlayToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.selfPlayToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.selfPlayToolStripMenuItem.Text = "Self &Play";
             this.selfPlayToolStripMenuItem.Click += new System.EventHandler(this.selfPlayToolStripMenuItem_Click_1);
             // 
             // outputWindowToolStripMenuItem
             // 
             this.outputWindowToolStripMenuItem.Name = "outputWindowToolStripMenuItem";
-            this.outputWindowToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.outputWindowToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.outputWindowToolStripMenuItem.Text = "Output Window";
             this.outputWindowToolStripMenuItem.Click += new System.EventHandler(this.outputWindowToolStripMenuItem_Click);
             // 
@@ -353,6 +354,7 @@
             this.cbSeconds,
             this.toolStripSeparator3,
             this.chkHighlightLastMove,
+            this.chkShowTileLocations,
             this.toolStripSeparator6,
             this.btnNavStart,
             this.btnNavBack,
@@ -510,6 +512,17 @@
             // 
             this.openFileDialog1.Filter = "Volcanoes Game Transcript|*.vgt";
             // 
+            // chkShowTileLocations
+            // 
+            this.chkShowTileLocations.CheckOnClick = true;
+            this.chkShowTileLocations.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.chkShowTileLocations.Image = ((System.Drawing.Image)(resources.GetObject("chkShowTileLocations.Image")));
+            this.chkShowTileLocations.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.chkShowTileLocations.Name = "chkShowTileLocations";
+            this.chkShowTileLocations.Size = new System.Drawing.Size(23, 22);
+            this.chkShowTileLocations.Text = "Show Coordinate Labels";
+            this.chkShowTileLocations.Click += new System.EventHandler(this.chkShowTileLocations_Click);
+            // 
             // GameForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -592,6 +605,7 @@
         private System.Windows.Forms.ToolStripMenuItem exportThemeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem resetThemeToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
+        private System.Windows.Forms.ToolStripButton chkShowTileLocations;
     }
 }
 

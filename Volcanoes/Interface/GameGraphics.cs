@@ -4,20 +4,18 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Volcano.Game;
 
 namespace Volcano.Interface
 {
-    class GameGraphics
+    internal class GameGraphics
     {
         private Panel _panel;
         private Size _size;
         private List<GameTile> _tiles;
         private List<GameRotation> _rotations;
-        
+
         private int[] boardIndexFromTileIndex;
 
         public GameGraphicsSettings GraphicsSettings { get; set; }
@@ -164,7 +162,7 @@ namespace Volcano.Interface
                 RotationLoops = rotationLoops2,
                 Image = Properties.Resources.rotate_clockwise
             });
-            
+
             int[][] rotationLoop3 = new int[16][];
             for (int i = 0; i < 16; i++)
             {
@@ -377,13 +375,16 @@ namespace Volcano.Interface
                                 y += GraphicsSettings.TileHeight + GraphicsSettings.TileSpacing;
                                 upright = !upright;
                                 break;
+
                             case 1:
                                 x += GraphicsSettings.TileWidth / 2 + GraphicsSettings.TileHorizontalSpacing;
                                 break;
+
                             case 2:
                                 x += GraphicsSettings.TileWidth + GraphicsSettings.TileHorizontalSpacing * 2;
                                 y += GraphicsSettings.TileHeight + GraphicsSettings.TileSpacing + GraphicsSettings.TileHorizontalSpacing;
                                 break;
+
                             case 3:
                                 y += GraphicsSettings.TileHeight + GraphicsSettings.TileSpacing + GraphicsSettings.TileHorizontalSpacing;
                                 break;
@@ -398,12 +399,15 @@ namespace Volcano.Interface
                                 y += GraphicsSettings.TileHorizontalSpacing;
                                 upright = !upright;
                                 break;
+
                             case 1:
                                 x += GraphicsSettings.TileWidth / 2 + GraphicsSettings.TileHorizontalSpacing;
                                 y += GraphicsSettings.TileHeight + GraphicsSettings.TileSpacing + GraphicsSettings.TileHorizontalSpacing;
                                 break;
+
                             case 2:
                                 break;
+
                             case 3:
                                 x += GraphicsSettings.TileWidth + GraphicsSettings.TileHorizontalSpacing * 2;
                                 break;
@@ -441,12 +445,12 @@ namespace Volcano.Interface
                 }
             }
         }
-        
+
         private void RotateBoard(int[][] rotationLoops)
         {
             int[] redirects = new int[80];
 
-            for (int i = 0; i < 16; i ++)
+            for (int i = 0; i < 16; i++)
             {
                 for (int r = 0; r < 5; r++)
                 {
@@ -550,13 +554,14 @@ namespace Volcano.Interface
                 {
                     DrawTile(g, gameState, i, hoverTile, lastPlayIndex, highlightLastMove);
 
+                    if (GraphicsSettings.ShowTileNames)
+                    {
+                        DrawTileSubText(g, i, Constants.TileNames[boardIndexFromTileIndex[i]]);
+                    }
+
                     if (gameState.Tiles[boardIndexFromTileIndex[i]] == 0)
                     {
-                        if (GraphicsSettings.ShowTileNames)
-                        {
-                            DrawTileCenterText(g, i, Constants.TileNames[boardIndexFromTileIndex[i]]);
-                        }
-                        else if (GraphicsSettings.ShowTileIndexes)
+                        if (GraphicsSettings.ShowTileIndexes)
                         {
                             DrawTileMainText(g, i, boardIndexFromTileIndex[i].ToString());
                         }
@@ -567,14 +572,17 @@ namespace Volcano.Interface
                     {
                         int value = Math.Abs(gameState.Tiles[boardIndexFromTileIndex[i]]);
 
-                        if (Math.Abs(gameState.Tiles[boardIndexFromTileIndex[i]]) <= VolcanoGame.Settings.MaxMagmaChamberLevel)
+                        if (!GraphicsSettings.ShowTileNames)
                         {
-                            DrawTileSubText(g, i, "Chamber");
-                        }
-                        else
-                        {
-                            value -= VolcanoGame.Settings.MaxMagmaChamberLevel;
-                            DrawTileSubText(g, i, "Volcano");
+                            if (Math.Abs(gameState.Tiles[boardIndexFromTileIndex[i]]) <= VolcanoGame.Settings.MaxMagmaChamberLevel)
+                            {
+                                DrawTileSubText(g, i, "Chamber");
+                            }
+                            else
+                            {
+                                value -= VolcanoGame.Settings.MaxMagmaChamberLevel;
+                                DrawTileSubText(g, i, "Volcano");
+                            }
                         }
 
                         DrawTileMainText(g, i, value.ToString());

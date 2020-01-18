@@ -34,6 +34,7 @@ namespace Volcano
             InitializeComponent();
 
             settings = GameGraphicsSettings.LoadOrDefault("graphics.json");
+            chkShowTileLocations.Checked = settings.ShowTileNames;
             graphics = new GameGraphics(gamePanel, settings);
             game = new VolcanoGame();
             game.OnMoveMade += Game_OnMoveMade;
@@ -432,6 +433,11 @@ namespace Volcano
                 NavNext();
             }
             return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        private void chkShowTileLocations_Click(object sender, EventArgs e)
+        {
+            settings.ShowTileNames = chkShowTileLocations.Checked; 
         }
     }
 }
