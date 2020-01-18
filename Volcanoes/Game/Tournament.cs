@@ -171,7 +171,7 @@ namespace Volcano.Game
 
             using (StreamWriter w = new StreamWriter(_gameDataFile))
             {
-                w.WriteLine("Player One,Player Two,Winner,Termination,Total Moves,Total Milliseconds,Starting Tile Index,Transcript");
+                w.WriteLine("Player One,Player Two,Winner,Termination,Total Moves,Total Milliseconds,Starting Tile Index,Transcript,Winning Path");
                 foreach (var result in results)
                 {
                     string gameResult = "Draw";
@@ -197,7 +197,20 @@ namespace Volcano.Game
                         }
                     }
 
-                    w.WriteLine(result.PlayerOne + "," + result.PlayerTwo + "," + gameResult + "," + result.Termination.ToString() + "," + result.TotalMoves + "," + result.ElapsedMilliseconds + "," + result.FirstTile + "," + transcript);
+                    string winningPath = "";
+                    if (result.WinningPath != null && result.WinningPath.Count > 0)
+                    {
+                        try
+                        {
+                            winningPath = result.WinningPath.Select(x => Constants.TileNames[x]).Aggregate((c, n) => c + " " + n);
+                        }
+                        catch (Exception ex)
+                        {
+                            winningPath = ex.Message;
+                        }
+                    }
+
+                    w.WriteLine(result.PlayerOne + "," + result.PlayerTwo + "," + gameResult + "," + result.Termination.ToString() + "," + result.TotalMoves + "," + result.ElapsedMilliseconds + "," + result.FirstTile + "," + transcript + "," + winningPath);
                 }
             }
 
@@ -311,6 +324,7 @@ namespace Volcano.Game
         public int TotalMoves { get; set; }
         public long ElapsedMilliseconds { get; set; }
         public List<Move> Moves { get; set; }
+        public List<int> WinningPath { get; set; }
 
         public TournamentResult(VolcanoGame state, string playerOne, string playerTwo, TournamentTerminationType termination, long milliseconds)
         {
@@ -352,6 +366,8 @@ namespace Volcano.Game
             {
                 FirstTile = Moves[0].Location;
             }
+
+            WinningPath = state?.CurrentState?.WinningPath ?? new List<int>();
         }
 
         public TournamentResult()
