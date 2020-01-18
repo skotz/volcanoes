@@ -230,11 +230,21 @@ namespace Volcano
 
         private void btnNavBack_Click(object sender, EventArgs e)
         {
+            NavBack();
+        }
+
+        private void NavBack()
+        {
             transcriptMove = Math.Max(Math.Min(transcriptMove - 1, game.MoveHistory.Count - 1), 0);
             lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
         }
 
         private void btnNavNext_Click(object sender, EventArgs e)
+        {
+            NavNext();
+        }
+
+        private void NavNext()
         {
             transcriptMove = Math.Max(Math.Min(transcriptMove + 1, game.MoveHistory.Count - 1), 0);
             lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
@@ -242,11 +252,21 @@ namespace Volcano
 
         private void btnNavStart_Click(object sender, EventArgs e)
         {
+            NavFirst();
+        }
+
+        private void NavFirst()
+        {
             transcriptMove = 0;
             lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
         }
 
         private void btnNavEnd_Click(object sender, EventArgs e)
+        {
+            NavLast();
+        }
+
+        private void NavLast()
         {
             transcriptMove = game.MoveHistory.Count - 1;
             lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
@@ -315,6 +335,14 @@ namespace Volcano
             //{
             //    graphics.RotateBoard();
             //}
+            if (e.KeyCode == Keys.Home)
+            {
+                NavFirst();
+            }
+            if (e.KeyCode == Keys.End)
+            {
+                NavLast();
+            }
         }
 
         private void stressTestPathSearchToolStripMenuItem_Click(object sender, EventArgs e)
@@ -392,6 +420,18 @@ namespace Volcano
                     e.Cancel = true;
                 }
             }
+        }
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.Left)
+            {
+                NavBack();
+            }
+            if (keyData == Keys.Right)
+            {
+                NavNext();
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
     }
 }
