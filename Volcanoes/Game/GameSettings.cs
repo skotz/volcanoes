@@ -10,13 +10,13 @@ namespace Volcano.Game
 {
     class GameSettings
     {
-        public int MaxMagmaChamberLevel = 4;
-        public int MaxVolcanoLevel = 8;
+        public int MaxMagmaChamberLevel = 0;
+        public int MaxVolcanoLevel = 5;
 
-        public int EruptOverflowEmptyTileAmount = 1;
+        public int EruptOverflowEmptyTileAmount = 0;
         public int EruptOverflowFriendlyTileAmount = 1;
-        public int EruptOverflowEnemyTileAmount = -1;
-        public bool EruptOverflowAllowCapture = true;
+        public int EruptOverflowEnemyTileAmount = -5;
+        public bool EruptOverflowAllowCapture = false;
 
         public bool AllowMagmaChamberCaptures = false;
         public bool AllowVolcanoCaptures = false;
@@ -24,7 +24,7 @@ namespace Volcano.Game
         public int TournamentAdjudicateMaxTurns = 500;
         public int TournamentAdjudicateMaxSeconds = 60 * 30;
 
-        public bool IndicateTranscriptMoveType = false;
+        public bool IndicateTranscriptMoveType = true;
 
         [JsonIgnore]
         public string CustomSettingsFile;
