@@ -41,7 +41,7 @@ namespace Volcano.Interface
         public int IdealPanelWidth { get { return TileWidth * 11 + TileHorizontalSpacing * 20 + TileSpacing * 2 + BoardSpacing * 2; } }
         public int IdealPanelHeight { get { return TileHeight * 6 + TileHorizontalSpacing * 4 + TileSpacing * 7 + BoardSpacing * 2; } }
 
-        public bool ShowTileNames { get; set; } = false;
+        public bool ShowTileNames { get; set; } = true;
         public bool ShowTileIndexes { get; set; } = false;
 
         public bool ShowRotationButtons { get; set; } = true;
