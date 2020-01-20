@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Volcanoes"
-#define MyAppVersion "0.4.0"
+#define MyAppVersion "v0.4.0"
 #define MyAppPublisher "Simon Dorfman and Scott Clayton"
 #define MyAppURL "https://github.com/skotz/volcanoes"
 #define MyAppExeName "Volcanoes.exe"
@@ -22,7 +22,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DisableProgramGroupPage=yes
 ;LicenseFile=..\LICENSE
-OutputBaseFilename=setup-volcanoes
+OutputBaseFilename=Setup-Volcanoes-{#MyAppVersion}
 SetupIconFile=icon.ico
 Compression=lzma
 SolidCompression=yes

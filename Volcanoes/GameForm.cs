@@ -156,7 +156,7 @@ namespace Volcano
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Designed by Simon Dorfman\r\nDeveloped by Scott Clayton", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Designed by Simon Dorfman\r\nDeveloped by Scott Clayton\r\nhttps://github.com/skotz/volcanoes", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void selfPlayToolStripMenuItem_Click_1(object sender, EventArgs e)
