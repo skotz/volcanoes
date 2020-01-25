@@ -14,6 +14,7 @@ using System.IO;
 using Volcano.Engine;
 using System.Diagnostics;
 using Volcano.Search;
+using static System.Environment;
 
 namespace Volcano
 {
@@ -29,11 +30,18 @@ namespace Volcano
 
         EngineOutputForm outputForm;
 
+        string gameFolder = $"{Environment.GetFolderPath(SpecialFolder.MyDocuments)}\\My Games\\Volcanoes\\";
+
         public GameForm()
         {
             InitializeComponent();
 
-            settings = GameGraphicsSettings.LoadOrDefault("graphics.json");
+            if (!Directory.Exists(gameFolder))
+            {
+                Directory.CreateDirectory(gameFolder);
+            }
+
+            settings = GameGraphicsSettings.LoadOrDefault(gameFolder + "graphics.json");
             chkShowTileLocations.Checked = settings.ShowTileNames;
             graphics = new GameGraphics(gamePanel, settings);
             game = new VolcanoGame();
@@ -73,7 +81,7 @@ namespace Volcano
                 lblStatusBar.Text = VolcanoGame.Settings.CustomSettingsFile + " loaded " + VolcanoGame.Settings.CustomSettingsTitle;
             }
 
-            FileSystemWatcher graphicsSettingsFsw = new FileSystemWatcher(".", "graphics.json");
+            FileSystemWatcher graphicsSettingsFsw = new FileSystemWatcher(".", gameFolder + "graphics.json");
             graphicsSettingsFsw.EnableRaisingEvents = true;
             graphicsSettingsFsw.Changed += GraphicsSettingsFsw_Changed;
         }
@@ -178,7 +186,7 @@ namespace Volcano
                     games /= 2;
                 }
 
-                Tournament tourney = new Tournament(games, selfPlayForm.SecondsPerMove, "selfplay-table-" + date + ".csv", "selfplay-data-" + date + ".csv", engines, selfPlayForm.Engines, selfPlayForm.Engines.Count == 1);
+                Tournament tourney = new Tournament(games, selfPlayForm.SecondsPerMove, gameFolder + "selfplay-table-" + date + ".csv", gameFolder + "selfplay-data-" + date + ".csv", engines, selfPlayForm.Engines, selfPlayForm.Engines.Count == 1);
                 tourney.OnTournamentCompleted += Tourney_OnTournamentCompleted;
                 tourney.OnTournamentStatus += Tourney_OnTournamentStatus;
                 tourney.Start();
@@ -198,7 +206,7 @@ namespace Volcano
 
                 string date = DateTime.Now.ToString("yyyyMMddhhmmss");
                  
-                Tournament tourney = new Tournament(form.Rounds, form.SecondsPerMove, "tourney-table-" + date + ".csv", "tourney-data-" + date + ".csv", engines, form.Engines, form.SelfPlay || form.Engines.Count == 1);
+                Tournament tourney = new Tournament(form.Rounds, form.SecondsPerMove, gameFolder + "tourney-table-" + date + ".csv", gameFolder + "tourney-data-" + date + ".csv", engines, form.Engines, form.SelfPlay || form.Engines.Count == 1);
                 tourney.OnTournamentCompleted += Tourney_OnTournamentCompleted;
                 tourney.OnTournamentStatus += Tourney_OnTournamentStatus;
                 tourney.Start();
@@ -288,30 +296,30 @@ namespace Volcano
 
         private void exportRulesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            VolcanoGame.Settings.Save("volcano.json");
+            VolcanoGame.Settings.Save(gameFolder + "volcano.json");
             MessageBox.Show("Rules exported as volcano.json!\r\nEdit the settings and reload to play with custom rules.", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void importRulesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (File.Exists("volcano.json"))
+            if (File.Exists(gameFolder + "volcano.json"))
             {
-                File.Move("volcano.json", "volcano.json." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak");
+                File.Move(gameFolder + "volcano.json", gameFolder + "volcano.json." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak");
                 MessageBox.Show("Rules will be reset to their defaults when you restart.", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
         private void exportThemeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            graphics.GraphicsSettings.Save("graphics.json");
+            graphics.GraphicsSettings.Save(gameFolder + "graphics.json");
             MessageBox.Show("Graphics exported as graphics.json!\r\nEdit the settings and reload to see your changes.", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void resetThemeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (File.Exists("graphics.json"))
+            if (File.Exists(gameFolder + "graphics.json"))
             {
-                File.Move("graphics.json", "graphics.json." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak");
+                File.Move(gameFolder + "graphics.json", gameFolder + "graphics.json." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak");
                 settings = GameGraphicsSettings.Default;
                 graphics.GraphicsSettings = settings;
             }
@@ -319,9 +327,9 @@ namespace Volcano
 
         private void GraphicsSettingsFsw_Changed(object sender, FileSystemEventArgs e)
         {
-            if (File.Exists("graphics.json"))
+            if (File.Exists(gameFolder + "graphics.json"))
             {
-                settings = GameGraphicsSettings.LoadOrDefault("graphics.json");
+                settings = GameGraphicsSettings.LoadOrDefault(gameFolder + "graphics.json");
                 graphics.GraphicsSettings = settings;
             }
         }
