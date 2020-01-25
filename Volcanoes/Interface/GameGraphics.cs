@@ -19,17 +19,24 @@ namespace Volcano.Interface
 
         private int[] boardIndexFromTileIndex;
 
+        private float _initialWidth;
+        private float _fontScale;
+
         public GameGraphicsSettings GraphicsSettings { get; set; }
 
         public GameGraphics(Panel panel, GameGraphicsSettings settings)
         {
             _panel = panel;
             _size = new Size(0, 0);
+
             GraphicsSettings = settings;
 
             InitializeTiles();
             InitializeRotations();
             InitializeRedirects();
+
+            _initialWidth = _tiles[0].BoundingBox.Width;
+
             InitializeHud();
         }
 
@@ -455,6 +462,9 @@ namespace Volcano.Interface
             var bottomMost = _tiles.Max(x => x.Location.Y + x.BoundingBox.Height);
             var width = _tiles[0].BoundingBox.Width;
             _clock = new Rectangle(leftMost, bottomMost - width, width, width);
+
+            // Font sizes
+            _fontScale = Math.Max(_tiles[0].BoundingBox.Width / _initialWidth, 1f);
         }
 
         private void RotateBoard(int[][] rotationLoops)
@@ -516,7 +526,7 @@ namespace Volcano.Interface
                 using (Graphics g3 = _panel.CreateGraphics())
                 {
                     g3.Clear(SystemColors.ControlDark);
-                    g3.DrawString(":)", new Font("Tahoma", 8f, FontStyle.Regular), Brushes.White, new Point(1, 1));
+                    g3.DrawString(":)", new Font("Tahoma", 8f * _fontScale, FontStyle.Regular), Brushes.White, new Point(1, 1));
                 }
 
                 return;
@@ -636,16 +646,16 @@ namespace Volcano.Interface
                     g2.DrawImage(b, (_panel.Width - GraphicsSettings.IdealPanelWidth) / 2, (_panel.Height - GraphicsSettings.IdealPanelHeight) / 2, GraphicsSettings.IdealPanelWidth, GraphicsSettings.IdealPanelHeight);
 
                     Color playerColor = gameState.Player == Player.One ? GraphicsSettings.PlayerOneVolcanoTileColor : GraphicsSettings.PlayerTwoVolcanoTileColor;
-                    g2.DrawString("Turn " + gameState.Turn, new Font("Tahoma", 12f, FontStyle.Bold), new SolidBrush(playerColor), new Point(5, 5));
+                    g2.DrawString("Turn " + gameState.Turn, new Font("Tahoma", 12f * _fontScale, FontStyle.Bold), new SolidBrush(playerColor), new Point(5, 5));
                     if (gameState.State == GameState.GameOver)
                     {
                         playerColor = gameState.Winner == Player.One ? GraphicsSettings.PlayerOneVolcanoTileColor : GraphicsSettings.PlayerTwoVolcanoTileColor;
                         string gameOver = "Game Over!";
-                        Font f = new Font("Tahoma", 12f, FontStyle.Bold);
+                        Font f = new Font("Tahoma", 12f * _fontScale, FontStyle.Bold);
                         SizeF size = g.MeasureString(gameOver, f);
                         g2.DrawString(gameOver, f, new SolidBrush(playerColor), new Point(_panel.Width - (int)size.Width - 5, 5));
                     }
-                    g2.DrawString(game.NodesPerSecond.ToString() + " NPS", new Font("Tahoma", 12f, FontStyle.Bold), Brushes.Gray, new Point(5, _panel.Height - 25));
+                    g2.DrawString(game.NodesPerSecond.ToString() + " NPS", new Font("Tahoma", 12f * _fontScale, FontStyle.Bold), Brushes.Gray, new Point(5, _panel.Height - 25));
 
                     // Double buffering
                     g3.DrawImage(b2, 0, 0, _panel.Width, _panel.Height);
@@ -798,7 +808,7 @@ namespace Volcano.Interface
         private void DrawTileText(Graphics g, int index, string text, int heightOffset, int fontSize, bool bold)
         {
             int triangleAdjust = (_tiles[index].Upright ? 1 : -1) * GraphicsSettings.TileHeight / heightOffset;
-            Font font = new Font("Tahoma", fontSize, bold ? FontStyle.Bold : FontStyle.Regular);
+            Font font = new Font("Tahoma", fontSize * _fontScale, bold ? FontStyle.Bold : FontStyle.Regular);
             SizeF size = g.MeasureString(text, font);
             Brush brush = new SolidBrush(Color.FromArgb(128, 255, 255, 255));
             RectangleF location = new RectangleF(new PointF(_tiles[index].BoundingBox.X + _tiles[index].BoundingBox.Width / 2 - size.Width / 2, _tiles[index].BoundingBox.Y + _tiles[index].BoundingBox.Height / 2 - size.Height / 2 + triangleAdjust), size);
