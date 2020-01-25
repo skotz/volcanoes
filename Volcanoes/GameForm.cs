@@ -88,12 +88,12 @@ namespace Volcano
 
         private void Game_OnMoveMade(bool growthHappened)
         {
-            if (transcriptMove == game.MoveHistory.Count - (growthHappened ? 3 : 2))
+            if (transcriptMove == game.MoveHistory.Count - (growthHappened ? 2 : 1))
             {
-                transcriptMove = game.MoveHistory.Count - 1;
+                transcriptMove = game.MoveHistory.Count;
             }
 
-            lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
+            lblTranscriptMove.Text = transcriptMove + "/" + game.MoveHistory.Count;
         }
 
         private void gameTimer_Tick(object sender, EventArgs e)
@@ -105,7 +105,7 @@ namespace Volcano
         private void gamePanel_Click(object sender, EventArgs e)
         {
             Point mouse = gamePanel.PointToClient(Cursor.Position);
-            bool reviewMode = game.MoveHistory.Count > 0 && transcriptMove != game.MoveHistory.Count - 1;
+            bool reviewMode = game.MoveHistory.Count > 0 && transcriptMove != game.MoveHistory.Count;
             if (game.CurrentState.State == GameState.InProgress && !game.Thinking && !reviewMode)
             {
                 int tileIndex = graphics.GetBoardIndex(mouse);
@@ -228,7 +228,7 @@ namespace Volcano
                 if (game.LoadTranscript(File.ReadAllText(openFileDialog1.FileName)))
                 {
                     transcriptMove = game.MoveHistory.Count - 1;
-                    lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
+                    lblTranscriptMove.Text = transcriptMove + "/" + game.MoveHistory.Count;
                 }
                 else
                 {
@@ -244,8 +244,8 @@ namespace Volcano
 
         private void NavBack()
         {
-            transcriptMove = Math.Max(Math.Min(transcriptMove - 1, game.MoveHistory.Count - 1), 0);
-            lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
+            transcriptMove = Math.Max(Math.Min(transcriptMove - 1, game.MoveHistory.Count), 0);
+            lblTranscriptMove.Text = transcriptMove + "/" + game.MoveHistory.Count;
         }
 
         private void btnNavNext_Click(object sender, EventArgs e)
@@ -255,8 +255,8 @@ namespace Volcano
 
         private void NavNext()
         {
-            transcriptMove = Math.Max(Math.Min(transcriptMove + 1, game.MoveHistory.Count - 1), 0);
-            lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
+            transcriptMove = Math.Max(Math.Min(transcriptMove + 1, game.MoveHistory.Count), 0);
+            lblTranscriptMove.Text = transcriptMove + "/" + game.MoveHistory.Count;
         }
 
         private void btnNavStart_Click(object sender, EventArgs e)
@@ -267,7 +267,7 @@ namespace Volcano
         private void NavFirst()
         {
             transcriptMove = 0;
-            lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
+            lblTranscriptMove.Text = transcriptMove + "/" + game.MoveHistory.Count;
         }
 
         private void btnNavEnd_Click(object sender, EventArgs e)
@@ -277,8 +277,8 @@ namespace Volcano
 
         private void NavLast()
         {
-            transcriptMove = game.MoveHistory.Count - 1;
-            lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
+            transcriptMove = game.MoveHistory.Count;
+            lblTranscriptMove.Text = transcriptMove + "/" + game.MoveHistory.Count;
         }
 
         private void fromStringToolStripMenuItem_Click(object sender, EventArgs e)
@@ -286,7 +286,7 @@ namespace Volcano
             if (game.LoadTranscript(Clipboard.GetText()))
             {
                 transcriptMove = game.MoveHistory.Count - 1;
-                lblTranscriptMove.Text = (transcriptMove + 1) + "/" + game.MoveHistory.Count;
+                lblTranscriptMove.Text = transcriptMove + "/" + game.MoveHistory.Count;
             }
             else
             {

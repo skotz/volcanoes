@@ -510,7 +510,7 @@ namespace Volcano.Interface
                 return;
             }
 
-            bool reviewMode = game.MoveHistory.Count > 0 && moveNumber != game.MoveHistory.Count - 1;
+            bool reviewMode = game.MoveHistory.Count > 0 && moveNumber != game.MoveHistory.Count;
 
             int hoverTile = GetTileIndex(mouseLocation);
             Board gameState = reviewMode ? game.GetPreviousState(moveNumber) : game.CurrentState;
