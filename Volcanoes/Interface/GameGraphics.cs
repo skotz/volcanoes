@@ -15,6 +15,7 @@ namespace Volcano.Interface
         private Size _size;
         private List<GameTile> _tiles;
         private List<GameRotation> _rotations;
+        private Rectangle _clock;
 
         private int[] boardIndexFromTileIndex;
 
@@ -29,6 +30,7 @@ namespace Volcano.Interface
             InitializeTiles();
             InitializeRotations();
             InitializeRedirects();
+            InitializeHud();
         }
 
         private void InitializeRedirects()
@@ -446,6 +448,15 @@ namespace Volcano.Interface
             }
         }
 
+        private void InitializeHud()
+        {
+            // Turn clock
+            var leftMost = _tiles.Min(x => x.Location.X);
+            var bottomMost = _tiles.Max(x => x.Location.Y + x.BoundingBox.Height);
+            var width = _tiles[0].BoundingBox.Width;
+            _clock = new Rectangle(leftMost, bottomMost - width, width, width);
+        }
+
         private void RotateBoard(int[][] rotationLoops)
         {
             int[] redirects = new int[80];
@@ -473,6 +484,7 @@ namespace Volcano.Interface
                 GraphicsSettings.UpdateBestTileWidth(_panel.Size);
                 InitializeTiles();
                 InitializeRotations();
+                InitializeHud();
 
                 _size = _panel.Size;
             }
@@ -587,6 +599,33 @@ namespace Volcano.Interface
 
                         DrawTileMainText(g, i, value.ToString());
                     }
+                }
+
+                // Draw turn clock
+                if (_clock.Width > 0)
+                {
+                    var lastToMove = moveNumber % 6;
+
+                    var centerCover = new Rectangle(_clock.X + _clock.Width / 3, _clock.Y + _clock.Width / 3, _clock.Width / 3, _clock.Width / 3);
+                    var angle = 360f / 6;
+                    var start = -90f - angle / 2;
+
+                    var player1brush = new SolidBrush(GraphicsSettings.PlayerOneVolcanoTileColor);
+                    var player2brush = new SolidBrush(GraphicsSettings.PlayerTwoVolcanoTileColor);
+                    var growthBrush = new SolidBrush(GraphicsSettings.EmptyTileColor);
+                    var backgroundBrush = new SolidBrush(GraphicsSettings.BackgroundColor);
+                    var playerToMovePen = new Pen(GraphicsSettings.LastPlayedTileBorderColor, 5f);
+
+                    g.FillPie(player1brush, _clock, start, angle);
+                    g.FillPie(player2brush, _clock, start + angle, angle);
+                    g.FillPie(growthBrush, _clock, start + angle * 2, angle);
+                    g.FillPie(player2brush, _clock, start + angle * 3, angle);
+                    g.FillPie(player1brush, _clock, start + angle * 4, angle);
+                    g.FillPie(growthBrush, _clock, start + angle * 5, angle);
+
+                    g.DrawPie(playerToMovePen, _clock, start + angle * lastToMove, angle);
+
+                    g.FillEllipse(backgroundBrush, centerCover);
                 }
 
                 using (Bitmap b2 = new Bitmap(_panel.Width, _panel.Height))

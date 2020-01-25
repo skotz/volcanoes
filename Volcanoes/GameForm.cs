@@ -88,11 +88,28 @@ namespace Volcano
 
         private void Game_OnMoveMade(bool growthHappened)
         {
+            // If we were not in analysis mode previous to the last move, bump us up to the latest move
             if (transcriptMove == game.MoveHistory.Count - (growthHappened ? 2 : 1))
             {
-                transcriptMove = game.MoveHistory.Count;
+                // If the last move was a growth move, then show it for a short period of time
+                if (growthHappened)
+                {
+                    transcriptMove = game.MoveHistory.Count - 1;
+                    growthMoveTimer.Start();
+                }
+                else
+                {
+                    transcriptMove = game.MoveHistory.Count;
+                }
             }
 
+            lblTranscriptMove.Text = transcriptMove + "/" + game.MoveHistory.Count;
+        }
+
+        private void growthMoveTimer_Tick(object sender, EventArgs e)
+        {
+            growthMoveTimer.Stop();
+            transcriptMove = game.MoveHistory.Count;
             lblTranscriptMove.Text = transcriptMove + "/" + game.MoveHistory.Count;
         }
 
@@ -227,7 +244,7 @@ namespace Volcano
             {
                 if (game.LoadTranscript(File.ReadAllText(openFileDialog1.FileName)))
                 {
-                    transcriptMove = game.MoveHistory.Count - 1;
+                    transcriptMove = game.MoveHistory.Count;
                     lblTranscriptMove.Text = transcriptMove + "/" + game.MoveHistory.Count;
                 }
                 else
@@ -285,7 +302,7 @@ namespace Volcano
         {
             if (game.LoadTranscript(Clipboard.GetText()))
             {
-                transcriptMove = game.MoveHistory.Count - 1;
+                transcriptMove = game.MoveHistory.Count;
                 lblTranscriptMove.Text = transcriptMove + "/" + game.MoveHistory.Count;
             }
             else
