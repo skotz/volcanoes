@@ -624,11 +624,28 @@ namespace Volcano.Interface
                     var angle = 360f / 6;
                     var start = -90f - angle / 2;
 
+                    var moveColor = GraphicsSettings.EmptyTileColor;
+                    switch (lastToMove)
+                    {
+                        case 0:
+                        case 4:
+                            moveColor = GraphicsSettings.PlayerOneVolcanoTileColor;
+                            break;
+
+                        case 1:
+                        case 3:
+                            moveColor = GraphicsSettings.PlayerTwoVolcanoTileColor;
+                            break;
+                    }
+
+                    var shadeColor = Color.FromArgb(128, 255, 255, 255);
+
                     var player1brush = new SolidBrush(GraphicsSettings.PlayerOneVolcanoTileColor);
                     var player2brush = new SolidBrush(GraphicsSettings.PlayerTwoVolcanoTileColor);
                     var growthBrush = new SolidBrush(GraphicsSettings.EmptyTileColor);
-                    var backgroundBrush = new SolidBrush(GraphicsSettings.BackgroundColor);
-                    var playerToMovePen = new Pen(GraphicsSettings.LastPlayedTileBorderColor, 5f);
+                    var playerToMoveBrush = new SolidBrush(moveColor);
+                    var playerToMovePen = new Pen(moveColor, 8f * _fontScale);
+                    var shadeBrush = new SolidBrush(shadeColor);
 
                     g.FillPie(player1brush, _clock, start, angle);
                     g.FillPie(player2brush, _clock, start + angle, angle);
@@ -637,9 +654,10 @@ namespace Volcano.Interface
                     g.FillPie(player1brush, _clock, start + angle * 4, angle);
                     g.FillPie(growthBrush, _clock, start + angle * 5, angle);
 
+                    g.FillPie(shadeBrush, _clock, start + angle * lastToMove + angle, angle * 5);
                     g.DrawPie(playerToMovePen, _clock, start + angle * lastToMove, angle);
 
-                    g.FillEllipse(backgroundBrush, centerCover);
+                    g.FillEllipse(playerToMoveBrush, centerCover);
                 }
 
                 using (Bitmap b2 = new Bitmap(_panel.Width, _panel.Height))

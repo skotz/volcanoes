@@ -35,6 +35,7 @@ namespace Volcano.Interface
         public Color HoverAdjacentTileBorderColor { get; set; } = Color.LightGray;
         public Color HoverAntipodeTileBorderColor { get; set; } = Color.FromArgb(0, 219, 48);
         public Color RecentEruptionTileBorderColor { get; set; } = Color.Black;
+        public Color TurnClockPlayerToMoveBorderColor { get; set; } = Color.FromArgb(255, 255, 0);
 
         public Color LastPlayedTileBorderColor { get; set; } = Color.FromArgb(255, 255, 255, 0);
 

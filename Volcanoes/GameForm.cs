@@ -58,8 +58,9 @@ namespace Volcano
             engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
             engines.Add<MonteCarloBarricadeEngine>("Monte Carlo Barricade");
             engines.Add<MonteCarloTreeSearchParallelEngine>("Parallel MCTS");
-            //engines.Add<MonteCarloBeelineParallelEngine>("Parallel MCTS Beeline");
             engines.Add<MonteCarloBeelineRandParallelEngine>("Parallel MCTS Beeline");
+            //engines.Add<MonteCarloBeelineParallelEngine>("Parallel MCTS Beeline Full");
+            //engines.Add<MonteCarloBeelineParallelDeepEngine>("Parallel MCTS Beeline Sim");
 
             cbPlayerOne.Items.Add("Human");
             cbPlayerTwo.Items.Add("Human");

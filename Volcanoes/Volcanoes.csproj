@@ -65,6 +65,7 @@
     <Compile Include="Engine\IStatus.cs" />
     <Compile Include="Engine\MonteCarloBarricadeEngine.cs" />
     <Compile Include="Engine\MonteCarloBeelineFourEngine.cs" />
+    <Compile Include="Engine\MonteCarloBeelineParallelDeepEngine.cs" />
     <Compile Include="Engine\MonteCarloBeelineRandParallelEngine.cs" />
     <Compile Include="Engine\MonteCarloBeelineParallelEngine.cs" />
     <Compile Include="Engine\MonteCarloBeelineThreeEngine.cs" />
