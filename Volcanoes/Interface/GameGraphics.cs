@@ -16,6 +16,7 @@ namespace Volcano.Interface
         private List<GameTile> _tiles;
         private List<GameRotation> _rotations;
         private Rectangle _clock;
+        private Rectangle _reference;
 
         private int[] boardIndexFromTileIndex;
 
@@ -465,6 +466,9 @@ namespace Volcano.Interface
 
             // Font sizes
             _fontScale = Math.Max(_tiles[0].BoundingBox.Width / _initialWidth, 1f);
+
+            // Growth reference
+            _reference = new Rectangle();
         }
 
         private void RotateBoard(int[][] rotationLoops)
@@ -655,7 +659,7 @@ namespace Volcano.Interface
                         SizeF size = g.MeasureString(gameOver, f);
                         g2.DrawString(gameOver, f, new SolidBrush(playerColor), new Point(_panel.Width - (int)size.Width - 5, 5));
                     }
-                    g2.DrawString(game.NodesPerSecond.ToString() + " NPS", new Font("Tahoma", 12f * _fontScale, FontStyle.Bold), Brushes.Gray, new Point(5, _panel.Height - 25));
+                    g2.DrawString(game.NodesPerSecond.ToString() + " NPS", new Font("Tahoma", 12f, FontStyle.Bold), Brushes.Gray, new Point(5, _panel.Height - 25));
 
                     // Double buffering
                     g3.DrawImage(b2, 0, 0, _panel.Width, _panel.Height);

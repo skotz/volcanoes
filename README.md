@@ -29,7 +29,7 @@ This cycle repeats until a player wins by successfully connecting a pair of anti
 ## Engines
 Several computer AIs are included with Volcanoes. Here are the current rankings from a recent round robin tournament.
 
-![Engine Cross Table](Concept/History/z-history-20190101.png)
+![Engine Cross Table](Concept/History/z-cross-table-20200125.png)
 
 Our goal is to learn strategies for this game through the analysis of games played by computer AIs.
 

@@ -245,6 +245,16 @@ namespace Volcano.Game
             return GetMoves(true, true, true, VolcanoGame.Settings.MaxVolcanoLevel);
         }
 
+        public List<int> GetRandomMoves()
+        {
+            var moves = GetMoves(false, true, false, VolcanoGame.Settings.MaxVolcanoLevel);
+            if (moves.Count > 0)
+            {
+                return moves;
+            }
+            return GetMoves();
+        }
+
         /// <summary>
         /// Get a list of all valid moves for the current player on the current board state.
         /// </summary>
