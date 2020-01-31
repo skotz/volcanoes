@@ -85,6 +85,10 @@ namespace Volcano.Engine
                 while (state.Winner == Player.Empty && state.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns)
                 {
                     var moves = state.GetMoves();
+                    if (moves.Count == 0)
+                    {
+                        break;
+                    }
                     state.MakeMove(moves[random.Next(moves.Count)]);
                     visitedNodes++;
                 }

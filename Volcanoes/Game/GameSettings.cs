@@ -20,6 +20,7 @@ namespace Volcano.Game
 
         public bool AllowMagmaChamberCaptures = false;
         public bool AllowVolcanoCaptures = false;
+        public bool AllowDormantVolcanoes = false;
 
         public int TournamentAdjudicateMaxTurns = 500;
         public int TournamentAdjudicateMaxSeconds = 60 * 30;

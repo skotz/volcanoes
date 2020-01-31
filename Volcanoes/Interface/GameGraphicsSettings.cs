@@ -25,8 +25,10 @@ namespace Volcano.Interface
 
         public Color PlayerOneVolcanoTileColor { get; set; } = Color.FromArgb(18, 11, 134);
         public Color PlayerOneMagmaChamberTileColor { get; set; } = Color.FromArgb(39, 29, 211);
+        public Color PlayerOneDormantTileColor { get; set; } = Color.FromArgb(7, 3, 76);
         public Color PlayerTwoVolcanoTileColor { get; set; } = Color.FromArgb(192, 114, 0);
         public Color PlayerTwoMagmaChamberTileColor { get; set; } = Color.FromArgb(255, 151, 0);
+        public Color PlayerTwoDormantTileColor { get; set; } = Color.FromArgb(114, 68, 0);
 
         public Color EmptyTileColor { get; set; } = Color.Gray;
         public Color BackgroundColor { get; set; } = SystemColors.Control;

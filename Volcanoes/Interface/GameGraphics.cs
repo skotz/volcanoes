@@ -691,11 +691,39 @@ namespace Volcano.Interface
 
             if (gameState.Tiles[boardIndexFromTileIndex[index]] > 0)
             {
-                tileColor = Math.Abs(gameState.Tiles[boardIndexFromTileIndex[index]]) > VolcanoGame.Settings.MaxMagmaChamberLevel ? GraphicsSettings.PlayerOneVolcanoTileColor : GraphicsSettings.PlayerOneMagmaChamberTileColor;
+                if (Math.Abs(gameState.Tiles[boardIndexFromTileIndex[index]]) > VolcanoGame.Settings.MaxMagmaChamberLevel)
+                {
+                    if (VolcanoGame.Settings.AllowDormantVolcanoes && gameState.Dormant[boardIndexFromTileIndex[index]])
+                    {
+                        tileColor = GraphicsSettings.PlayerOneDormantTileColor;
+                    }
+                    else
+                    {
+                        tileColor = GraphicsSettings.PlayerOneVolcanoTileColor;
+                    }
+                }
+                else
+                {
+                    tileColor = GraphicsSettings.PlayerOneMagmaChamberTileColor;
+                }
             }
             else if (gameState.Tiles[boardIndexFromTileIndex[index]] < 0)
             {
-                tileColor = Math.Abs(gameState.Tiles[boardIndexFromTileIndex[index]]) > VolcanoGame.Settings.MaxMagmaChamberLevel ? GraphicsSettings.PlayerTwoVolcanoTileColor : GraphicsSettings.PlayerTwoMagmaChamberTileColor;
+                if (Math.Abs(gameState.Tiles[boardIndexFromTileIndex[index]]) > VolcanoGame.Settings.MaxMagmaChamberLevel)
+                {
+                    if (VolcanoGame.Settings.AllowDormantVolcanoes && gameState.Dormant[boardIndexFromTileIndex[index]])
+                    {
+                        tileColor = GraphicsSettings.PlayerTwoDormantTileColor;
+                    }
+                    else
+                    {
+                        tileColor = GraphicsSettings.PlayerTwoVolcanoTileColor;
+                    }
+                }
+                else
+                {
+                    tileColor = GraphicsSettings.PlayerTwoMagmaChamberTileColor;
+                }
             }
 
             // Winning path

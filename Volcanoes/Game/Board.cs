@@ -11,6 +11,7 @@ namespace Volcano.Game
     class Board
     {
         public int[] Tiles;
+        public bool[] Dormant;
         public Player Player;
         public int Turn;
 
@@ -34,6 +35,7 @@ namespace Volcano.Game
             Turn = 1;
             Player = Player.One;
             Tiles = new int[80];
+            Dormant = new bool[80];
             Winner = Player.Empty;
             WinningPath = new List<int>();
         }
@@ -42,6 +44,8 @@ namespace Volcano.Game
         {
             Tiles = new int[80];
             Array.Copy(copy.Tiles, Tiles, 80);
+            Dormant = new bool[80];
+            Array.Copy(copy.Dormant, Dormant, 80);
             Player = copy.Player;
             Turn = copy.Turn;
             Winner = copy.Winner;
@@ -73,10 +77,13 @@ namespace Volcano.Game
                 {
                     if (Tiles[i] != 0)
                     {
-                        Tiles[i] = Tiles[i] > 0 ? Tiles[i] + 1 : Tiles[i] - 1;
-                        if (Math.Abs(Tiles[i]) >= VolcanoGame.Settings.MaxVolcanoLevel)
+                        if (!VolcanoGame.Settings.AllowDormantVolcanoes || !Dormant[i])
                         {
-                            eruptions.Enqueue(i);
+                            Tiles[i] = Tiles[i] > 0 ? Tiles[i] + 1 : Tiles[i] - 1;
+                            if (Math.Abs(Tiles[i]) >= VolcanoGame.Settings.MaxVolcanoLevel)
+                            {
+                                eruptions.Enqueue(i);
+                            }
                         }
                     }
                 }
@@ -129,8 +136,17 @@ namespace Volcano.Game
                 {
                     int i = eruptions.Dequeue();
 
-                    // Downgrade to a level one volcano
-                    Tiles[i] = Tiles[i] > 0 ? VolcanoGame.Settings.MaxMagmaChamberLevel + 1 : -(VolcanoGame.Settings.MaxMagmaChamberLevel + 1);
+                    if (VolcanoGame.Settings.AllowDormantVolcanoes)
+                    {
+                        // Make the volcano dormant
+                        Tiles[i] = Tiles[i] > 0 ? VolcanoGame.Settings.MaxVolcanoLevel : -VolcanoGame.Settings.MaxVolcanoLevel;
+                        Dormant[i] = true;
+                    }
+                    else
+                    {
+                        // Downgrade to a level one volcano
+                        Tiles[i] = Tiles[i] > 0 ? VolcanoGame.Settings.MaxMagmaChamberLevel + 1 : -(VolcanoGame.Settings.MaxMagmaChamberLevel + 1);
+                    }
 
                     foreach (int adjacent in Constants.AdjacentIndexes[i])
                     {
@@ -152,13 +168,16 @@ namespace Volcano.Game
                         // Same owner
                         else if ((Tiles[adjacent] > 0 && Tiles[i] > 0) || (Tiles[adjacent] < 0 && Tiles[i] < 0))
                         {
-                            if (Tiles[i] > 0)
+                            if (!VolcanoGame.Settings.AllowDormantVolcanoes || !Dormant[adjacent])
                             {
-                                deltas[adjacent] += VolcanoGame.Settings.EruptOverflowFriendlyTileAmount;
-                            }
-                            else
-                            {
-                                deltas[adjacent] -= VolcanoGame.Settings.EruptOverflowFriendlyTileAmount;
+                                if (Tiles[i] > 0)
+                                {
+                                    deltas[adjacent] += VolcanoGame.Settings.EruptOverflowFriendlyTileAmount;
+                                }
+                                else
+                                {
+                                    deltas[adjacent] -= VolcanoGame.Settings.EruptOverflowFriendlyTileAmount;
+                                }
                             }
                         }
 
@@ -184,15 +203,17 @@ namespace Volcano.Game
                     if (deltas[i] != 0)
                     {
                         bool playerOne = Tiles[i] > 0;
+                        bool playerTwo = Tiles[i] < 0;
 
-                        // Someone already owns this tile, so the deltas can be takes as-is
+                        // Someone already owns this tile, so the deltas can be taken as-is
                         Tiles[i] += deltas[i];
                         
                         // If we changed the value so much that it switched sides
-                        if (((Tiles[i] < 0 && playerOne) || (Tiles[i] > 0 && !playerOne)) && !VolcanoGame.Settings.EruptOverflowAllowCapture)
+                        if (((Tiles[i] < 0 && playerOne) || (Tiles[i] > 0 && playerTwo)) && !VolcanoGame.Settings.EruptOverflowAllowCapture)
                         {
                             // Clear the tile
                             Tiles[i] = 0;
+                            Dormant[i] = false;
                         }
 
                         // Did this change trigger a chain reaction?
@@ -274,7 +295,10 @@ namespace Volcano.Game
                     // Grow existing tiles
                     if (growthMoves && ((Tiles[i] > 0 && Player == Player.One) || (Tiles[i] < 0 && Player == Player.Two)) && Math.Abs(Tiles[i]) < maxGrowthValue)
                     {
-                        moves.Add(i);
+                        if (!VolcanoGame.Settings.AllowDormantVolcanoes || !Dormant[i])
+                        {
+                            moves.Add(i);
+                        }
                     }
 
                     // Claim new tiles
@@ -300,6 +324,19 @@ namespace Volcano.Game
                             moves.Add(i);
                         }
                     }
+                }
+            }
+
+            if (moves.Count == 0)
+            {
+                if (growthMoves && expandMoves & captureMoves && maxGrowthValue >= VolcanoGame.Settings.MaxVolcanoLevel)
+                {
+                    // There are no moves in this position
+                    return moves;
+                }
+                else
+                {
+                    return GetMoves(true, true, true, VolcanoGame.Settings.MaxVolcanoLevel);
                 }
             }
 
