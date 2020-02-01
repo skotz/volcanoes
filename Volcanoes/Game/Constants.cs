@@ -19,9 +19,16 @@ namespace Volcano.Game
 
         /// <summary>
         /// An array mapping a source tile index to it's tile name.
-        /// E.G., TileNames[5] = "2A"
+        /// E.G., TileNames[5] = "N02"
         /// </summary>
         public static string[] TileNames = GetTileNames();
+
+        /// <summary>
+        /// FOR BACKWARDS COMPATIBILITY
+        /// An array mapping a source tile index to it's tile name.
+        /// E.G., TileNames[5] = "2A"
+        /// </summary>
+        public static string[] OldTileNames = GetOldTileNames();
 
         /// <summary>
         /// An array mapping a source tile to its antipodes (tile directly opposite on the 3D board shape).
@@ -39,6 +46,10 @@ namespace Volcano.Game
         /// </summary>
         public static int[][] FastestPaths = GetFastestPaths();
 
+        /// <summary>
+        /// An dictionary mapping a tile name back to it's index.
+        /// Supports both old and new tile names!
+        /// </summary>
         public static Dictionary<string, int> TileIndexes = GetTileIndexes();
 
         private static int[][] GetConnectingTiles()
@@ -158,13 +169,19 @@ namespace Volcano.Game
 
         private static string[] GetTileNames()
         {
+            return new string[] {
+                "N07", "N01", "N08", "N06", "N10", "N02", "N11", "N09", "N13", "N03", "N14", "N12", "N16", "N04", "N17", "N15", "N19", "N05", "N20", "N18", "N22", "N32", "N21", "N23", "N26", "N36", "N25", "N27", "N30", "N40", "N29", "N31", "N34", "N24", "N33", "N35", "N38", "N28", "N37", "N39",
+                "S34", "S24", "S35", "S33", "S38", "S28", "S39", "S37", "S22", "S32", "S23", "S21", "S26", "S36", "S27", "S25", "S30", "S40", "S31", "S29", "S16", "S04", "S15", "S17", "S19", "S05", "S18", "S20", "S07", "S01", "S06", "S08", "S10", "S02", "S09", "S11", "S13", "S03", "S12", "S14",
+                "G",
+            };
+        }
+
+        private static string[] GetOldTileNames()
+        {
             string[] names = new string[81];
 
             for (int outer = 0; outer < 20; outer++)
             {
-                int outerRow = outer / 5;
-                int outerCol = outer % 5;
-
                 for (int inner = 0; inner < 4; inner++)
                 {
                     int index = outer * 4 + inner;
@@ -340,6 +357,22 @@ namespace Volcano.Game
             for (int i = 0; i < 81; i++)
             {
                 indexes.Add(TileNames[i], i);
+            }
+
+            // Support legacy tile names
+            for (int i = 0; i < 81; i++)
+            {
+                if (indexes.ContainsKey(OldTileNames[i]))
+                {
+                    if (indexes[OldTileNames[i]] != i)
+                    {
+                        throw new Exception("Tile mapping duplicate!");
+                    }
+                }
+                else
+                {
+                    indexes.Add(OldTileNames[i], i);
+                }
             }
 
             return indexes;

@@ -87,7 +87,8 @@ namespace Volcano.Engine
                 }
 
                 // If we don't have an antipode path, continue connecting A tiles kitty corner until we do
-                List<int> alphaMoves = moves.Where(x => Constants.TileNames[x].EndsWith("A")).ToList();
+                // Use old tile names since new ones don't have As
+                List<int> alphaMoves = moves.Where(x => Constants.OldTileNames[x].EndsWith("A")).ToList();
 
                 if (alphaMoves.Count > 0)
                 {

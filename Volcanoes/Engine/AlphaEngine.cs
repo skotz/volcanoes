@@ -14,7 +14,9 @@ namespace Volcano.Engine
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
             List<int> moves = state.GetMoves();
-            List<int> alphaMoves = moves.Where(x => Constants.TileNames[x].EndsWith("A")).ToList();
+
+            // Use old tile names since the new system isn't named like this
+            List<int> alphaMoves = moves.Where(x => Constants.OldTileNames[x].EndsWith("A")).ToList();
 
             if (alphaMoves.Count > 0)
             {
