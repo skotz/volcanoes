@@ -11,14 +11,14 @@ namespace Volcano.Interface
 {
     class GameGraphicsSettings
     {
-        public int TileSize { get; set; } = 80;
+        public float TileSize { get; set; } = 80;
         public int TileSpacing { get; set; } = 8;
 
         public int BoardSpacing { get; set; } = 20;
 
-        public int TileWidth { get { return TileSize; } }
-        public int TileHeight { get { return (int)(TileWidth * Math.Sqrt(3) / 2); } }
-        public int TileHorizontalSpacing { get { return (int)(TileSpacing * Math.Sqrt(3) / 2); } }
+        public float TileWidth { get { return TileSize; } }
+        public float TileHeight { get { return (int)(TileWidth * Math.Sqrt(3) / 2); } }
+        public float TileHorizontalSpacing { get { return (int)(TileSpacing * Math.Sqrt(3) / 2); } }
 
         public int MainFontSize { get; set; } = 14;
         public int SubTextFontSize { get; set; } = 8;
@@ -40,13 +40,14 @@ namespace Volcano.Interface
         public Color TurnClockPlayerToMoveBorderColor { get; set; } = Color.FromArgb(255, 255, 0);
 
         public Color LastPlayedTileBorderColor { get; set; } = Color.FromArgb(255, 255, 255, 0);
+        public Color EquatorColor { get; set; } = Color.FromArgb(200, 255, 0, 0);
 
-        public int IdealPanelWidth { get { return TileWidth * 11 + TileHorizontalSpacing * 20 + TileSpacing * 2 + BoardSpacing * 2; } }
-        public int IdealPanelHeight { get { return TileHeight * 6 + TileHorizontalSpacing * 4 + TileSpacing * 7 + BoardSpacing * 2; } }
+        public int IdealPanelWidth { get { return (int)(TileWidth * 11 + TileHorizontalSpacing * 20 + TileSpacing * 2 + BoardSpacing * 2); } }
+        public int IdealPanelHeight { get { return (int)(TileHeight * 6 + TileHorizontalSpacing * 4 + TileSpacing * 7 + BoardSpacing * 2); } }
 
         public bool ShowTileNames { get; set; } = true;
         public bool ShowTileIndexes { get; set; } = false;
-
+        public bool ShowEquator { get; set; } = true;
         public bool ShowRotationButtons { get; set; } = true;
 
         private GameGraphicsSettings()
@@ -59,10 +60,10 @@ namespace Volcano.Interface
             // >>> panelSize.Width = TileWidth * 11 + TileHorizontalSpacing * 20 + TileSpacing * 2 + BoardSpacing * 2
             // >>> TileWidth * -11 = TileHorizontalSpacing * 20 + TileSpacing * 2 + BoardSpacing * 2 - panelSize.Width
             // >>> TileWidth = (TileHorizontalSpacing * 20 + TileSpacing * 2 + BoardSpacing * 2 - panelSize.Width) / -11            
-            int width = (TileHorizontalSpacing * 20 + TileSpacing * 2 + BoardSpacing * 2 - panelSize.Width) / -11;
+            float width = (TileHorizontalSpacing * 20 + TileSpacing * 2 + BoardSpacing * 2 - panelSize.Width) / -11;
 
             // Given our new width, check to make sure the resulting height doesn't overflow the screen bounds
-            int height = (int)(width * Math.Sqrt(3) / 2) * 6 + TileHorizontalSpacing * 4 + TileSpacing * 7 + BoardSpacing * 2;
+            float height = (int)(width * Math.Sqrt(3) / 2) * 6 + TileHorizontalSpacing * 4 + TileSpacing * 7 + BoardSpacing * 2;
             if (height > panelSize.Height)
             {
                 // Scaling to the width of the screen led to an overflow, so instead find the ideal width that scales the board to the screen's height

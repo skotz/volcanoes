@@ -10,9 +10,9 @@ namespace Volcano.Interface
 {
     class GameTile
     {
-        public Point Location { get; set; }
+        public PointF Location { get; set; }
         public bool Upright { get; set; }
-        public Rectangle BoundingBox { get; set; }
+        public RectangleF BoundingBox { get; set; }
         public GraphicsPath Path { get; set; }
     }
 }

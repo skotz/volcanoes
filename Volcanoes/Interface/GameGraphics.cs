@@ -16,7 +16,7 @@ namespace Volcano.Interface
         private List<GameTile> _tiles;
         private List<GameRotation> _rotations;
         private Rectangle _clock;
-        private Rectangle _reference;
+        private RectangleF _reference;
 
         private int[] boardIndexFromTileIndex;
 
@@ -55,10 +55,10 @@ namespace Volcano.Interface
             // TODO: simplify this mess
             _rotations = new List<GameRotation>();
 
-            int radius = _tiles[0].BoundingBox.Width / 5;
-            int xOffset = _tiles[0].BoundingBox.Width + GraphicsSettings.TileHorizontalSpacing;
-            int yOffset = _tiles[0].BoundingBox.Height * 2 / 3;
-            int yOffsetInverted = _tiles[0].BoundingBox.Height - yOffset;
+            var radius = _tiles[0].BoundingBox.Width / 5;
+            var xOffset = _tiles[0].BoundingBox.Width + GraphicsSettings.TileHorizontalSpacing;
+            var yOffset = _tiles[0].BoundingBox.Height * 2 / 3;
+            var yOffsetInverted = _tiles[0].BoundingBox.Height - yOffset;
 
             // Rotate around 2/7/26/41/23 and 71/50/33/55/74
             int[][] rotationLoops = new int[16][];
@@ -79,12 +79,12 @@ namespace Volcano.Interface
             rotationLoops[14] = new int[] { 40, 24, 4, 0, 20 };
             rotationLoops[15] = new int[] { 41, 26, 7, 2, 23 };
 
-            int x = _tiles[74].Location.X - GraphicsSettings.TileHorizontalSpacing;
-            int y = _tiles[74].Location.Y + yOffset;
+            var x = _tiles[74].Location.X - GraphicsSettings.TileHorizontalSpacing;
+            var y = _tiles[74].Location.Y + yOffset;
             _rotations.Add(new GameRotation
             {
-                Location = new Point(x - radius, y - radius),
-                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                Location = new PointF(x - radius, y - radius),
+                BoundingBox = new RectangleF(x - radius, y - radius, radius * 2, radius * 2),
                 RotationLoops = rotationLoops,
                 Image = Properties.Resources.rotate_counter_clockwise
             });
@@ -92,8 +92,8 @@ namespace Volcano.Interface
             y = _tiles[2].Location.Y + yOffsetInverted;
             _rotations.Add(new GameRotation
             {
-                Location = new Point(x - radius, y - radius),
-                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                Location = new PointF(x - radius, y - radius),
+                BoundingBox = new RectangleF(x - radius, y - radius, radius * 2, radius * 2),
                 RotationLoops = rotationLoops,
                 Image = Properties.Resources.rotate_clockwise
             });
@@ -122,8 +122,8 @@ namespace Volcano.Interface
             y = _tiles[57].Location.Y + yOffsetInverted;
             _rotations.Add(new GameRotation
             {
-                Location = new Point(x - radius, y - radius),
-                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                Location = new PointF(x - radius, y - radius),
+                BoundingBox = new RectangleF(x - radius, y - radius, radius * 2, radius * 2),
                 RotationLoops = rotationLoopsPoles,
                 Image = Properties.Resources.rotate_right
             });
@@ -158,8 +158,8 @@ namespace Volcano.Interface
             y = _tiles[78].Location.Y + yOffset;
             _rotations.Add(new GameRotation
             {
-                Location = new Point(x - radius, y - radius),
-                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                Location = new PointF(x - radius, y - radius),
+                BoundingBox = new RectangleF(x - radius, y - radius, radius * 2, radius * 2),
                 RotationLoops = rotationLoops2,
                 Image = Properties.Resources.rotate_counter_clockwise
             });
@@ -167,8 +167,8 @@ namespace Volcano.Interface
             y = _tiles[6].Location.Y + yOffsetInverted;
             _rotations.Add(new GameRotation
             {
-                Location = new Point(x - radius, y - radius),
-                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                Location = new PointF(x - radius, y - radius),
+                BoundingBox = new RectangleF(x - radius, y - radius, radius * 2, radius * 2),
                 RotationLoops = rotationLoops2,
                 Image = Properties.Resources.rotate_clockwise
             });
@@ -216,8 +216,8 @@ namespace Volcano.Interface
             y = _tiles[62].Location.Y + yOffset;
             _rotations.Add(new GameRotation
             {
-                Location = new Point(x - radius, y - radius),
-                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                Location = new PointF(x - radius, y - radius),
+                BoundingBox = new RectangleF(x - radius, y - radius, radius * 2, radius * 2),
                 RotationLoops = rotationLoop3,
                 Image = Properties.Resources.rotate_counter_clockwise
             });
@@ -225,8 +225,8 @@ namespace Volcano.Interface
             y = _tiles[10].Location.Y + yOffsetInverted;
             _rotations.Add(new GameRotation
             {
-                Location = new Point(x - radius, y - radius),
-                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                Location = new PointF(x - radius, y - radius),
+                BoundingBox = new RectangleF(x - radius, y - radius, radius * 2, radius * 2),
                 RotationLoops = rotationLoop3,
                 Image = Properties.Resources.rotate_clockwise
             });
@@ -277,8 +277,8 @@ namespace Volcano.Interface
             y = _tiles[66].Location.Y + yOffset;
             _rotations.Add(new GameRotation
             {
-                Location = new Point(x - radius, y - radius),
-                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                Location = new PointF(x - radius, y - radius),
+                BoundingBox = new RectangleF(x - radius, y - radius, radius * 2, radius * 2),
                 RotationLoops = rotationLoop4,
                 Image = Properties.Resources.rotate_counter_clockwise
             });
@@ -286,8 +286,8 @@ namespace Volcano.Interface
             y = _tiles[14].Location.Y + yOffsetInverted;
             _rotations.Add(new GameRotation
             {
-                Location = new Point(x - radius, y - radius),
-                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                Location = new PointF(x - radius, y - radius),
+                BoundingBox = new RectangleF(x - radius, y - radius, radius * 2, radius * 2),
                 RotationLoops = rotationLoop4,
                 Image = Properties.Resources.rotate_clockwise
             });
@@ -338,8 +338,8 @@ namespace Volcano.Interface
             y = _tiles[70].Location.Y + yOffset;
             _rotations.Add(new GameRotation
             {
-                Location = new Point(x - radius, y - radius),
-                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                Location = new PointF(x - radius, y - radius),
+                BoundingBox = new RectangleF(x - radius, y - radius, radius * 2, radius * 2),
                 RotationLoops = rotationLoop5,
                 Image = Properties.Resources.rotate_counter_clockwise
             });
@@ -347,8 +347,8 @@ namespace Volcano.Interface
             y = _tiles[18].Location.Y + yOffsetInverted;
             _rotations.Add(new GameRotation
             {
-                Location = new Point(x - radius, y - radius),
-                BoundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2),
+                Location = new PointF(x - radius, y - radius),
+                BoundingBox = new RectangleF(x - radius, y - radius, radius * 2, radius * 2),
                 RotationLoops = rotationLoop5,
                 Image = Properties.Resources.rotate_clockwise
             });
@@ -366,8 +366,8 @@ namespace Volcano.Interface
                 for (int inner = 0; inner < 4; inner++)
                 {
                     // Details of outer triangle
-                    int x = outerCol * (GraphicsSettings.TileWidth * 2 + GraphicsSettings.TileHorizontalSpacing * 4) + GraphicsSettings.TileSpacing + GraphicsSettings.BoardSpacing;
-                    int y = outerRow * (GraphicsSettings.TileHeight * 2 + GraphicsSettings.TileSpacing * 2 + GraphicsSettings.TileHorizontalSpacing) + GraphicsSettings.TileHorizontalSpacing + GraphicsSettings.BoardSpacing;
+                    var x = outerCol * (GraphicsSettings.TileWidth * 2 + GraphicsSettings.TileHorizontalSpacing * 4) + GraphicsSettings.TileSpacing + GraphicsSettings.BoardSpacing;
+                    var y = outerRow * (GraphicsSettings.TileHeight * 2 + GraphicsSettings.TileSpacing * 2 + GraphicsSettings.TileHorizontalSpacing) + GraphicsSettings.TileHorizontalSpacing + GraphicsSettings.BoardSpacing;
                     bool upright = outerRow % 2 == 0;
                     if (outerRow >= 2)
                     {
@@ -447,9 +447,9 @@ namespace Volcano.Interface
 
                     _tiles.Add(new GameTile
                     {
-                        Location = new Point(x, y),
+                        Location = new PointF(x, y),
                         Upright = upright,
-                        BoundingBox = new Rectangle(x, y, GraphicsSettings.TileWidth, GraphicsSettings.TileHeight),
+                        BoundingBox = new RectangleF(x, y, GraphicsSettings.TileWidth, GraphicsSettings.TileHeight),
                         Path = path
                     });
                 }
@@ -462,7 +462,7 @@ namespace Volcano.Interface
             var leftMost = _tiles.Min(x => x.Location.X);
             var bottomMost = _tiles.Max(x => x.Location.Y + x.BoundingBox.Height);
             var width = _tiles[0].BoundingBox.Width;
-            _clock = new Rectangle(leftMost, bottomMost - width, width, width);
+            _clock = new Rectangle((int)leftMost, (int)(bottomMost - width), (int)width, (int)width);
 
             // Font sizes
             _fontScale = Math.Max(_tiles[0].BoundingBox.Width / _initialWidth, 1f);
@@ -556,6 +556,60 @@ namespace Volcano.Interface
 
                 g.Clear(background);
 
+                // Draw equator
+                if (GraphicsSettings.ShowEquator)
+                {
+                    var allPoints = new List<PointF>();
+                    for (int i = 0; i < 80; i++)
+                    {
+                        // If this is a northern tile
+                        if (Constants.TileNames[boardIndexFromTileIndex[i]].Contains("N"))
+                        {
+                            foreach (int adjacent in Constants.AdjacentIndexes[i])
+                            {
+                                // If this northern tile has an adjacent southern tile
+                                if (Constants.TileNames[boardIndexFromTileIndex[adjacent]].Contains("S"))
+                                {
+                                    var rect = _tiles[adjacent].Path.GetBounds();
+                                    var center = new PointF(rect.X + rect.Width / 2, rect.Y + rect.Height / 2);
+
+                                    // Find two points closest to the adjacent tile
+                                    var points = _tiles[i].Path.PathPoints.OrderBy(x => Math.Sqrt(Math.Pow(x.X - center.X, 2) + Math.Pow(x.Y - center.Y, 2))).ToList();
+                                    var pointsAdjacent = _tiles[adjacent].Path.PathPoints.OrderBy(x => Math.Sqrt(Math.Pow(x.X - points[0].X, 2) + Math.Pow(x.Y - points[0].Y, 2))).ToList();
+
+                                    // Average them to get a line exactly halfway between the two tiles
+                                    var centerOne = new PointF((points[0].X + pointsAdjacent[0].X) / 2, (points[0].Y + pointsAdjacent[0].Y) / 2);
+                                    var centerTwo = new PointF((points[1].X + pointsAdjacent[1].X) / 2, (points[1].Y + pointsAdjacent[1].Y) / 2);
+
+                                    // Save the points so we can draw them all at once later
+                                    allPoints.Add(centerOne);
+                                    allPoints.Add(centerTwo);
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Sort the points left to right so we don't have a line jumping randomly all of the board
+                    allPoints.Sort((c, n) => c.X.CompareTo(n.X));
+
+                    var pen = new Pen(GraphicsSettings.EquatorColor, GraphicsSettings.TileSpacing * 0.75f);
+                    pen.EndCap = LineCap.Round;
+                    pen.StartCap = LineCap.Round;
+
+                    g.DrawLines(pen, allPoints.ToArray());
+
+                    //var width = GraphicsSettings.TileSpacing;
+                    //for (int t = width; t >= 1; t--)
+                    //{
+                    //    var color = Color.FromArgb(255 - 255 * t / width, GraphicsSettings.EquatorColor.R, GraphicsSettings.EquatorColor.G, GraphicsSettings.EquatorColor.B);
+                    //    var pen = new Pen(color, t);
+                    //    pen.EndCap = LineCap.Round;
+                    //    pen.StartCap = LineCap.Round;
+
+                    //    g.DrawLines(pen, allPoints.ToArray());
+                    //}
+                }
+
                 // Draw rotation buttons
                 if (GraphicsSettings.ShowRotationButtons)
                 {
@@ -571,7 +625,7 @@ namespace Volcano.Interface
                         matrix.Matrix33 = opacity;
                         ImageAttributes attributes = new ImageAttributes();
                         attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-                        g.DrawImage(_rotations[i].Image, _rotations[i].BoundingBox, 0, 0, _rotations[i].Image.Width, _rotations[i].Image.Height, GraphicsUnit.Pixel, attributes);
+                        g.DrawImage(_rotations[i].Image, _rotations[i].BoundingBoxFull, 0, 0, _rotations[i].Image.Width, _rotations[i].Image.Height, GraphicsUnit.Pixel, attributes);
                     }
                 }
 
@@ -620,7 +674,7 @@ namespace Volcano.Interface
                 {
                     var lastToMove = moveNumber % 6;
 
-                    var centerCover = new Rectangle(_clock.X + _clock.Width / 3, _clock.Y + _clock.Width / 3, _clock.Width / 3, _clock.Width / 3);
+                    var centerCover = new RectangleF(_clock.X + _clock.Width / 3, _clock.Y + _clock.Width / 3, _clock.Width / 3, _clock.Width / 3);
                     var angle = 360f / 6;
                     var start = -90f - angle / 2;
 
@@ -857,7 +911,7 @@ namespace Volcano.Interface
 
         private void DrawTileText(Graphics g, int index, string text, int heightOffset, int fontSize, bool bold)
         {
-            int triangleAdjust = (_tiles[index].Upright ? 1 : -1) * GraphicsSettings.TileHeight / heightOffset;
+            var triangleAdjust = (_tiles[index].Upright ? 1 : -1) * GraphicsSettings.TileHeight / heightOffset;
             Font font = new Font("Tahoma", fontSize * _fontScale, bold ? FontStyle.Bold : FontStyle.Regular);
             SizeF size = g.MeasureString(text, font);
             Brush brush = new SolidBrush(Color.FromArgb(128, 255, 255, 255));
