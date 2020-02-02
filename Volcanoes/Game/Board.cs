@@ -225,6 +225,11 @@ namespace Volcano.Game
                         // So we don't process it a second time
                         deltas[i] = 0;
                     }
+                    
+                    if (VolcanoGame.Settings.AllowDormantVolcanoes)
+                    {
+                        Dormant[i] = Math.Abs(Tiles[i]) == VolcanoGame.Settings.MaxVolcanoLevel;
+                    }
                 }
             }
 
