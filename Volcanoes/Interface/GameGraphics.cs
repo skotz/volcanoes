@@ -367,7 +367,7 @@ namespace Volcano.Interface
                 {
                     // Details of outer triangle
                     var x = outerCol * (GraphicsSettings.TileWidth * 2 + GraphicsSettings.TileHorizontalSpacing * 4) + GraphicsSettings.TileSpacing + GraphicsSettings.BoardSpacing;
-                    var y = outerRow * (GraphicsSettings.TileHeight * 2 + GraphicsSettings.TileSpacing * 2 + GraphicsSettings.TileHorizontalSpacing) + GraphicsSettings.TileHorizontalSpacing + GraphicsSettings.BoardSpacing;
+                    var y = outerRow * (GraphicsSettings.TileHeight * 2 + GraphicsSettings.TileSpacing * 2 + GraphicsSettings.TileHorizontalInverseSpacing) + GraphicsSettings.TileSpacing + GraphicsSettings.BoardSpacing;
                     bool upright = outerRow % 2 == 0;
                     if (outerRow >= 2)
                     {
@@ -380,23 +380,23 @@ namespace Volcano.Interface
                     {
                         switch (inner)
                         {
-                            case 0:
+                            case 0: // e.g., N07
                                 x += GraphicsSettings.TileWidth / 2 + GraphicsSettings.TileHorizontalSpacing;
                                 y += GraphicsSettings.TileHeight + GraphicsSettings.TileSpacing;
                                 upright = !upright;
                                 break;
 
-                            case 1:
+                            case 1: // e.g., N01
                                 x += GraphicsSettings.TileWidth / 2 + GraphicsSettings.TileHorizontalSpacing;
                                 break;
 
-                            case 2:
+                            case 2: // e.g., N08
                                 x += GraphicsSettings.TileWidth + GraphicsSettings.TileHorizontalSpacing * 2;
-                                y += GraphicsSettings.TileHeight + GraphicsSettings.TileSpacing + GraphicsSettings.TileHorizontalSpacing;
+                                y += GraphicsSettings.TileHeight + GraphicsSettings.TileSpacing + GraphicsSettings.TileHorizontalInverseSpacing;
                                 break;
 
-                            case 3:
-                                y += GraphicsSettings.TileHeight + GraphicsSettings.TileSpacing + GraphicsSettings.TileHorizontalSpacing;
+                            case 3: // e.g., N06
+                                y += GraphicsSettings.TileHeight + GraphicsSettings.TileSpacing + GraphicsSettings.TileHorizontalInverseSpacing;
                                 break;
                         }
                     }
@@ -404,21 +404,21 @@ namespace Volcano.Interface
                     {
                         switch (inner)
                         {
-                            case 0:
+                            case 0: // e.g., N22
                                 x += GraphicsSettings.TileWidth / 2 + GraphicsSettings.TileHorizontalSpacing;
-                                y += GraphicsSettings.TileHorizontalSpacing;
+                                y += GraphicsSettings.TileHorizontalInverseSpacing;
                                 upright = !upright;
                                 break;
 
-                            case 1:
+                            case 1: // e.g., S32
                                 x += GraphicsSettings.TileWidth / 2 + GraphicsSettings.TileHorizontalSpacing;
-                                y += GraphicsSettings.TileHeight + GraphicsSettings.TileSpacing + GraphicsSettings.TileHorizontalSpacing;
+                                y += GraphicsSettings.TileHeight + GraphicsSettings.TileSpacing + GraphicsSettings.TileHorizontalInverseSpacing;
                                 break;
 
-                            case 2:
+                            case 2: // e.g., N21
                                 break;
 
-                            case 3:
+                            case 3: // e.g., N23
                                 x += GraphicsSettings.TileWidth + GraphicsSettings.TileHorizontalSpacing * 2;
                                 break;
                         }

@@ -17,8 +17,9 @@ namespace Volcano.Interface
         public int BoardSpacing { get; set; } = 20;
 
         public float TileWidth { get { return TileSize; } }
-        public float TileHeight { get { return (int)(TileWidth * Math.Sqrt(3) / 2); } }
-        public float TileHorizontalSpacing { get { return (int)(TileSpacing * Math.Sqrt(3) / 2); } }
+        public float TileHeight { get { return (float)(TileWidth * Math.Sqrt(3) / 2); } }
+        public float TileHorizontalSpacing { get { return (float)(TileSpacing * Math.Sqrt(3) / 2); } }
+        public float TileHorizontalInverseSpacing { get { return (float)(TileSpacing / 2); } }
 
         public int MainFontSize { get; set; } = 14;
         public int SubTextFontSize { get; set; } = 8;
