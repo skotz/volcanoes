@@ -1,35 +1,40 @@
 # Volcanoes
 This is a prototype for a new board game concept being designed by Simon Dorfman and developed by Scott Clayton.
 
-![Board Concept](Concept/History/z-history-20200125.png)
+![Screenshot](Concept/History/z-history-20200125.png)
 
 ## Rules
 The goal of the game is to create a line of adjacent volcanoes which connect tiles on 
 opposite sides of the [Pentakis Icosidodecahedron](https://en.wikipedia.org/wiki/Pentakis_icosidodecahedron) board (an 80-tile sphere-ish shape).
 
-### On your turn you may
-1. Place a level 1 volcano of your color on an empty tile
-2. Progress one of your tiles one level on the growth track
-   * Level 4 volcanoes erupt with the following effects
-      * The level 4 volcano becomes dormant (it no longer grows)
-      * The tiles adjacent to the erupting volcano are affected in the following ways
-         * Friendly volcanoes progress one level on the growth track
-         * Enemy volcanoes are destroyed and become empty tiles
+### On your turn you may either:
+1. Place a level-one volcano of your color on an empty tile  
+   -or-
+2. Grow one of your volcanoes by one level  
+   e.g. one to two (1→2), two to three (2→3), or three to four (3→4)
 
 ### Progression of play
 1. Player one's turn (Blue always goes first)
 2. Player two's turn (Orange always goes second)
-3. Growth (every non-empty tile on the board is advanced one level on the growth track)
+3. Growth (every volcano on the board grows one level, except dormant volcanoes at level-four)
 4. Player two's turn (Orange's turn)
 5. Player one's turn (Blue's turn)
 6. Growth
 
 This cycle repeats until a player wins by successfully connecting a pair of antipodes (tiles directly opposite each other). 
 
+### Eruptions
+When a volcano advances to level-four (via a player's turn or via a growth turn), the volcanoes erupt with the following effects:
+
+   * The level-four volcano becomes dormant (it stops growing)
+   * The tiles adjacent to the erupting volcano are affected in the following ways:
+      * Friendly volcanoes grow one level (this could trigger another eruption)
+      * Enemy volcanoes are destroyed and leave behind empty tiles
+
 ## Engines
 Several computer AIs are included with Volcanoes. Here are the current rankings from a recent round robin tournament:
 
-![Engine Cross Table](Concept/History/z-cross-table-20200125.png)
+![Engine Cross Table](Concept/History/z-history-20190101.png)
 
 Our goal is to learn strategies for this game through the analysis of games played by computer AIs.
 
