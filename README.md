@@ -1,37 +1,47 @@
 # Volcanoes
 This is a prototype for a new board game concept being designed by Simon Dorfman and developed by Scott Clayton.
 
-![Board Concept](Concept/History/z-history-20200125.png)
+![Screenshot](Concept/History/z-history-20200125.png)
 
 ## Rules
 The goal of the game is to create a line of adjacent volcanoes which connect tiles on 
 opposite sides of the [Pentakis Icosidodecahedron](https://en.wikipedia.org/wiki/Pentakis_icosidodecahedron) board (an 80-tile sphere-ish shape).
 
-### On your turn you may
-1. Place a level 1 volcano of your color on an empty tile
-2. Progress one of your tiles one level on the growth track
-   * Level 5 volcanoes erupt with the following effects
-      * The level 5 volcano turns back into a level 1 volcano
-      * The tiles adjacent to the erupting volcano are affected in the following ways
-         * Friendly volcanoes progress one level on the growth track
-         * Enemy volcanoes are destroyed and become empty tiles
+### On your turn you may either:
+1. Place a level-one volcano of your color on an empty tile  
+   -or-
+2. Grow one of your volcanoes by one level  
+   e.g. one to two (1→2), two to three (2→3), or three to four (3→4)
 
 ### Progression of play
 1. Player one's turn (Blue always goes first)
 2. Player two's turn (Orange always goes second)
-3. Growth (every non-empty tile on the board is advanced one level on the growth track)
+3. Growth (every volcano on the board grows one level, except dormant volcanoes at level-four)
 4. Player two's turn (Orange's turn)
 5. Player one's turn (Blue's turn)
 6. Growth
 
 This cycle repeats until a player wins by successfully connecting a pair of antipodes (tiles directly opposite each other). 
 
-## Engines
-Several computer AIs are included with Volcanoes. Here are the current rankings from a recent round robin tournament.
+### Eruptions
+When a volcano advances to level-four (via a player's turn or via a growth turn), the volcanoes erupt with the following effects:
 
-![Engine Cross Table](Concept/History/z-cross-table-20200125.png)
+   * The level-four volcano becomes dormant (it stops growing)
+   * The tiles adjacent to the erupting volcano are affected in the following ways:
+      * Friendly volcanoes grow one level (this could trigger another eruption)
+      * Enemy volcanoes are destroyed and leave behind empty tiles
+
+## Engines
+Several computer AIs are included with Volcanoes. Here are the current rankings from a recent round robin tournament:
+
+![Engine Cross Table](Concept/History/z-history-20190101.png)
 
 Our goal is to learn strategies for this game through the analysis of games played by computer AIs.
+
+More information about the last two columns:
+
+* CS = Cumulative Score (number of wins)
+* NS = [Neustadtl Score](https://en.wikipedia.org/wiki/Sonneborn%E2%80%93Berger_score) (tie break score; basically a score weighted by strength of opposition where a win against a stronger opponent is worth more)
 
 ## Features
 Most engines report their progress while searching for the best move.
@@ -46,8 +56,8 @@ Run round robin tournaments with the provided engines to get cross tables and de
 
 ![Board Rotation](Concept/History/z-history-20181231d.png)
 
-Player One | Player Two | Winner | Termination | Total Moves | Total Milliseconds | Starting Tile Index | Transcript
---- | --- | --- | --- | --- | --- | --- | ---
-Barricade | Monte Carlo Tree Search | Two | Normal | 54 | 130188 | 64 | 17A 18D G 10C 10A G 5D 20D G 8B 8A G 13D 4C G 2B 2A G 3B 3A G 11C 3C G 15D 20B G 18C 18B G 19A 18D G 2C 19B G 19D 14C G 20D 20C G 12A 7D G 7A 10B G 7C 3D G 7A 4B G
-Monte Carlo Tree Search | Barricade | One | Normal | 51 | 108007 | 70 | 18C 13B G 18A 6B G 9B 9A G 14D 16D G 9D 13C G 14B 1A G 3B 3A G 17A 20A G 12A 12C G 4D 3D G 5B 16C G 8A 17D G 1B 8B G 10A 7A G 1C 19B G 15D 16B G 4B 11B G
-
+| Player One              | Player Two    | Winner | Termination | Total Moves | Total Milliseconds | Starting Tile Index | Transcript                                                                                                                            | Winning Path                                    |
+| ----------------------- | ------------- | ------ | ----------- | ----------- | ------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| Monte Carlo Tree Search | Parallel MCTS | Two    | Normal      | 39          | 152276             | 1                   | N01 N19 G N03 N04 G S24 N15 G S17 N17 G S15 N04 G N23 S04 G S34 S01 G S13 S03 G S10 S13+ G S03 S02 G S02+ S03+ G N19 N05 G S04 N19+ G | N13 N03 N04 N05 N19 N20 N39 N38 S28 S29 S12 S13 |
+| Monte Carlo Tree Search | Parallel MCTS | One    | Normal      | 19          | 109903             | 46                  | S39 N24 G S03 S10 G N11 S08 G N04 S01 G N19 S02 G N01 N07 G S02                                                                       | N10 N11 N27 N28 S38 S39 S20 S19 S05 S01 S02 S10 |
+| Monte Carlo Tree Search | Parallel MCTS | Two    | Normal      | 28          | 87456              | 7                   | N09 N07 G N11 N10 G N21 N11+ G N39 N02 G N14 N13 G N01+ N04 G N02 N05+ G N04 N16 G N16+ N03+ G N04                                    | N38 N37 N18 N19 N05 N04 N03 N13 N12 N29 N28 S38 |

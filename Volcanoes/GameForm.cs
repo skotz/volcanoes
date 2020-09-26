@@ -50,15 +50,15 @@ namespace Volcano
             gameTimer.Start();
 
             engines = new EngineHelper();
+            engines.Add<BarricadeEngine>("Barricade");
             engines.Add<RandomEngine>("Random");
             engines.Add<DeepBeelineEngine>("Deep Beeline");
-            engines.Add<BarricadeEngine>("Barricade");
+            engines.Add<MonteCarloBarricadeEngine>("Monte Carlo Barricade");
+            engines.Add<MonteCarloBeelineRandParallelEngine>("Parallel MCTS Beeline");
+            engines.Add<MonteCarloTreeSearchParallelEngine>("Parallel MCTS");
             engines.Add<MonteCarloBeelineThreeEngine>("Monte Carlo Beeline 3");
             engines.Add<MonteCarloBeelineFourEngine>("Monte Carlo Beeline 4");
             engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
-            engines.Add<MonteCarloBarricadeEngine>("Monte Carlo Barricade");
-            engines.Add<MonteCarloTreeSearchParallelEngine>("Parallel MCTS");
-            engines.Add<MonteCarloBeelineRandParallelEngine>("Parallel MCTS Beeline");
             //engines.Add<MonteCarloBeelineParallelEngine>("Parallel MCTS Beeline Full");
             //engines.Add<MonteCarloBeelineParallelDeepEngine>("Parallel MCTS Beeline Sim");
 
@@ -226,7 +226,7 @@ namespace Volcano
                 selfPlayToolStripMenuItem.Enabled = false;
 
                 string date = DateTime.Now.ToString("yyyyMMddhhmmss");
-                 
+
                 Tournament tourney = new Tournament(form.Rounds, form.SecondsPerMove, gameFolder + "tourney-table-" + date + ".csv", gameFolder + "tourney-data-" + date + ".csv", engines, form.Engines, form.SelfPlay || form.Engines.Count == 1);
                 tourney.OnTournamentCompleted += Tourney_OnTournamentCompleted;
                 tourney.OnTournamentStatus += Tourney_OnTournamentStatus;
@@ -466,7 +466,7 @@ namespace Volcano
 
         private void chkShowTileLocations_Click(object sender, EventArgs e)
         {
-            settings.ShowTileNames = chkShowTileLocations.Checked; 
+            settings.ShowTileNames = chkShowTileLocations.Checked;
         }
     }
 }
