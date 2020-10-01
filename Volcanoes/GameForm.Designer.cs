@@ -82,6 +82,8 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.growthMoveTimer = new System.Windows.Forms.Timer(this.components);
+            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
+            this.whiteboardModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -280,7 +282,9 @@
             this.resetRulesToolStripMenuItem,
             this.toolStripSeparator8,
             this.exportThemeToolStripMenuItem,
-            this.resetThemeToolStripMenuItem});
+            this.resetThemeToolStripMenuItem,
+            this.toolStripSeparator9,
+            this.whiteboardModeToolStripMenuItem});
             this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
             this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
             this.dEBUGToolStripMenuItem.Text = "DEBUG";
@@ -529,6 +533,18 @@
             this.growthMoveTimer.Interval = 1000;
             this.growthMoveTimer.Tick += new System.EventHandler(this.growthMoveTimer_Tick);
             // 
+            // toolStripSeparator9
+            // 
+            this.toolStripSeparator9.Name = "toolStripSeparator9";
+            this.toolStripSeparator9.Size = new System.Drawing.Size(201, 6);
+            // 
+            // whiteboardModeToolStripMenuItem
+            // 
+            this.whiteboardModeToolStripMenuItem.CheckOnClick = true;
+            this.whiteboardModeToolStripMenuItem.Name = "whiteboardModeToolStripMenuItem";
+            this.whiteboardModeToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
+            this.whiteboardModeToolStripMenuItem.Text = "Whiteboard Mode";
+            // 
             // GameForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -613,6 +629,8 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
         private System.Windows.Forms.ToolStripButton chkShowTileLocations;
         private System.Windows.Forms.Timer growthMoveTimer;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
+        private System.Windows.Forms.ToolStripMenuItem whiteboardModeToolStripMenuItem;
     }
 }
 

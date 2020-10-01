@@ -126,11 +126,34 @@ namespace Volcano
         private void gamePanel_Click(object sender, EventArgs e)
         {
             Point mouse = gamePanel.PointToClient(Cursor.Position);
-            bool reviewMode = game.MoveHistory.Count > 0 && transcriptMove != game.MoveHistory.Count;
-            if (game.CurrentState.State == GameState.InProgress && !game.Thinking && !reviewMode)
+            if (whiteboardModeToolStripMenuItem.Checked)
             {
-                int tileIndex = graphics.GetBoardIndex(mouse);
-                game.MakeMove(tileIndex);
+                try
+                {
+                    int tileIndex = graphics.GetBoardIndex(mouse);
+                    if (game.CurrentState.Tiles[tileIndex] == 0)
+                    {
+                        game.CurrentState.Tiles[tileIndex] = 1;
+                    }
+                    else if (game.CurrentState.Tiles[tileIndex] > 0)
+                    {
+                        game.CurrentState.Tiles[tileIndex] = -1;
+                    }
+                    else
+                    {
+                        game.CurrentState.Tiles[tileIndex] = 0;
+                    }
+                }
+                catch { }
+            }
+            else
+            {
+                bool reviewMode = game.MoveHistory.Count > 0 && transcriptMove != game.MoveHistory.Count;
+                if (game.CurrentState.State == GameState.InProgress && !game.Thinking && !reviewMode)
+                {
+                    int tileIndex = graphics.GetBoardIndex(mouse);
+                    game.MakeMove(tileIndex);
+                }
             }
             graphics.Click(mouse);
         }
