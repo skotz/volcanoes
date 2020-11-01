@@ -171,7 +171,7 @@ namespace Volcano.Game
 
             using (StreamWriter w = new StreamWriter(_gameDataFile))
             {
-                w.WriteLine("Player One,Player Two,Winner,Termination,Total Moves,Total Milliseconds,Starting Tile Index,Transcript,Winning Path");
+                w.WriteLine("Player One,Player Two,Winner,Termination,Total Moves,Total Milliseconds,Starting Tile Index,Transcript,Winning Path,WinCondition");
                 foreach (var result in results)
                 {
                     string gameResult = "Draw";
@@ -210,7 +210,14 @@ namespace Volcano.Game
                         }
                     }
 
-                    w.WriteLine(result.PlayerOne + "," + result.PlayerTwo + "," + gameResult + "," + result.Termination.ToString() + "," + result.TotalMoves + "," + result.ElapsedMilliseconds + "," + result.FirstTile + "," + transcript + "," + winningPath);
+                    string winCondition = "";
+                    if (result.WinCondition == 1)
+                    {
+                        winCondition = "TieOnGrowthBetweenWinnersTurns";
+                    }
+                    else winCondition = "NormalWin";
+
+                    w.WriteLine(result.PlayerOne + "," + result.PlayerTwo + "," + gameResult + "," + result.Termination.ToString() + "," + result.TotalMoves + "," + result.ElapsedMilliseconds + "," + result.FirstTile + "," + transcript + "," + winningPath + "," + winCondition);
                 }
             }
 
@@ -325,6 +332,7 @@ namespace Volcano.Game
         public long ElapsedMilliseconds { get; set; }
         public List<Move> Moves { get; set; }
         public List<int> WinningPath { get; set; }
+        public int WinCondition { get; set; }
 
         public TournamentResult(VolcanoGame state, string playerOne, string playerTwo, TournamentTerminationType termination, long milliseconds)
         {

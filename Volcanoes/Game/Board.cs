@@ -18,6 +18,8 @@ namespace Volcano.Game
         public Player Winner;
         public List<int> WinningPath;
 
+        public int WinCondition;
+
         public bool LastMoveIncreasedTile;
         
         private static PathFinder pathFinder = new PathFinder();
@@ -38,6 +40,7 @@ namespace Volcano.Game
             Dormant = new bool[80];
             Winner = Player.Empty;
             WinningPath = new List<int>();
+            WinCondition = 0;
         }
 
         public Board(Board copy)
@@ -240,9 +243,12 @@ namespace Volcano.Game
                 WinningPath = new List<int>();
             }
         }
-
+        //goal: update below function: if win condition is found, check to see if other player also wins
+        //if other player wins also, award the win to the player who just took a turn
         private void SearchForWin()
         {
+            int TentativeWinner = 0;
+            List<int> PathTentativeWinner = new List<int>();
             // We only need to cover the first 40 tiles since their antipodes cover the last 40
             for (int i = 0; i < 40; i++)
             {
@@ -254,9 +260,41 @@ namespace Volcano.Game
                     List<int> path = pathFinder.FindPath(this, i, Constants.Antipodes[i]).Path;
                     if (path.Count > 0)
                     {
+                        //Todo: add if statement to only use the new code being developed below on growth turns.
+                        //On other turns, use the existing code. Why? A tie can only happen on a growth turn.
+                        //Hopefully, that will make it run a little faster because it won't have to do all this logic for every turn, just on growth turns.
+
+                        if (TentativeWinner == 0) //default case, always do this the first time we find a winning path
+                        {
+                            TentativeWinner = Tiles[i] > 0 ? 1 : -1; //1 = winning path found for Player.One, -1 = winning path found for Player.Two
+                            PathTentativeWinner = path;
+                        }
+                        else if (TentativeWinner == 1) //do this if the last winning path found was for Player.One
+                        {
+                            if (Tiles[i] < 0) //this means Player.Two has a winning path from this tile and triggers the tiebreaker rule
+                            {
+                                Winner = GetPlayerForPreviousTurn();
+                                WinningPath = GetPlayerForPreviousTurn() == Player.Two ? path : PathTentativeWinner;
+                                WinCondition = 1; //TieOnGrowthBetweenWinnersTurns
+                                return;
+                            }
+                        }
+                        else if (TentativeWinner == - 1) //do this if the last winning path found was for Player.Two
+                        {
+                            if (Tiles[i] > 0) //this means Player.One has a winning path from this tile and triggers the tiebreaker rule
+                            {
+                                Winner = GetPlayerForPreviousTurn();
+                                WinningPath = GetPlayerForPreviousTurn() == Player.One ? path : PathTentativeWinner;
+                                WinCondition = 1; //TieOnGrowthBetweenWinnersTurns
+                                return;
+                            }
+                        }
+                    
+                    /*
                         Winner = Tiles[i] > 0 ? Player.One : Player.Two;
                         WinningPath = path;
                         return;
+                    */
                     }
                 }
             }
