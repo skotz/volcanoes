@@ -376,6 +376,7 @@ namespace Volcano.Game
             }
 
             WinningPath = state?.CurrentState?.WinningPath ?? new List<int>();
+            WinCondition = state?.CurrentState?.WinCondition ?? new int();
         }
 
         public TournamentResult()

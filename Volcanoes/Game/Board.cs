@@ -298,6 +298,16 @@ namespace Volcano.Game
                     }
                 }
             }
+            if (TentativeWinner != 0)
+            {
+                if (TentativeWinner == 1)
+                {
+                    Winner = Player.One;
+                }
+                else
+                    Winner = Player.Two;
+                WinningPath = PathTentativeWinner;
+            }
         }
 
         /// <summary>
