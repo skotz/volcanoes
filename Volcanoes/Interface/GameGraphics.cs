@@ -780,10 +780,13 @@ namespace Volcano.Interface
                 }
             }
 
-            // Winning path
-            if (gameState.WinningPath.Count > 0 && !gameState.WinningPath.Contains(boardIndexFromTileIndex[index]))
+            // Winning paths
+            if (gameState.WinningPathPlayerOne.Count > 0 || gameState.WinningPathPlayerTwo.Count > 0)
             {
-                tileColor = Color.FromArgb(64, tileColor);
+                if (!gameState.WinningPathPlayerOne.Contains(boardIndexFromTileIndex[index]) && !gameState.WinningPathPlayerTwo.Contains(boardIndexFromTileIndex[index]))
+                {
+                    tileColor = Color.FromArgb(64, tileColor);
+                }
             }
 
             //// Tile on the shortest unhindered path to the antipode

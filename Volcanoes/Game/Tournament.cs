@@ -171,7 +171,7 @@ namespace Volcano.Game
 
             using (StreamWriter w = new StreamWriter(_gameDataFile))
             {
-                w.WriteLine("Player One,Player Two,Winner,Termination,Total Moves,Total Milliseconds,Starting Tile Index,Transcript,Winning Path");
+                w.WriteLine("Player One,Player Two,Winner,Termination,Total Moves,Total Milliseconds,Starting Tile Index,Transcript,Winning Path One,Winning Path Two");
                 foreach (var result in results)
                 {
                     string gameResult = "Draw";
@@ -197,20 +197,10 @@ namespace Volcano.Game
                         }
                     }
 
-                    string winningPath = "";
-                    if (result.WinningPath != null && result.WinningPath.Count > 0)
-                    {
-                        try
-                        {
-                            winningPath = result.WinningPath.Select(x => Constants.TileNames[x]).Aggregate((c, n) => c + " " + n);
-                        }
-                        catch (Exception ex)
-                        {
-                            winningPath = ex.Message;
-                        }
-                    }
+                    string winningPathOne = GetWinningPath(result.WinningPathOne);
+                    string winningPathTwo = GetWinningPath(result.WinningPathTwo);
 
-                    w.WriteLine(result.PlayerOne + "," + result.PlayerTwo + "," + gameResult + "," + result.Termination.ToString() + "," + result.TotalMoves + "," + result.ElapsedMilliseconds + "," + result.FirstTile + "," + transcript + "," + winningPath);
+                    w.WriteLine(result.PlayerOne + "," + result.PlayerTwo + "," + gameResult + "," + result.Termination.ToString() + "," + result.TotalMoves + "," + result.ElapsedMilliseconds + "," + result.FirstTile + "," + transcript + "," + winningPathOne + "," + winningPathTwo);
                 }
             }
 
@@ -282,6 +272,24 @@ namespace Volcano.Game
             }
         }
 
+        private static string GetWinningPath(List<int> path)
+        {
+            string winningPath = "";
+            if (path != null && path.Count > 0)
+            {
+                try
+                {
+                    winningPath = path.Select(x => Constants.TileNames[x]).Aggregate((c, n) => c + " " + n);
+                }
+                catch (Exception ex)
+                {
+                    winningPath = ex.Message;
+                }
+            }
+
+            return winningPath;
+        }
+
         private void Worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             OnTournamentStatus?.Invoke(e.UserState as TournamentStatus);
@@ -324,7 +332,8 @@ namespace Volcano.Game
         public int TotalMoves { get; set; }
         public long ElapsedMilliseconds { get; set; }
         public List<Move> Moves { get; set; }
-        public List<int> WinningPath { get; set; }
+        public List<int> WinningPathOne { get; set; }
+        public List<int> WinningPathTwo { get; set; }
 
         public TournamentResult(VolcanoGame state, string playerOne, string playerTwo, TournamentTerminationType termination, long milliseconds)
         {
@@ -367,7 +376,8 @@ namespace Volcano.Game
                 FirstTile = Moves[0].Location;
             }
 
-            WinningPath = state?.CurrentState?.WinningPath ?? new List<int>();
+            WinningPathOne = state?.CurrentState?.WinningPathPlayerOne ?? new List<int>();
+            WinningPathTwo = state?.CurrentState?.WinningPathPlayerTwo ?? new List<int>();
         }
 
         public TournamentResult()

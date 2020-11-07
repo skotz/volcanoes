@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Volcano.Engine;
 using Volcano.Search;
 
 namespace Volcano.Game
 {
-    class Board
+    internal class Board
     {
         public int[] Tiles;
         public bool[] Dormant;
@@ -16,10 +13,11 @@ namespace Volcano.Game
         public int Turn;
 
         public Player Winner;
-        public List<int> WinningPath;
+        public List<int> WinningPathPlayerOne;
+        public List<int> WinningPathPlayerTwo;
 
         public bool LastMoveIncreasedTile;
-        
+
         private static PathFinder pathFinder = new PathFinder();
 
         public GameState State
@@ -37,7 +35,8 @@ namespace Volcano.Game
             Tiles = new int[80];
             Dormant = new bool[80];
             Winner = Player.Empty;
-            WinningPath = new List<int>();
+            WinningPathPlayerOne = new List<int>();
+            WinningPathPlayerTwo = new List<int>();
         }
 
         public Board(Board copy)
@@ -49,11 +48,12 @@ namespace Volcano.Game
             Player = copy.Player;
             Turn = copy.Turn;
             Winner = copy.Winner;
-            WinningPath = copy.WinningPath;
+            WinningPathPlayerOne = copy.WinningPathPlayerOne;
+            WinningPathPlayerTwo = copy.WinningPathPlayerTwo;
         }
 
         /// <summary>
-        /// Make a given move on the board. 
+        /// Make a given move on the board.
         /// </summary>
         /// <param name="move"></param>
         public bool MakeMove(int move)
@@ -62,7 +62,7 @@ namespace Volcano.Game
         }
 
         /// <summary>
-        /// Make a given move on the board. 
+        /// Make a given move on the board.
         /// </summary>
         /// <param name="move"></param>
         public bool MakeMove(int move, bool checkForWin, bool autoGrow)
@@ -207,7 +207,7 @@ namespace Volcano.Game
 
                         // Someone already owns this tile, so the deltas can be taken as-is
                         Tiles[i] += deltas[i];
-                        
+
                         // If we changed the value so much that it switched sides
                         if (((Tiles[i] < 0 && playerOne) || (Tiles[i] > 0 && playerTwo)) && !VolcanoGame.Settings.EruptOverflowAllowCapture)
                         {
@@ -225,7 +225,7 @@ namespace Volcano.Game
                         // So we don't process it a second time
                         deltas[i] = 0;
                     }
-                    
+
                     if (VolcanoGame.Settings.AllowDormantVolcanoes)
                     {
                         Dormant[i] = Math.Abs(Tiles[i]) == VolcanoGame.Settings.MaxVolcanoLevel;
@@ -237,26 +237,45 @@ namespace Volcano.Game
             if (phases <= 0)
             {
                 Winner = Player.Draw;
-                WinningPath = new List<int>();
+                WinningPathPlayerOne = new List<int>();
+                WinningPathPlayerTwo = new List<int>();
             }
         }
 
         private void SearchForWin()
         {
+            Winner = Player.Empty;
+
             // We only need to cover the first 40 tiles since their antipodes cover the last 40
             for (int i = 0; i < 40; i++)
             {
-                if (Tiles[i] != 0 && 
-                    ((Tiles[Constants.Antipodes[i]] > 0 && Tiles[i] > 0) || (Tiles[Constants.Antipodes[i]] < 0 && Tiles[i] < 0)) && 
-                    Math.Abs(Tiles[i]) > VolcanoGame.Settings.MaxMagmaChamberLevel && 
+                if (Tiles[i] != 0 &&
+                    ((Tiles[Constants.Antipodes[i]] > 0 && Tiles[i] > 0) || (Tiles[Constants.Antipodes[i]] < 0 && Tiles[i] < 0)) &&
+                    Math.Abs(Tiles[i]) > VolcanoGame.Settings.MaxMagmaChamberLevel &&
                     Math.Abs(Tiles[Constants.Antipodes[i]]) > VolcanoGame.Settings.MaxMagmaChamberLevel)
                 {
-                    List<int> path = pathFinder.FindPath(this, i, Constants.Antipodes[i]).Path;
-                    if (path.Count > 0)
+                    // Only search until we find a winner or detect a draw
+                    if (Winner == Player.Empty || (Winner == Player.One && Tiles[i] < 0) || (Winner == Player.Two && Tiles[i] > 0))
                     {
-                        Winner = Tiles[i] > 0 ? Player.One : Player.Two;
-                        WinningPath = path;
-                        return;
+                        var path = pathFinder.FindPath(this, i, Constants.Antipodes[i]).Path;
+                        if (path.Count > 0)
+                        {
+                            if (Tiles[i] > 0)
+                            {
+                                Winner = Winner != Player.Empty ? Player.Draw : Player.One;
+                                WinningPathPlayerOne = path;
+                            }
+                            else
+                            {
+                                Winner = Winner != Player.Empty ? Player.Draw : Player.Two;
+                                WinningPathPlayerTwo = path;
+                            }
+
+                            if (Winner == Player.Draw)
+                            {
+                                return;
+                            }
+                        }
                     }
                 }
             }
@@ -288,7 +307,7 @@ namespace Volcano.Game
         public List<int> GetMoves(bool growthMoves, bool expandMoves, bool captureMoves, int maxGrowthValue)
         {
             List<int> moves = new List<int>();
-            
+
             if (GetMoveTypeForTurn(Turn) == MoveType.AllGrow)
             {
                 moves.Add(Constants.AllGrowMove);
@@ -316,14 +335,14 @@ namespace Volcano.Game
                     if (captureMoves)
                     {
                         Player opponent = Player == Player.One ? Player.Two : Player.One;
-                        if (VolcanoGame.Settings.AllowMagmaChamberCaptures && 
-                            ((Tiles[i] > 0 && opponent == Player.One) || (Tiles[i] < 0 && opponent == Player.Two)) && 
+                        if (VolcanoGame.Settings.AllowMagmaChamberCaptures &&
+                            ((Tiles[i] > 0 && opponent == Player.One) || (Tiles[i] < 0 && opponent == Player.Two)) &&
                             Math.Abs(Tiles[i]) <= VolcanoGame.Settings.MaxMagmaChamberLevel)
                         {
                             moves.Add(i);
                         }
-                        if (VolcanoGame.Settings.AllowVolcanoCaptures && 
-                            ((Tiles[i] > 0 && opponent == Player.One) || (Tiles[i] < 0 && opponent == Player.Two)) && 
+                        if (VolcanoGame.Settings.AllowVolcanoCaptures &&
+                            ((Tiles[i] > 0 && opponent == Player.One) || (Tiles[i] < 0 && opponent == Player.Two)) &&
                             Math.Abs(Tiles[i]) > VolcanoGame.Settings.MaxMagmaChamberLevel)
                         {
                             moves.Add(i);
@@ -376,10 +395,12 @@ namespace Volcano.Game
                 case 4:
                 case 5:
                     return Player.One;
+
                 case 1:
                 case 2:
                 case 3:
                     return Player.Two;
+
                 default:
                     return Player.Empty;
             }
@@ -402,6 +423,7 @@ namespace Volcano.Game
                 case 2:
                 case 5:
                     return MoveType.AllGrow;
+
                 case 0:
                 case 1:
                 case 3:
