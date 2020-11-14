@@ -35,7 +35,7 @@ namespace Volcano.Engine
             visitedNodes = 0;
             simulationCount = 0;
 
-            cancel = new EngineCancellationToken(() => token.Cancelled || timer.ElapsedMilliseconds >= maxSeconds * 1000 - bufferMilliseconds);
+            cancel = new EngineCancellationToken(() => token.Cancelled || timer.ElapsedMilliseconds >= maxSeconds * 1000L - bufferMilliseconds);
 
             int best = MonteCarloTreeSearch(state);
 

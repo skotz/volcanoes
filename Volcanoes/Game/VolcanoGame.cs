@@ -301,5 +301,13 @@ namespace Volcano.Game
                 }
             }
         }
+
+        public void ForceStop()
+        {
+            if (_worker.IsBusy)
+            {
+                _worker.CancelAsync();
+            }
+        }
     }
 }

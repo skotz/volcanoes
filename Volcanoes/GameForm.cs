@@ -120,7 +120,7 @@ namespace Volcano
         private void gameTimer_Tick(object sender, EventArgs e)
         {
             Point mouse = gamePanel.PointToClient(Cursor.Position);
-            graphics.Draw(game, mouse, transcriptMove, chkHighlightLastMove.Checked);
+            graphics.Draw(game, mouse, transcriptMove, chkHighlightLastMove.Checked, displayHeatmap.Checked);
         }
 
         private void gamePanel_Click(object sender, EventArgs e)

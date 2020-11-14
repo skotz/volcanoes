@@ -59,6 +59,8 @@
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             this.exportThemeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetThemeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
+            this.whiteboardModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btnNewGame = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
@@ -82,8 +84,7 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.growthMoveTimer = new System.Windows.Forms.Timer(this.components);
-            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
-            this.whiteboardModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.displayHeatmap = new System.Windows.Forms.ToolStripButton();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -342,6 +343,18 @@
             this.resetThemeToolStripMenuItem.Text = "Reset Theme";
             this.resetThemeToolStripMenuItem.Click += new System.EventHandler(this.resetThemeToolStripMenuItem_Click);
             // 
+            // toolStripSeparator9
+            // 
+            this.toolStripSeparator9.Name = "toolStripSeparator9";
+            this.toolStripSeparator9.Size = new System.Drawing.Size(201, 6);
+            // 
+            // whiteboardModeToolStripMenuItem
+            // 
+            this.whiteboardModeToolStripMenuItem.CheckOnClick = true;
+            this.whiteboardModeToolStripMenuItem.Name = "whiteboardModeToolStripMenuItem";
+            this.whiteboardModeToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
+            this.whiteboardModeToolStripMenuItem.Text = "Whiteboard Mode";
+            // 
             // toolStrip1
             // 
             this.toolStrip1.BackColor = System.Drawing.SystemColors.Control;
@@ -360,6 +373,7 @@
             this.toolStripSeparator3,
             this.chkHighlightLastMove,
             this.chkShowTileLocations,
+            this.displayHeatmap,
             this.toolStripSeparator6,
             this.btnNavStart,
             this.btnNavBack,
@@ -533,17 +547,15 @@
             this.growthMoveTimer.Interval = 1000;
             this.growthMoveTimer.Tick += new System.EventHandler(this.growthMoveTimer_Tick);
             // 
-            // toolStripSeparator9
+            // displayHeatmap
             // 
-            this.toolStripSeparator9.Name = "toolStripSeparator9";
-            this.toolStripSeparator9.Size = new System.Drawing.Size(201, 6);
-            // 
-            // whiteboardModeToolStripMenuItem
-            // 
-            this.whiteboardModeToolStripMenuItem.CheckOnClick = true;
-            this.whiteboardModeToolStripMenuItem.Name = "whiteboardModeToolStripMenuItem";
-            this.whiteboardModeToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
-            this.whiteboardModeToolStripMenuItem.Text = "Whiteboard Mode";
+            this.displayHeatmap.CheckOnClick = true;
+            this.displayHeatmap.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.displayHeatmap.Image = ((System.Drawing.Image)(resources.GetObject("displayHeatmap.Image")));
+            this.displayHeatmap.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.displayHeatmap.Name = "displayHeatmap";
+            this.displayHeatmap.Size = new System.Drawing.Size(23, 22);
+            this.displayHeatmap.Text = "Highlight Last Move";
             // 
             // GameForm
             // 
@@ -631,6 +643,7 @@
         private System.Windows.Forms.Timer growthMoveTimer;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
         private System.Windows.Forms.ToolStripMenuItem whiteboardModeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripButton displayHeatmap;
     }
 }
 
