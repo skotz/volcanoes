@@ -535,26 +535,6 @@ namespace Volcano.Interface
         {
             Resize();
 
-            if (displayHeatmap)
-            {
-                if (game.CurrentState.Turn != analysisMove)
-                {
-                    EndAnalysis();
-                    analysisMove = game.CurrentState.Turn;
-                    analysisEngine = new VolcanoGame();
-                    analysisEngine.SecondsPerEngineMove = 1000000;
-                    analysisEngine.RegisterEngine(Player.One, new MonteCarloTreeSearchEngine());
-                    analysisEngine.RegisterEngine(Player.Two, new MonteCarloTreeSearchEngine());
-                    analysisEngine.OnEngineStatus += AnalysisEngine_OnEngineStatus;
-                    analysisEngine.CurrentState = new Board(game.CurrentState);
-                    analysisEngine.ComputerPlay();
-                }
-            }
-            else
-            {
-                EndAnalysis();
-            }
-
             if (GraphicsSettings.IdealPanelWidth <= 100 || GraphicsSettings.IdealPanelHeight <= 20)
             {
                 using (Graphics g3 = _panel.CreateGraphics())
@@ -576,6 +556,26 @@ namespace Volcano.Interface
             int lastPlayIndex = GetTileIndexFromBoardIndex(game.MoveHistory.Count >= moveNumber && moveNumber - 1 >= 0 ? game.MoveHistory[moveNumber - 1] : -1);
 
             Color background = reviewMode ? GraphicsSettings.ReviewBackgroundColor : GraphicsSettings.BackgroundColor;
+
+            if (displayHeatmap)
+            {
+                if (gameState.Turn != analysisMove)
+                {
+                    EndAnalysis();
+                    analysisMove = gameState.Turn;
+                    analysisEngine = new VolcanoGame();
+                    analysisEngine.SecondsPerEngineMove = 1000000;
+                    analysisEngine.RegisterEngine(Player.One, new MonteCarloTreeSearchEngine(false));
+                    analysisEngine.RegisterEngine(Player.Two, new MonteCarloTreeSearchEngine(false));
+                    analysisEngine.OnEngineStatus += AnalysisEngine_OnEngineStatus;
+                    analysisEngine.CurrentState = new Board(gameState);
+                    analysisEngine.ComputerPlay();
+                }
+            }
+            else
+            {
+                EndAnalysis();
+            }
 
             using (Bitmap b = new Bitmap(GraphicsSettings.IdealPanelWidth, GraphicsSettings.IdealPanelHeight))
             using (Graphics g = Graphics.FromImage(b))
@@ -671,12 +671,14 @@ namespace Volcano.Interface
                         {
                             var min = analysisStatus.Details.Min(x => x.Evaluation);
                             var max = analysisStatus.Details.Max(x => x.Evaluation);
+                            var scale = 1.0;
                             if (max - min > 0)
                             {
-                                var scale = (details.Evaluation - min) / (max - min);
-                                FillRoundedRectangle(g, i, scale);
-                                DrawTileText(g, i, details.Evaluation.ToString(), 3, GraphicsSettings.SubTextFontSize, false, Color.Black);
+                                scale = (details.Evaluation - min) / (max - min);
                             }
+                            var isBest = details.Evaluation == max;
+                            FillRoundedRectangle(g, i, scale, isBest);
+                            DrawTileText(g, i, details.Evaluation.ToString(), 3, GraphicsSettings.SubTextFontSize, false, Color.Black);
                         }
                     }
                     else if (GraphicsSettings.ShowTileNames)
@@ -983,11 +985,12 @@ namespace Volcano.Interface
             g.DrawString(text, font, brush, location);
         }
 
-        private void FillRoundedRectangle(Graphics g, int index, double intensity)
+        private void FillRoundedRectangle(Graphics g, int index, double intensity, bool isBest)
         {
             var cr = Math.Min(255, Math.Max(0, (1 - intensity) * 255));
             var cg = Math.Min(255, Math.Max(0, intensity * 255));
-            var brush = new SolidBrush(Color.FromArgb((int)cr, (int)cg, 0));
+            var cb = isBest ? 255 : 0;
+            var brush = new SolidBrush(Color.FromArgb((int)cr, (int)cg, cb));
 
             var width = _tiles[index].BoundingBox.Width * 0.6f;
             var height = _tiles[index].BoundingBox.Height / 5;
@@ -999,7 +1002,7 @@ namespace Volcano.Interface
             {
                 y = _tiles[index].BoundingBox.Y + _tiles[index].BoundingBox.Height - padding - height;
             }
-            
+
             var radius = height;
             RectangleF corner = new RectangleF(x, y, radius, radius);
             GraphicsPath path = new GraphicsPath();

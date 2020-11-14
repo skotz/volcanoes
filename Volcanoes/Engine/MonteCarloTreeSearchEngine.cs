@@ -2,30 +2,35 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Volcano.Game;
 
 namespace Volcano.Engine
 {
-    class MonteCarloTreeSearchEngine : IEngine, IStatus
+    internal class MonteCarloTreeSearchEngine : IEngine, IStatus
     {
         private Random random;
         private int simulationCount;
         private int visitedNodes;
-        private int maxIterations;
+        private bool _allowForcedWins;
 
         private int bufferMilliseconds = 200;
         private EngineCancellationToken cancel;
 
         private Stopwatch statusUpdate;
         private int millisecondsBetweenUpdates = 500;
+
         public event EventHandler<EngineStatus> OnStatus;
-        
+
+        public MonteCarloTreeSearchEngine(bool allowForcedWins)
+        {
+            random = new Random();
+            _allowForcedWins = allowForcedWins;
+        }
+
         public MonteCarloTreeSearchEngine()
         {
             random = new Random();
-            maxIterations = 1000000;
+            _allowForcedWins = true;
         }
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
@@ -47,7 +52,7 @@ namespace Volcano.Engine
                 Milliseconds = timer.ElapsedMilliseconds
             };
         }
-        
+
         protected virtual List<int> GetMoves(Board state)
         {
             return state.GetMoves();
@@ -58,7 +63,7 @@ namespace Volcano.Engine
             var rootNode = new MonteCarloTreeSearchNode(rootState, GetMoves);
             var forceWin = false;
 
-            for (int i = 0; i < maxIterations && !cancel.Cancelled && !forceWin; i++)
+            while (!cancel.Cancelled && !forceWin)
             {
                 var node = rootNode;
                 var state = new Board(rootState);
@@ -102,12 +107,15 @@ namespace Volcano.Engine
                 }
 
                 // Cut Short
-                foreach (var child in rootNode.Children)
+                if (_allowForcedWins)
                 {
-                    // If we have a potential move that has a 100% win rate and it's been visited a lot of times, stop searching
-                    if (child.Visits > 500 && child.Wins == child.Visits)
+                    foreach (var child in rootNode.Children)
                     {
-                        forceWin = true;
+                        // If we have a potential move that has a 100% win rate and it's been visited a lot of times, stop searching
+                        if (child.Visits > 500 && child.Wins == child.Visits)
+                        {
+                            forceWin = true;
+                        }
                     }
                 }
 
@@ -136,7 +144,7 @@ namespace Volcano.Engine
             return rootNode.Children.OrderBy(x => x.Visits).LastOrDefault().Move;
         }
 
-        class MonteCarloTreeSearchNode
+        private class MonteCarloTreeSearchNode
         {
             private Func<Board, List<int>> _getMoves;
 

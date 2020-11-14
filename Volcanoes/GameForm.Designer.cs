@@ -75,6 +75,7 @@
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.chkHighlightLastMove = new System.Windows.Forms.ToolStripButton();
             this.chkShowTileLocations = new System.Windows.Forms.ToolStripButton();
+            this.displayHeatmap = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.btnNavStart = new System.Windows.Forms.ToolStripButton();
             this.btnNavBack = new System.Windows.Forms.ToolStripButton();
@@ -84,7 +85,6 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.growthMoveTimer = new System.Windows.Forms.Timer(this.components);
-            this.displayHeatmap = new System.Windows.Forms.ToolStripButton();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -482,6 +482,16 @@
             this.chkShowTileLocations.Text = "Show Coordinate Labels";
             this.chkShowTileLocations.Click += new System.EventHandler(this.chkShowTileLocations_Click);
             // 
+            // displayHeatmap
+            // 
+            this.displayHeatmap.CheckOnClick = true;
+            this.displayHeatmap.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.displayHeatmap.Image = ((System.Drawing.Image)(resources.GetObject("displayHeatmap.Image")));
+            this.displayHeatmap.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.displayHeatmap.Name = "displayHeatmap";
+            this.displayHeatmap.Size = new System.Drawing.Size(23, 22);
+            this.displayHeatmap.Text = "Display Engine Analysis Overlay";
+            // 
             // toolStripSeparator6
             // 
             this.toolStripSeparator6.Name = "toolStripSeparator6";
@@ -546,16 +556,6 @@
             // 
             this.growthMoveTimer.Interval = 1000;
             this.growthMoveTimer.Tick += new System.EventHandler(this.growthMoveTimer_Tick);
-            // 
-            // displayHeatmap
-            // 
-            this.displayHeatmap.CheckOnClick = true;
-            this.displayHeatmap.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.displayHeatmap.Image = ((System.Drawing.Image)(resources.GetObject("displayHeatmap.Image")));
-            this.displayHeatmap.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.displayHeatmap.Name = "displayHeatmap";
-            this.displayHeatmap.Size = new System.Drawing.Size(23, 22);
-            this.displayHeatmap.Text = "Highlight Last Move";
             // 
             // GameForm
             // 
