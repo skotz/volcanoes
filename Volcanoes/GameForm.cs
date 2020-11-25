@@ -59,6 +59,7 @@ namespace Volcano
             engines.Add<MonteCarloBeelineThreeEngine>("Monte Carlo Beeline 3");
             engines.Add<MonteCarloBeelineFourEngine>("Monte Carlo Beeline 4");
             engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
+            engines.Add<BreadthFirstBeamSearch>("Beam Search");
             //engines.Add<MonteCarloBeelineParallelEngine>("Parallel MCTS Beeline Full");
             //engines.Add<MonteCarloBeelineParallelDeepEngine>("Parallel MCTS Beeline Sim");
 
