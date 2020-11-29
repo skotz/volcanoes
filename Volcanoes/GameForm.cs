@@ -65,6 +65,11 @@ namespace Volcano
             //engines.Add<MonteCarloBeelineParallelEngine>("Parallel MCTS Beeline Full");
             //engines.Add<MonteCarloBeelineParallelDeepEngine>("Parallel MCTS Beeline Sim");
 
+            //engines.Add("MCTS 0.5 UCB", () => new MonteCarloTreeSearchEngine(0.1));
+            //engines.Add("MCTS 1.0 UCB", () => new MonteCarloTreeSearchEngine(1.0));
+            //engines.Add("MCTS 1.5 UCB", () => new MonteCarloTreeSearchEngine(1.5));
+            //engines.Add("MCTS 2.0 UCB", () => new MonteCarloTreeSearchEngine(2.0));
+
             cbPlayerOne.Items.Add("Human");
             cbPlayerTwo.Items.Add("Human");
             cbPlayerOne.SelectedIndex = 0;

@@ -24,6 +24,14 @@ namespace Volcano.Engine
 
         public event EventHandler<EngineStatus> OnStatus;
 
+        private double _ucbFactor = 2.0;
+
+        public MonteCarloTreeSearchEngine(double ucbFactor)
+        {
+            random = new Random();
+            _ucbFactor = ucbFactor;
+        }
+
         public MonteCarloTreeSearchEngine(bool allowForcedWins)
         {
             random = new Random();
@@ -104,7 +112,7 @@ namespace Volcano.Engine
                 // Select
                 while (node.Untried.Count == 0 && node.Children.Count > 0)
                 {
-                    node = node.SelectChild();
+                    node = node.SelectChild(_ucbFactor);
                     state.MakeMove(node.Move);
                     visitedNodes++;
                 }
@@ -215,9 +223,9 @@ namespace Volcano.Engine
                 }
             }
 
-            public MonteCarloTreeSearchNode SelectChild()
+            public MonteCarloTreeSearchNode SelectChild(double ucbFactor)
             {
-                return Children.OrderBy(x => UpperConfidenceBound(x)).LastOrDefault();
+                return Children.OrderBy(x => UpperConfidenceBound(ucbFactor, x)).LastOrDefault();
             }
 
             public MonteCarloTreeSearchNode AddChild(Board state, int move)
@@ -234,9 +242,9 @@ namespace Volcano.Engine
                 Wins += result;
             }
 
-            private double UpperConfidenceBound(MonteCarloTreeSearchNode node)
+            private double UpperConfidenceBound(double ucbFactor, MonteCarloTreeSearchNode node)
             {
-                return node.Wins / node.Visits + Math.Sqrt(2.0 * Math.Log(Visits) / node.Visits);
+                return node.Wins / node.Visits + Math.Sqrt(ucbFactor * Math.Log(Visits) / node.Visits);
             }
         }
     }
