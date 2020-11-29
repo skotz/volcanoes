@@ -85,6 +85,8 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.growthMoveTimer = new System.Windows.Forms.Timer(this.components);
+            this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
+            this.generateOpeningBooksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -285,7 +287,9 @@
             this.exportThemeToolStripMenuItem,
             this.resetThemeToolStripMenuItem,
             this.toolStripSeparator9,
-            this.whiteboardModeToolStripMenuItem});
+            this.whiteboardModeToolStripMenuItem,
+            this.toolStripSeparator10,
+            this.generateOpeningBooksToolStripMenuItem});
             this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
             this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
             this.dEBUGToolStripMenuItem.Text = "DEBUG";
@@ -294,65 +298,65 @@
             // stressTestPathSearchToolStripMenuItem
             // 
             this.stressTestPathSearchToolStripMenuItem.Name = "stressTestPathSearchToolStripMenuItem";
-            this.stressTestPathSearchToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
+            this.stressTestPathSearchToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.stressTestPathSearchToolStripMenuItem.Text = "Stress Test Path Search";
             this.stressTestPathSearchToolStripMenuItem.Click += new System.EventHandler(this.stressTestPathSearchToolStripMenuItem_Click);
             // 
             // stressTestEngineSearchToolStripMenuItem
             // 
             this.stressTestEngineSearchToolStripMenuItem.Name = "stressTestEngineSearchToolStripMenuItem";
-            this.stressTestEngineSearchToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
+            this.stressTestEngineSearchToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.stressTestEngineSearchToolStripMenuItem.Text = "Stress Test Engine Search";
             this.stressTestEngineSearchToolStripMenuItem.Click += new System.EventHandler(this.stressTestEngineSearchToolStripMenuItem_Click);
             // 
             // toolStripSeparator7
             // 
             this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(201, 6);
+            this.toolStripSeparator7.Size = new System.Drawing.Size(202, 6);
             // 
             // exportRulesToolStripMenuItem1
             // 
             this.exportRulesToolStripMenuItem1.Name = "exportRulesToolStripMenuItem1";
-            this.exportRulesToolStripMenuItem1.Size = new System.Drawing.Size(204, 22);
+            this.exportRulesToolStripMenuItem1.Size = new System.Drawing.Size(205, 22);
             this.exportRulesToolStripMenuItem1.Text = "Export Rules";
             this.exportRulesToolStripMenuItem1.Click += new System.EventHandler(this.exportRulesToolStripMenuItem_Click);
             // 
             // resetRulesToolStripMenuItem
             // 
             this.resetRulesToolStripMenuItem.Name = "resetRulesToolStripMenuItem";
-            this.resetRulesToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
+            this.resetRulesToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.resetRulesToolStripMenuItem.Text = "Reset Rules";
             this.resetRulesToolStripMenuItem.Click += new System.EventHandler(this.importRulesToolStripMenuItem_Click);
             // 
             // toolStripSeparator8
             // 
             this.toolStripSeparator8.Name = "toolStripSeparator8";
-            this.toolStripSeparator8.Size = new System.Drawing.Size(201, 6);
+            this.toolStripSeparator8.Size = new System.Drawing.Size(202, 6);
             // 
             // exportThemeToolStripMenuItem
             // 
             this.exportThemeToolStripMenuItem.Name = "exportThemeToolStripMenuItem";
-            this.exportThemeToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
+            this.exportThemeToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.exportThemeToolStripMenuItem.Text = "Export Theme";
             this.exportThemeToolStripMenuItem.Click += new System.EventHandler(this.exportThemeToolStripMenuItem_Click);
             // 
             // resetThemeToolStripMenuItem
             // 
             this.resetThemeToolStripMenuItem.Name = "resetThemeToolStripMenuItem";
-            this.resetThemeToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
+            this.resetThemeToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.resetThemeToolStripMenuItem.Text = "Reset Theme";
             this.resetThemeToolStripMenuItem.Click += new System.EventHandler(this.resetThemeToolStripMenuItem_Click);
             // 
             // toolStripSeparator9
             // 
             this.toolStripSeparator9.Name = "toolStripSeparator9";
-            this.toolStripSeparator9.Size = new System.Drawing.Size(201, 6);
+            this.toolStripSeparator9.Size = new System.Drawing.Size(202, 6);
             // 
             // whiteboardModeToolStripMenuItem
             // 
             this.whiteboardModeToolStripMenuItem.CheckOnClick = true;
             this.whiteboardModeToolStripMenuItem.Name = "whiteboardModeToolStripMenuItem";
-            this.whiteboardModeToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
+            this.whiteboardModeToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.whiteboardModeToolStripMenuItem.Text = "Whiteboard Mode";
             // 
             // toolStrip1
@@ -557,6 +561,18 @@
             this.growthMoveTimer.Interval = 1000;
             this.growthMoveTimer.Tick += new System.EventHandler(this.growthMoveTimer_Tick);
             // 
+            // toolStripSeparator10
+            // 
+            this.toolStripSeparator10.Name = "toolStripSeparator10";
+            this.toolStripSeparator10.Size = new System.Drawing.Size(202, 6);
+            // 
+            // generateOpeningBooksToolStripMenuItem
+            // 
+            this.generateOpeningBooksToolStripMenuItem.Name = "generateOpeningBooksToolStripMenuItem";
+            this.generateOpeningBooksToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.generateOpeningBooksToolStripMenuItem.Text = "Generate Opening Books";
+            this.generateOpeningBooksToolStripMenuItem.Click += new System.EventHandler(this.generateOpeningBooksToolStripMenuItem_Click);
+            // 
             // GameForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -644,6 +660,8 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
         private System.Windows.Forms.ToolStripMenuItem whiteboardModeToolStripMenuItem;
         private System.Windows.Forms.ToolStripButton displayHeatmap;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
+        private System.Windows.Forms.ToolStripMenuItem generateOpeningBooksToolStripMenuItem;
     }
 }
 

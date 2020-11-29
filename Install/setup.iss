@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Volcanoes"
-#define MyAppVersion "v0.5.3"
+#define MyAppVersion "v0.5.4"
 #define MyAppPublisher "Simon Dorfman and Scott Clayton"
 #define MyAppURL "https://github.com/skotz/volcanoes"
 #define MyAppExeName "Volcanoes.exe"
@@ -34,8 +34,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "..\Volcanoes\bin\Release\Volcanoes.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Volcanoes\bin\Release\Volcanoes.exe"; DestDir: "{app}"; Flags: ignoreversion    
 Source: "..\Volcanoes\bin\Release\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Volcanoes\bin\Release\openings.dat"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

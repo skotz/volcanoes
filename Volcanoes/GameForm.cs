@@ -30,6 +30,8 @@ namespace Volcano
 
         EngineOutputForm outputForm;
 
+        string openingBook = "openings.dat";
+
         string gameFolder = $"{Environment.GetFolderPath(SpecialFolder.MyDocuments)}\\My Games\\Volcanoes\\";
 
         public GameForm()
@@ -59,6 +61,7 @@ namespace Volcano
             engines.Add<MonteCarloBeelineThreeEngine>("Monte Carlo Beeline 3");
             engines.Add<MonteCarloBeelineFourEngine>("Monte Carlo Beeline 4");
             engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
+            engines.Add("MCTS with Book", () => new MonteCarloTreeSearchEngine(true, openingBook));
             //engines.Add<MonteCarloBeelineParallelEngine>("Parallel MCTS Beeline Full");
             //engines.Add<MonteCarloBeelineParallelDeepEngine>("Parallel MCTS Beeline Sim");
 
@@ -490,6 +493,12 @@ namespace Volcano
         private void chkShowTileLocations_Click(object sender, EventArgs e)
         {
             settings.ShowTileNames = chkShowTileLocations.Checked;
+        }
+
+        private void generateOpeningBooksToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var bookGenerator = new OpeningBook(openingBook);
+            bookGenerator.Generate(2, 60);
         }
     }
 }

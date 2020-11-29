@@ -18,6 +18,8 @@ namespace Volcano.Game
 
         public bool LastMoveIncreasedTile;
 
+        public string Transcript;
+
         private static PathFinder pathFinder = new PathFinder();
 
         public GameState State

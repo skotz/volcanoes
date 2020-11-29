@@ -13,6 +13,9 @@ namespace Volcano.Engine
         private int visitedNodes;
         private bool _allowForcedWins;
 
+        private bool _useOpeningBook;
+        private OpeningBook _book;
+
         private int bufferMilliseconds = 200;
         private EngineCancellationToken cancel;
 
@@ -27,6 +30,19 @@ namespace Volcano.Engine
             _allowForcedWins = allowForcedWins;
         }
 
+        public MonteCarloTreeSearchEngine(bool allowForcedWins, string openingBook)
+        {
+            random = new Random();
+            _allowForcedWins = allowForcedWins;
+            _useOpeningBook = !string.IsNullOrEmpty(openingBook);
+
+            if (_useOpeningBook)
+            {
+                _book = new OpeningBook(openingBook);
+                _useOpeningBook = _book.Loaded;
+            }
+        }
+
         public MonteCarloTreeSearchEngine()
         {
             random = new Random();
@@ -35,6 +51,22 @@ namespace Volcano.Engine
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
+            if (_useOpeningBook)
+            {
+                if (state.Turn <= _book.Depth)
+                {
+                    var bookMove = _book.GetMove(state.Transcript);
+
+                    if (bookMove >= 0)
+                    {
+                        return new SearchResult
+                        {
+                            BestMove = bookMove
+                        };
+                    }
+                }
+            }
+
             Stopwatch timer = Stopwatch.StartNew();
             statusUpdate = Stopwatch.StartNew();
             visitedNodes = 0;

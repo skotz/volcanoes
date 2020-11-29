@@ -4,12 +4,11 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Volcano.Engine;
 
 namespace Volcano.Game
 {
-    class VolcanoGame
+    internal class VolcanoGame
     {
         public Board CurrentState { get; set; }
 
@@ -20,16 +19,19 @@ namespace Volcano.Game
         private SearchResult _lastSearch;
 
         public event GameOverHandler OnGameOver;
+
         public delegate void GameOverHandler(Player winner, VictoryType type);
 
         public event MoveMadeHandler OnMoveMade;
+
         public delegate void MoveMadeHandler(bool growthHappened);
 
         public event EngineStatusHandler OnEngineStatus;
+
         public delegate void EngineStatusHandler(Player player, EngineStatus status);
 
         public List<int> MoveHistory { get; private set; }
-        
+
         public bool Thinking { get { return _worker.IsBusy; } }
 
         public Exception BackgroundError { get; private set; }
@@ -199,6 +201,24 @@ namespace Volcano.Game
             return moves;
         }
 
+        public string GetTranscriptLine()
+        {
+            if (MoveHistory.Count > 0)
+            {
+                if (Settings.IndicateTranscriptMoveType)
+                {
+                    var moves = GetDetailedMoveList();
+                    return moves.Select(x => x.Tile + (x.Addition ? "+" : "")).Aggregate((c, n) => c + " " + n);
+                }
+                else
+                {
+                    return MoveHistory.Select(x => Constants.TileNames[x]).Aggregate((c, n) => c + " " + n);
+                }
+            }
+
+            return "";
+        }
+
         public string GetTranscript(bool includeHeader)
         {
             if (MoveHistory.Count > 0)
@@ -212,15 +232,7 @@ namespace Volcano.Game
                     sb.AppendLine("");
                 }
 
-                if (Settings.IndicateTranscriptMoveType)
-                {
-                    var moves = GetDetailedMoveList();
-                    sb.AppendLine(moves.Select(x => x.Tile + (x.Addition ? "+" : "")).Aggregate((c, n) => c + " " + n));
-                }
-                else
-                {
-                    sb.AppendLine(MoveHistory.Select(x => Constants.TileNames[x]).Aggregate((c, n) => c + " " + n));
-                }
+                sb.AppendLine(GetTranscriptLine());
 
                 return sb.ToString();
             }
@@ -235,6 +247,8 @@ namespace Volcano.Game
             try
             {
                 BackgroundError = null;
+
+                CurrentState.Transcript = GetTranscriptLine();
 
                 if (CurrentState.Player == Player.One)
                 {
