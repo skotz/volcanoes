@@ -889,6 +889,13 @@ namespace Volcano.Interface
                     g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
                 }
 
+                //// Tiles exactly 3 moves away from the tile under the mouse pointer
+                //if (Constants.ThreeAway[hoverTile].Any(x => x == index))
+                //{
+                //    Pen pen = new Pen(Color.Red, GraphicsSettings.TileHorizontalSpacing);
+                //    g.DrawPolygon(pen, _tiles[index].Path.PathPoints);
+                //}
+
                 //// Tiles kitty corner to the tile under the pointer
                 //if (Constants.KittyCornerTiles[hoverIndex].Any(x => x == index))
                 //{

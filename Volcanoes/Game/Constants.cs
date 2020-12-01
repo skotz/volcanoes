@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Volcano.Search;
 
 namespace Volcano.Game
 {
-    class Constants
+    internal class Constants
     {
         public const int AllGrowMove = 80;
-       
+
         /// <summary>
         /// An array mapping a source tile index to it's three connecting triangle indexes.
         /// E.G., ConnectingTiles[55] = { 33, 52, 74 } since tile 55 connects to tiles 33, 51, and 74.
@@ -51,6 +49,18 @@ namespace Volcano.Game
         /// Supports both old and new tile names!
         /// </summary>
         public static Dictionary<string, int> TileIndexes = GetTileIndexes();
+
+        /// <summary>
+        /// An array mapping each tile to a list of tiles 3 moves away
+        /// </summary>
+        public static int[][] ThreeAway = GetThreeAway();
+
+        /// <summary>
+        /// Random numbers to use for zobrist style hashes
+        /// </summary>
+        public static int[,] ZobristKeys = GetZobristKeys();
+
+        public static Dictionary<int, Player> WinningPathHashTable = new Dictionary<int, Player>();
 
         private static int[][] GetConnectingTiles()
         {
@@ -192,12 +202,15 @@ namespace Volcano.Game
                         case 0:
                             names[index] += "A";
                             break;
+
                         case 1:
                             names[index] += "B";
                             break;
+
                         case 2:
                             names[index] += "C";
                             break;
+
                         case 3:
                             names[index] += "D";
                             break;
@@ -376,6 +389,56 @@ namespace Volcano.Game
             }
 
             return indexes;
+        }
+
+        private static int[][] GetThreeAway()
+        {
+            var tiles = new int[80][];
+            var connections = GetConnectingTiles();
+
+            for (int i = 0; i < 80; i++)
+            {
+                var done = new List<int>();
+                var queue = new List<int>();
+                queue.Add(i);
+
+                for (int d = 0; d < 3; d++)
+                {
+                    for (int x = queue.Count - 1; x >= 0; x--)
+                    {
+                        foreach (var con in connections[queue[x]])
+                        {
+                            if (!done.Contains(con))
+                            {
+                                queue.Add(con);
+                            }
+                        }
+
+                        done.Add(queue[x]);
+                        queue.RemoveAt(x);
+                    }
+                }
+
+                tiles[i] = queue.Distinct().ToArray();
+            }
+
+            return tiles;
+        }
+
+        private static int[,] GetZobristKeys()
+        {
+            var rand = new Random();
+            var tiles = new int[80, 100];
+
+            for (int i = 0; i < 80; i++)
+            {
+                for (int x = 0; x < 100; x++)
+                {
+                    tiles[i, x] = rand.Next();
+                }
+            }
+
+            return tiles;
         }
     }
 }

@@ -248,6 +248,16 @@ namespace Volcano.Game
         {
             Winner = Player.Empty;
 
+            //var hash = GetHash();
+            //if (Constants.WinningPathHashTable.ContainsKey(hash))
+            //{
+            //    var hashedWinner = Constants.WinningPathHashTable[hash];
+            //    if (hashedWinner == Player.Empty)
+            //    {
+            //        return;
+            //    }
+            //}
+
             // We only need to cover the first 40 tiles since their antipodes cover the last 40
             for (int i = 0; i < 40; i++)
             {
@@ -281,6 +291,8 @@ namespace Volcano.Game
                     }
                 }
             }
+
+            //Constants.WinningPathHashTable[hash] = Winner;
         }
 
         /// <summary>
@@ -433,6 +445,18 @@ namespace Volcano.Game
                 default:
                     return MoveType.SingleGrow;
             }
+        }
+
+        public int GetHash()
+        {
+            int hash = 0;
+
+            for (int i = 0; i < 80; i++)
+            {
+                hash ^= Constants.ZobristKeys[i, Tiles[i] + 10];
+            }
+
+            return hash;
         }
     }
 }

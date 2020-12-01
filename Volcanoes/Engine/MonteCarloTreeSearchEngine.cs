@@ -61,7 +61,7 @@ namespace Volcano.Engine
         {
             if (_useOpeningBook)
             {
-                if (state.Turn <= _book.Depth)
+                if (maxSeconds <= _book.Seconds)
                 {
                     var bookMove = _book.GetMove(state.Transcript);
 
