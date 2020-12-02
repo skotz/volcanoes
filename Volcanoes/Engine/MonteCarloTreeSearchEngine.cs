@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -12,6 +13,8 @@ namespace Volcano.Engine
         private int simulationCount;
         private int visitedNodes;
         private bool _allowForcedWins;
+        private bool _allowHash;
+        private bool _allowFastWinSearch;
 
         private bool _useOpeningBook;
         private OpeningBook _book;
@@ -23,6 +26,8 @@ namespace Volcano.Engine
         private int millisecondsBetweenUpdates = 500;
 
         public event EventHandler<EngineStatus> OnStatus;
+
+        public ConcurrentDictionary<long, Player> winHashes = new ConcurrentDictionary<long, Player>();
 
         private double _ucbFactor = 2.0;
 
@@ -38,10 +43,12 @@ namespace Volcano.Engine
             _allowForcedWins = allowForcedWins;
         }
 
-        public MonteCarloTreeSearchEngine(bool allowForcedWins, string openingBook)
+        public MonteCarloTreeSearchEngine(bool allowForcedWins, bool allowHash, bool allowFastWinSearch, string openingBook)
         {
             random = new Random();
             _allowForcedWins = allowForcedWins;
+            _allowHash = allowHash;
+            _allowFastWinSearch = allowFastWinSearch;
             _useOpeningBook = !string.IsNullOrEmpty(openingBook);
 
             if (_useOpeningBook)
@@ -107,6 +114,15 @@ namespace Volcano.Engine
             {
                 var node = rootNode;
                 var state = new Board(rootState);
+
+                state.allowHash = _allowHash;
+                state.fastWinSearch = _allowFastWinSearch;
+
+                if (_allowHash)
+                {
+                    state.winHashes = winHashes;
+                }
+
                 simulationCount++;
 
                 // Select

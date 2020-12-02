@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Volcano.Search;
@@ -21,6 +22,11 @@ namespace Volcano.Game
         public string Transcript;
 
         private static PathFinder pathFinder = new PathFinder();
+
+        public bool allowHash;
+        public bool fastWinSearch;
+
+        public ConcurrentDictionary<long, Player> winHashes;
 
         public GameState State
         {
@@ -248,15 +254,16 @@ namespace Volcano.Game
         {
             Winner = Player.Empty;
 
-            //var hash = GetHash();
-            //if (Constants.WinningPathHashTable.ContainsKey(hash))
-            //{
-            //    var hashedWinner = Constants.WinningPathHashTable[hash];
-            //    if (hashedWinner == Player.Empty)
-            //    {
-            //        return;
-            //    }
-            //}
+            var hash = 0L;
+            if (allowHash)
+            {
+                hash = GetHash();
+                if (winHashes.ContainsKey(hash))
+                {
+                    Winner = winHashes[hash];
+                    return;
+                }
+            }
 
             // We only need to cover the first 40 tiles since their antipodes cover the last 40
             for (int i = 0; i < 40; i++)
@@ -269,30 +276,89 @@ namespace Volcano.Game
                     // Only search until we find a winner or detect a draw
                     if (Winner == Player.Empty || (Winner == Player.One && Tiles[i] < 0) || (Winner == Player.Two && Tiles[i] > 0))
                     {
-                        var path = pathFinder.FindPath(this, i, Constants.Antipodes[i]).Path;
-                        if (path.Count > 0)
+                        if (fastWinSearch)
                         {
-                            if (Tiles[i] > 0)
+                            var winner = FastWinSearch(i, Constants.Antipodes[i]);
+                            if (winner != Player.Empty)
                             {
-                                Winner = Winner != Player.Empty ? Player.Draw : Player.One;
-                                WinningPathPlayerOne = path;
-                            }
-                            else
-                            {
-                                Winner = Winner != Player.Empty ? Player.Draw : Player.Two;
-                                WinningPathPlayerTwo = path;
-                            }
+                                if (Tiles[i] > 0)
+                                {
+                                    Winner = Winner != Player.Empty ? Player.Draw : Player.One;
+                                }
+                                else
+                                {
+                                    Winner = Winner != Player.Empty ? Player.Draw : Player.Two;
+                                }
 
-                            if (Winner == Player.Draw)
+                                if (Winner == Player.Draw)
+                                {
+                                    return;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            var path = pathFinder.FindPath(this, i, Constants.Antipodes[i]).Path;
+                            if (path.Count > 0)
                             {
-                                return;
+                                if (Tiles[i] > 0)
+                                {
+                                    Winner = Winner != Player.Empty ? Player.Draw : Player.One;
+                                    WinningPathPlayerOne = path;
+                                }
+                                else
+                                {
+                                    Winner = Winner != Player.Empty ? Player.Draw : Player.Two;
+                                    WinningPathPlayerTwo = path;
+                                }
+
+                                if (Winner == Player.Draw)
+                                {
+                                    return;
+                                }
                             }
                         }
                     }
                 }
             }
 
-            //Constants.WinningPathHashTable[hash] = Winner;
+            if (allowHash)
+            {
+                winHashes[hash] = Winner;
+            }
+        }
+
+        private Player FastWinSearch(int start, int end)
+        {
+            var visited = new bool[80];
+            var queue = new Queue<int>();
+
+            queue.Enqueue(start);
+
+            while (queue.Count > 0)
+            {
+                var next = queue.Dequeue();
+
+                if (!visited[next])
+                {
+                    visited[next] = true;
+
+                    if ((Tiles[next] > 0 && Tiles[start] > 0) || (Tiles[next] < 0 && Tiles[start] < 0))
+                    {
+                        if (next == end)
+                        {
+                            return Tiles[next] > 0 ? Player.One : Player.Two;
+                        }
+
+                        for (int i = 0; i < Constants.AdjacentIndexes[next].Length; i++)
+                        {
+                            queue.Enqueue(Constants.AdjacentIndexes[next][i]);
+                        }
+                    }
+                }
+            }
+
+            return Player.Empty;
         }
 
         /// <summary>
@@ -322,7 +388,11 @@ namespace Volcano.Game
         {
             List<int> moves = new List<int>();
 
-            if (GetMoveTypeForTurn(Turn) == MoveType.AllGrow)
+            if (Winner != Player.Empty)
+            {
+                return moves;
+            }
+            else if (GetMoveTypeForTurn(Turn) == MoveType.AllGrow)
             {
                 moves.Add(Constants.AllGrowMove);
             }
@@ -447,13 +517,13 @@ namespace Volcano.Game
             }
         }
 
-        public int GetHash()
+        public long GetHash()
         {
-            int hash = 0;
+            long hash = 0;
 
             for (int i = 0; i < 80; i++)
             {
-                hash ^= Constants.ZobristKeys[i, Tiles[i] + 10];
+                hash ^= Constants.ZobristKeys[i, Tiles[i] == 0 ? 0 : (Tiles[i] > 0 ? 1 : 2)];
             }
 
             return hash;

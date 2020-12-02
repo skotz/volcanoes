@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Volcanoes"
-#define MyAppVersion "v0.5.4"
+#define MyAppVersion "v0.5.5"
 #define MyAppPublisher "Simon Dorfman and Scott Clayton"
 #define MyAppURL "https://github.com/skotz/volcanoes"
 #define MyAppExeName "Volcanoes.exe"

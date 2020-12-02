@@ -23,6 +23,10 @@ namespace Volcano.Engine
 
         public int Seconds { get; private set; }
 
+        public event BookGenerationHandler OnStatusUpdate;
+
+        public delegate void BookGenerationHandler(int completed, int total);
+
         public OpeningBook(string file)
         {
             _file = file;
@@ -65,160 +69,37 @@ namespace Volcano.Engine
             }
         }
 
-        //public void Generate(int depth, int seconds)
-        //{
-        //    var root = new BookNode();
-        //    root.State = new VolcanoGame();
-        //    root.Children = root.State.CurrentState.GetMoves().Select(move => new BookNode
-        //    {
-        //        Move = move,
-        //        Parent = root,
-        //        State = Expand(root.State, move)
-        //    }).ToList();
-
-        //    var nextQueue = new List<BookNode>();
-        //    var queue = new List<BookNode>();
-        //    queue.Add(root);
-
-        //    for (int d = 0; d < depth; d++)
-        //    {
-        //        var lastToPlay = Player.Empty;
-
-        //        while (queue.Count > 0)
-        //        {
-        //            var node = queue[0];
-        //            queue.RemoveAt(0);
-
-        //            lastToPlay = node.State.CurrentState.Player;
-
-        //            // Score all possible moves in this position
-        //            Parallel.ForEach(node.Children, child =>
-        //            {
-        //                for (int i = 0; i < _simulations; i++)
-        //                {
-        //                    var winner = Simlulate(child.State.CurrentState);
-
-        //                    child.Simulations++;
-
-        //                    if (winner == Player.One)
-        //                    {
-        //                        child.PlayerOneWins++;
-        //                    }
-
-        //                    if (winner == Player.Two)
-        //                    {
-        //                        child.PlayerTwoWins++;
-        //                    }
-        //                }
-        //            });
-
-        //            // Keep the best ones
-        //            if (node.State.CurrentState.Player == Player.One)
-        //            {
-        //                node.Children = node.Children.OrderByDescending(x => x.PlayerOneScore).ToList();
-        //            }
-        //            if (node.State.CurrentState.Player == Player.Two)
-        //            {
-        //                node.Children = node.Children.OrderByDescending(x => x.PlayerTwoScore).ToList();
-        //            }
-
-        //            if (d > 0)
-        //            {
-        //                node.Children = node.Children.Take(_branchFactor).ToList();
-        //            }
-
-        //            // Save the results into the book
-        //            var transcript = node.State.GetTranscriptLine();
-        //            if (!_book.ContainsKey(transcript))
-        //            {
-        //                _book.Add(transcript, node.Children[0].Move);
-        //            }
-
-        //            foreach (var child in node.Children)
-        //            {
-        //                child.Children = child.State.CurrentState.GetMoves().Select(move => new BookNode
-        //                {
-        //                    Move = move,
-        //                    Parent = child,
-        //                    State = Expand(child.State, move)
-        //                }).ToList();
-
-        //                nextQueue.Add(child);
-        //            }
-        //        }
-
-        //        using (var r = new StreamWriter(_file))
-        //        {
-        //            r.WriteLine(depth);
-        //            r.WriteLine(_book.Count);
-        //            r.WriteLine(seconds);
-
-        //            foreach (var entry in _book)
-        //            {
-        //                r.WriteLine(entry.Key);
-        //                r.WriteLine(Constants.TileNames[entry.Value]);
-        //            }
-        //        }
-
-        //        if (lastToPlay == Player.One)
-        //        {
-        //            nextQueue = nextQueue.OrderByDescending(x => x.Parent.PlayerOneScore).Take(_beamWidth).ToList();
-        //        }
-        //        if (lastToPlay == Player.Two)
-        //        {
-        //            nextQueue = nextQueue.OrderByDescending(x => x.Parent.PlayerTwoScore).Take(_beamWidth).ToList();
-        //        }
-
-        //        queue.AddRange(nextQueue);
-        //        nextQueue.Clear();
-        //    }
-        //}
-
-        //public VolcanoGame Expand(VolcanoGame game, int move)
-        //{
-        //    var copy = new VolcanoGame();
-        //    copy.LoadTranscript(game.GetTranscriptLine());
-        //    copy.MakeMove(move);
-        //    return copy;
-        //}
-
-        //public Player Simlulate(Board state)
-        //{
-        //    var copy = new Board(state);
-
-        //    while (copy.Winner == Player.Empty && copy.Turn < 100)
-        //    {
-        //        var moves = copy.GetMoves();
-        //        if (moves.Count == 0)
-        //        {
-        //            break;
-        //        }
-        //        copy.MakeMove(moves[_rand.Next(moves.Count)]);
-        //    }
-
-        //    return copy.Winner;
-        //}
-
         public void Generate(int depth, int seconds)
         {
+            int done = 0;
+            OnStatusUpdate?.Invoke(done, 12643);
+
             // Blue's first move
             var blueStart = GenerateBookForPosition(depth, seconds, "", true);
 
-            // Blue's second and third move (after all possible moves from orange)
-            var allGames = GetAllTranscriptsAfterPosition(blueStart, false);
+            OnStatusUpdate?.Invoke(++done, 12643);
 
-            Parallel.ForEach(allGames, transcript =>
-            {
-                GenerateBookForPosition(depth, seconds, transcript, false);
-            });
+            // Blue's second and third move (after all possible moves from orange)
+            var allGamesBlue = GetAllTranscriptsAfterPosition(blueStart, false);
 
             // Orange's first and second move (after all possible moves from blue)
-            allGames = GetAllTranscriptsAfterPosition("", true);
+            var allGamesOrange = GetAllTranscriptsAfterPosition("", true);
 
-            Parallel.ForEach(allGames, transcript =>
+            Parallel.ForEach(allGamesBlue, transcript =>
             {
                 GenerateBookForPosition(depth, seconds, transcript, false);
+
+                OnStatusUpdate?.Invoke(++done, 12643);
             });
+
+            Parallel.ForEach(allGamesOrange, transcript =>
+            {
+                GenerateBookForPosition(depth, seconds, transcript, false);
+
+                OnStatusUpdate?.Invoke(++done, 12643);
+            });
+
+            OnStatusUpdate?.Invoke(12643, 12643);
         }
 
         private string GenerateBookForPosition(int depth, int seconds, string transcript, bool singleOnly)

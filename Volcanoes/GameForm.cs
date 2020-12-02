@@ -61,7 +61,12 @@ namespace Volcano
             engines.Add<MonteCarloBeelineThreeEngine>("Monte Carlo Beeline 3");
             engines.Add<MonteCarloBeelineFourEngine>("Monte Carlo Beeline 4");
             engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
-            engines.Add("MCTS with Book", () => new MonteCarloTreeSearchEngine(true, openingBook));
+
+            engines.Add("MCTS Opening Book", () => new MonteCarloTreeSearchEngine(true, false, false, openingBook));
+            engines.Add("MCTS Victory Hash", () => new MonteCarloTreeSearchEngine(true, true, false, ""));
+            engines.Add("MCTS Fast Win Check", () => new MonteCarloTreeSearchEngine(true, false, true, ""));
+            engines.Add("MCTS Trio", () => new MonteCarloTreeSearchEngine(true, true, true, openingBook));
+
             //engines.Add<MonteCarloPlayoutEngine>("MCTS Playout");
             //engines.Add<MonteCarloBeelineParallelEngine>("Parallel MCTS Beeline Full");
             //engines.Add<MonteCarloBeelineParallelDeepEngine>("Parallel MCTS Beeline Sim");
@@ -503,10 +508,8 @@ namespace Volcano
 
         private void generateOpeningBooksToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var bookGenerator = new OpeningBook(openingBook);
-            bookGenerator.Generate(7, 60);
-
-            MessageBox.Show("Done");
+            var bookForm = new BookForm(openingBook);
+            bookForm.ShowDialog();
         }
     }
 }

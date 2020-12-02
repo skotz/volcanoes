@@ -114,8 +114,10 @@ namespace Volcano.Engine
                             break;
                         }
 
-                        var fastWinReward = 0.5 * (state.Turn - rootState.Turn) / VolcanoGame.Settings.TournamentAdjudicateMaxTurns;
-                        node.Update(state.Winner == node.LastToMove ? 1.0 - fastWinReward : 0.0);
+                        //var fastWinReward = 0.5 * (state.Turn - rootState.Turn) / VolcanoGame.Settings.TournamentAdjudicateMaxTurns;
+                        //node.Update(state.Winner == node.LastToMove ? 1.0 - fastWinReward : 0.0);
+
+                        node.Update(state.Winner == node.LastToMove ? 1.0 : 0.0);
                         node = node.Parent;
                         visitedNodes++;
                     }

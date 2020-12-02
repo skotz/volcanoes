@@ -42,6 +42,8 @@ namespace Volcano.Game
 
         public static GameSettings Settings = GameSettings.LoadOrDefault("volcano.json");
 
+        public DateTime lastEngineMove;
+
         public VolcanoGame()
         {
             CurrentState = new Board();
@@ -182,6 +184,7 @@ namespace Volcano.Game
             {
                 if (CurrentState.Player == Player.One && _playerOneEngine != null || CurrentState.Player == Player.Two && _playerTwoEngine != null)
                 {
+                    lastEngineMove = DateTime.Now;
                     _worker.RunWorkerAsync();
                 }
             }
@@ -290,6 +293,8 @@ namespace Volcano.Game
                 if (_lastSearch.BestMove >= 0 && CurrentState.IsValidMove(_lastSearch.BestMove))
                 {
                     bool growthHappened = CurrentState.MakeMove(_lastSearch.BestMove);
+
+                    lastEngineMove = DateTime.Now;
 
                     MoveHistory.Add(_lastSearch.BestMove);
                     if (growthHappened)

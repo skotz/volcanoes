@@ -87,10 +87,16 @@ namespace Volcano.Game
                                 game.StartNewGame();
                                 game.ComputerPlay();
 
-                                while (victory == VictoryType.None && game.CurrentState.Winner == Player.Empty && game.CurrentState.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns && killswitch.ElapsedMilliseconds < VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000)
+                                while (victory == VictoryType.None && 
+                                    game.CurrentState.Winner == Player.Empty && 
+                                    game.CurrentState.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns && 
+                                    killswitch.ElapsedMilliseconds < VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000 &&
+                                    (DateTime.Now - game.lastEngineMove).TotalSeconds < _secondsPerMove + 10)
                                 {
                                     System.Threading.Thread.Sleep(100);
                                 }
+
+                                game.ForceStop();
 
                                 var termination = TournamentTerminationType.Normal;
                                 if (game.CurrentState.Winner == Player.Empty)
@@ -99,7 +105,7 @@ namespace Volcano.Game
                                     {
                                         termination = TournamentTerminationType.AdjudicateMoves;
                                     }
-                                    else if (killswitch.ElapsedMilliseconds >= VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000)
+                                    else if (killswitch.ElapsedMilliseconds >= VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000 || (DateTime.Now - game.lastEngineMove).TotalSeconds > _secondsPerMove + 10)
                                     {
                                         termination = TournamentTerminationType.AdjudicateTime;
                                     }

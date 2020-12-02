@@ -565,8 +565,8 @@ namespace Volcano.Interface
                     analysisMove = gameState.Turn;
                     analysisEngine = new VolcanoGame();
                     analysisEngine.SecondsPerEngineMove = 1000000;
-                    analysisEngine.RegisterEngine(Player.One, new MonteCarloTreeSearchEngine(false));
-                    analysisEngine.RegisterEngine(Player.Two, new MonteCarloTreeSearchEngine(false));
+                    analysisEngine.RegisterEngine(Player.One, new MonteCarloTreeSearchEngine(false, true, true, ""));
+                    analysisEngine.RegisterEngine(Player.Two, new MonteCarloTreeSearchEngine(false, true, true, ""));
                     analysisEngine.OnEngineStatus += AnalysisEngine_OnEngineStatus;
                     analysisEngine.CurrentState = new Board(gameState);
                     analysisEngine.ComputerPlay();
