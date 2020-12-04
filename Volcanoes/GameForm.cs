@@ -208,7 +208,7 @@ namespace Volcano
 
         private void Tourney_OnTournamentStatus(TournamentStatus status)
         {
-            lblStatusBar.Text = status.CompletedGames + "/" + status.TotalGames + " games completed";
+            lblStatusBar.Text = status.CompletedGames + "/" + status.TotalGames + " games completed" + (status.Timeouts > 0 ? $" ({status.Timeouts} timeouts)" : "");
             progStatus.Value = (int)status.PercentageComplete;
         }
 

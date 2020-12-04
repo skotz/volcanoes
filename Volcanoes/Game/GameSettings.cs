@@ -61,6 +61,11 @@ namespace Volcano.Game
             return new GameSettings();
         }
 
+        public GameSettings Clone()
+        {
+            return (GameSettings)MemberwiseClone();
+        }
+
         public void Save(string file)
         {
             string json = JsonConvert.SerializeObject(this, Formatting.Indented);

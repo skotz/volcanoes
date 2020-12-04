@@ -22,6 +22,8 @@ namespace Volcano.Engine
         private int bufferMilliseconds = 200;
         private EngineCancellationToken cancel;
 
+        private Stopwatch timer;
+
         private Stopwatch statusUpdate;
         private int millisecondsBetweenUpdates = 500;
 
@@ -82,7 +84,7 @@ namespace Volcano.Engine
                 }
             }
 
-            Stopwatch timer = Stopwatch.StartNew();
+            timer = Stopwatch.StartNew();
             statusUpdate = Stopwatch.StartNew();
             visitedNodes = 0;
             simulationCount = 0;
@@ -192,7 +194,7 @@ namespace Volcano.Engine
                         status.Add(child?.Move ?? 80, eval, pv);
                     }
                     status.Sort();
-                    OnStatus(this, status);
+                    OnStatus?.Invoke(this, status);
                     statusUpdate = Stopwatch.StartNew();
                 }
             }

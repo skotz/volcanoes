@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -11,7 +12,7 @@ namespace Volcano.Engine
     {
         private string _file;
 
-        private Dictionary<string, int> _book;
+        private ConcurrentDictionary<string, int> _book;
 
         private SemaphoreSlim _lock;
 
@@ -30,7 +31,7 @@ namespace Volcano.Engine
         public OpeningBook(string file)
         {
             _file = file;
-            _book = new Dictionary<string, int>();
+            _book = new ConcurrentDictionary<string, int>();
             _lock = new SemaphoreSlim(1);
             _rand = new Random();
 
@@ -49,7 +50,7 @@ namespace Volcano.Engine
                         var transcript = r.ReadLine();
                         var move = Constants.TileIndexes[r.ReadLine()];
 
-                        _book.Add(transcript, move);
+                        _book[transcript] = move;
                     }
                 }
 
@@ -119,7 +120,7 @@ namespace Volcano.Engine
 
                 lock (_book)
                 {
-                    _book.Add(t, b);
+                    _book[t] = b;
                 }
 
                 game.MakeMove(b);
@@ -136,7 +137,7 @@ namespace Volcano.Engine
 
                     lock (_book)
                     {
-                        _book.Add(t, b);
+                        _book[t] = b;
                     }
 
                     UpdateBook(depth, seconds);
@@ -202,60 +203,6 @@ namespace Volcano.Engine
             }
 
             return transcripts;
-        }
-
-        private void GetAllGames(bool playerOne, List<string> games, VolcanoGame board, int depth, int maxDepth)
-        {
-            if (depth >= maxDepth)
-            {
-                return;
-            }
-
-            var game = new VolcanoGame();
-            game.LoadTranscript(board.GetTranscriptLine());
-
-            var allMoves = game.CurrentState.GetMoves();
-
-            // Building a book for blue
-            if (playerOne)
-            {
-                if (game.CurrentState.Player == Player.Two)
-                {
-                    // Get every possible move for the opponent
-                    allMoves = game.CurrentState.GetMoves();
-                }
-                else
-                {
-                    if (depth == 1)
-                    {
-                    }
-                }
-            }
-
-            // Building a book for orange
-            if (!playerOne)
-            {
-                if (game.CurrentState.Player == Player.One)
-                {
-                    // Get every possible move for the opponent
-                    allMoves = game.CurrentState.GetMoves();
-                }
-                else
-                {
-                }
-            }
-
-            foreach (var move in allMoves)
-            {
-                var copy = new VolcanoGame();
-                copy.LoadTranscript(game.GetTranscriptLine());
-
-                copy.MakeMove(move);
-
-                games.Add(copy.GetTranscriptLine());
-
-                GetAllGames(playerOne, games, copy, depth + 1, maxDepth);
-            }
         }
 
         private class BookNode

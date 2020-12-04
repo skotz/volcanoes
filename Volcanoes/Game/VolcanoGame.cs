@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -42,7 +43,7 @@ namespace Volcano.Game
 
         public static GameSettings Settings = GameSettings.LoadOrDefault("volcano.json");
 
-        public DateTime lastEngineMove;
+        private int _graceTimeout = 250;
 
         public VolcanoGame()
         {
@@ -115,26 +116,32 @@ namespace Volcano.Game
             return board;
         }
 
-        public void RegisterEngine(Player player, IEngine engine)
+        public void RegisterEngine(Player player, IEngine engine, bool silent = false)
         {
             if (player == Player.One)
             {
                 _playerOneEngine = engine;
 
-                var status = _playerOneEngine as IStatus;
-                if (status != null)
+                if (!silent)
                 {
-                    status.OnStatus += Status_OnStatusOne;
+                    var status = _playerOneEngine as IStatus;
+                    if (status != null)
+                    {
+                        status.OnStatus += Status_OnStatusOne;
+                    }
                 }
             }
             if (player == Player.Two)
             {
                 _playerTwoEngine = engine;
 
-                var status = _playerTwoEngine as IStatus;
-                if (status != null)
+                if (!silent)
                 {
-                    status.OnStatus += Status_OnStatusTwo;
+                    var status = _playerTwoEngine as IStatus;
+                    if (status != null)
+                    {
+                        status.OnStatus += Status_OnStatusTwo;
+                    }
                 }
             }
         }
@@ -184,7 +191,6 @@ namespace Volcano.Game
             {
                 if (CurrentState.Player == Player.One && _playerOneEngine != null || CurrentState.Player == Player.Two && _playerTwoEngine != null)
                 {
-                    lastEngineMove = DateTime.Now;
                     _worker.RunWorkerAsync();
                 }
             }
@@ -253,6 +259,8 @@ namespace Volcano.Game
 
                 CurrentState.Transcript = GetTranscriptLine();
 
+                var timer = Stopwatch.StartNew();
+
                 if (CurrentState.Player == Player.One)
                 {
                     e.Result = _playerOneEngine.GetBestMove(CurrentState, SecondsPerEngineMove, token);
@@ -260,6 +268,11 @@ namespace Volcano.Game
                 else if (CurrentState.Player == Player.Two)
                 {
                     e.Result = _playerTwoEngine.GetBestMove(CurrentState, SecondsPerEngineMove, token);
+                }
+
+                if (timer.ElapsedMilliseconds > SecondsPerEngineMove * 1000 + _graceTimeout)
+                {
+                    e.Result = new SearchResult { Timeout = true };
                 }
             }
             catch (Exception ex)
@@ -270,7 +283,7 @@ namespace Volcano.Game
                 {
                     using (StreamWriter w = new StreamWriter("errors.txt", true))
                     {
-                        w.WriteLine("Failed to get a move from an engine! :: " + ex.Message);
+                        w.WriteLine(DateTime.Now.ToString() + "\r\nFailed to get a move from an engine!\r\n" + ex.ToString() + "\r\n\r\n");
                     }
                 }
                 catch { /* TODO */ }
@@ -294,8 +307,6 @@ namespace Volcano.Game
                 {
                     bool growthHappened = CurrentState.MakeMove(_lastSearch.BestMove);
 
-                    lastEngineMove = DateTime.Now;
-
                     MoveHistory.Add(_lastSearch.BestMove);
                     if (growthHappened)
                     {
@@ -316,7 +327,7 @@ namespace Volcano.Game
                 {
                     // If an engine doesn't find a move, then he adjourns the game
                     CurrentState.Winner = CurrentState.Player == Player.One ? Player.Two : Player.One;
-                    OnGameOver?.Invoke(CurrentState.Winner, VictoryType.ArenaAdjudication);
+                    OnGameOver?.Invoke(CurrentState.Winner, _lastSearch.Timeout ? VictoryType.OpponentTimeout : VictoryType.ArenaAdjudication);
                 }
             }
         }

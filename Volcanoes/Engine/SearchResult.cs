@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Volcano.Game;
-
-namespace Volcano.Engine
+﻿namespace Volcano.Engine
 {
-    class SearchResult
+    internal class SearchResult
     {
         public int Score { get; set; }
 
@@ -20,6 +13,8 @@ namespace Volcano.Engine
         public decimal HashPercentage { get; set; }
 
         public int BestMove { get; set; }
+
+        public bool Timeout { get; set; }
 
         public int NodesPerSecond
         {

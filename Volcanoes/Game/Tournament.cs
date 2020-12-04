@@ -4,13 +4,12 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Volcano.Engine;
 
 namespace Volcano.Game
 {
-    class Tournament
+    internal class Tournament
     {
         private int _rounds;
         private int _secondsPerMove;
@@ -20,16 +19,17 @@ namespace Volcano.Game
         private List<string> _players;
         private bool _allowSelfPlay;
 
-        int totalGames;
+        private int totalGames;
 
         private BackgroundWorker worker;
 
         public event TournamentOverHandler OnTournamentCompleted;
-        public delegate void TournamentOverHandler();
-        
-        public event TournamentStatusHandler OnTournamentStatus;
-        public delegate void TournamentStatusHandler(TournamentStatus status);
 
+        public delegate void TournamentOverHandler();
+
+        public event TournamentStatusHandler OnTournamentStatus;
+
+        public delegate void TournamentStatusHandler(TournamentStatus status);
 
         public Tournament(int rounds, int secondsPerMove, string crossTableFile, string gameDataFile, EngineHelper engines, List<string> players, bool allowSelfPlay)
         {
@@ -53,7 +53,7 @@ namespace Volcano.Game
             if (!worker.IsBusy)
             {
                 totalGames = _rounds * _players.Count * (_allowSelfPlay ? _players.Count : (_players.Count - 1));
-                OnTournamentStatus?.Invoke(new TournamentStatus(0, totalGames));
+                OnTournamentStatus?.Invoke(new TournamentStatus(0, totalGames, 0));
                 worker.RunWorkerAsync();
             }
         }
@@ -64,6 +64,7 @@ namespace Volcano.Game
             List<TournamentResult> results = new List<TournamentResult>();
 
             int completedGames = 0;
+            int timeouts = 0;
 
             foreach (var engine1 in _players)
             {
@@ -81,17 +82,16 @@ namespace Volcano.Game
 
                             try
                             {
-                                game.RegisterEngine(Player.One, _engines.GetEngine(engine1));
-                                game.RegisterEngine(Player.Two, _engines.GetEngine(engine2));
+                                game.RegisterEngine(Player.One, _engines.GetEngine(engine1), true);
+                                game.RegisterEngine(Player.Two, _engines.GetEngine(engine2), true);
                                 game.SecondsPerEngineMove = _secondsPerMove;
                                 game.StartNewGame();
                                 game.ComputerPlay();
 
-                                while (victory == VictoryType.None && 
-                                    game.CurrentState.Winner == Player.Empty && 
-                                    game.CurrentState.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns && 
-                                    killswitch.ElapsedMilliseconds < VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000 &&
-                                    (DateTime.Now - game.lastEngineMove).TotalSeconds < _secondsPerMove + 10)
+                                while (victory == VictoryType.None &&
+                                    game.CurrentState.Winner == Player.Empty &&
+                                    game.CurrentState.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns &&
+                                    killswitch.ElapsedMilliseconds < VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000)
                                 {
                                     System.Threading.Thread.Sleep(100);
                                 }
@@ -105,7 +105,7 @@ namespace Volcano.Game
                                     {
                                         termination = TournamentTerminationType.AdjudicateMoves;
                                     }
-                                    else if (killswitch.ElapsedMilliseconds >= VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000 || (DateTime.Now - game.lastEngineMove).TotalSeconds > _secondsPerMove + 10)
+                                    else if (killswitch.ElapsedMilliseconds >= VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000)
                                     {
                                         termination = TournamentTerminationType.AdjudicateTime;
                                     }
@@ -131,6 +131,10 @@ namespace Volcano.Game
                                     {
                                         termination = TournamentTerminationType.IllegalMove;
                                     }
+                                }
+                                else if (victory == VictoryType.OpponentTimeout)
+                                {
+                                    termination = TournamentTerminationType.Timeout;
                                 }
 
                                 lock (results)
@@ -164,7 +168,7 @@ namespace Volcano.Game
                             }
 
                             completedGames++;
-                            worker.ReportProgress(0, new TournamentStatus(completedGames, totalGames));
+                            worker.ReportProgress(0, new TournamentStatus(completedGames, totalGames, timeouts));
                         });
                     }
                 }
@@ -307,10 +311,12 @@ namespace Volcano.Game
         }
     }
 
-    class TournamentStatus
+    internal class TournamentStatus
     {
         public int CompletedGames { get; set; }
         public int TotalGames { get; set; }
+        public int Timeouts { get; set; }
+
         public decimal PercentageComplete
         {
             get
@@ -319,14 +325,15 @@ namespace Volcano.Game
             }
         }
 
-        public TournamentStatus(int completed, int total)
+        public TournamentStatus(int completed, int total, int timeouts)
         {
             CompletedGames = completed;
             TotalGames = total;
+            Timeouts = timeouts;
         }
     }
 
-    class TournamentResult
+    internal class TournamentResult
     {
         public string PlayerOne { get; set; }
         public string PlayerTwo { get; set; }
@@ -391,7 +398,7 @@ namespace Volcano.Game
         }
     }
 
-    enum TournamentTerminationType
+    internal enum TournamentTerminationType
     {
         Normal,
         AdjudicateTime,
@@ -399,10 +406,11 @@ namespace Volcano.Game
         PlayerOneError,
         PlayerTwoError,
         Error,
-        IllegalMove
+        IllegalMove,
+        Timeout
     }
 
-    class TournamentResultLine
+    internal class TournamentResultLine
     {
         public string Name { get; set; }
         public string CrossTableName { get; set; }

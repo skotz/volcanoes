@@ -50,7 +50,7 @@ namespace Volcano.Game
         /// An dictionary mapping a tile name back to it's index.
         /// Supports both old and new tile names!
         /// </summary>
-        public static Dictionary<string, int> TileIndexes = GetTileIndexes();
+        public static ConcurrentDictionary<string, int> TileIndexes = GetTileIndexes();
 
         /// <summary>
         /// An array mapping each tile to a list of tiles 3 moves away
@@ -362,14 +362,14 @@ namespace Volcano.Game
             return paths;
         }
 
-        private static Dictionary<string, int> GetTileIndexes()
+        private static ConcurrentDictionary<string, int> GetTileIndexes()
         {
-            Dictionary<string, int> indexes = new Dictionary<string, int>();
+            var indexes = new ConcurrentDictionary<string, int>();
 
             // The 80th index is a pseudo tile for the growth phase
             for (int i = 0; i < 81; i++)
             {
-                indexes.Add(TileNames[i], i);
+                indexes[TileNames[i]] = i;
             }
 
             // Support legacy tile names
@@ -384,7 +384,7 @@ namespace Volcano.Game
                 }
                 else
                 {
-                    indexes.Add(OldTileNames[i], i);
+                    indexes[OldTileNames[i]] = i;
                 }
             }
 
