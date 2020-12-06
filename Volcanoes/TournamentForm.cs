@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Windows.Forms;
+using Volcano.Engine;
 
 namespace Volcano
 {
@@ -15,6 +16,8 @@ namespace Volcano
         public int SecondsPerMove { get; set; }
 
         public bool SelfPlay { get; set; }
+
+        public TournamentType TournamentType { get; set; }
 
         public TournamentForm(List<string> engines)
         {
@@ -31,6 +34,8 @@ namespace Volcano
             }
 
             DialogResult = DialogResult.Cancel;
+
+            comboType.SelectedIndex = 0;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -43,6 +48,8 @@ namespace Volcano
 
             SelfPlay = cbSelfPlay.Checked;
 
+            TournamentType = comboType.SelectedIndex == 1 ? TournamentType.Swiss : TournamentType.RoundRobin;
+
             if (Engines.Count >= 2 || (SelfPlay && Engines.Count >= 1))
             {
                 DialogResult = DialogResult.OK;
@@ -51,6 +58,19 @@ namespace Volcano
             else
             {
                 MessageBox.Show("Please select 2 or more engines.", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void comboType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboType.SelectedIndex == 1)
+            {
+                cbSelfPlay.Checked = false;
+                cbSelfPlay.Enabled = false;
+            }
+            else
+            {
+                cbSelfPlay.Enabled = true;
             }
         }
     }

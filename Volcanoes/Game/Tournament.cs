@@ -18,6 +18,12 @@ namespace Volcano.Game
         private EngineHelper _engines;
         private List<string> _players;
         private bool _allowSelfPlay;
+        private TournamentType _tournamentType;
+
+        private List<Action> games;
+        private List<TournamentResult> results;
+        private int completedGames = 0;
+        private int timeouts = 0;
 
         private int totalGames;
 
@@ -31,7 +37,7 @@ namespace Volcano.Game
 
         public delegate void TournamentStatusHandler(TournamentStatus status);
 
-        public Tournament(int rounds, int secondsPerMove, string crossTableFile, string gameDataFile, EngineHelper engines, List<string> players, bool allowSelfPlay)
+        public Tournament(int rounds, int secondsPerMove, string crossTableFile, string gameDataFile, EngineHelper engines, List<string> players, bool allowSelfPlay, TournamentType tournamentType)
         {
             _rounds = rounds;
             _secondsPerMove = secondsPerMove;
@@ -40,6 +46,7 @@ namespace Volcano.Game
             _engines = engines;
             _players = players;
             _allowSelfPlay = allowSelfPlay;
+            _tournamentType = tournamentType;
 
             worker = new BackgroundWorker();
             worker.WorkerReportsProgress = true;
@@ -52,7 +59,14 @@ namespace Volcano.Game
         {
             if (!worker.IsBusy)
             {
-                totalGames = _rounds * _players.Count * (_allowSelfPlay ? _players.Count : (_players.Count - 1));
+                if (_tournamentType == TournamentType.RoundRobin)
+                {
+                    totalGames = _rounds * _players.Count * (_allowSelfPlay ? _players.Count : (_players.Count - 1));
+                }
+                else if (_tournamentType == TournamentType.Swiss)
+                {
+                    totalGames = _rounds * (_players.Count % 2 == 1 ? _players.Count - 1 : _players.Count);
+                }
                 OnTournamentStatus?.Invoke(new TournamentStatus(0, totalGames, 0));
                 worker.RunWorkerAsync();
             }
@@ -60,123 +74,70 @@ namespace Volcano.Game
 
         private void Worker_DoWork(object sender, DoWorkEventArgs e)
         {
-            List<Action> games = new List<Action>();
-            List<TournamentResult> results = new List<TournamentResult>();
+            results = new List<TournamentResult>();
 
-            int completedGames = 0;
-            int timeouts = 0;
+            completedGames = 0;
+            timeouts = 0;
 
-            foreach (var engine1 in _players)
+            if (_tournamentType == TournamentType.RoundRobin)
             {
-                foreach (var engine2 in _players)
+                games = new List<Action>();
+
+                foreach (var engine1 in _players)
                 {
-                    if (engine1 != engine2 || _allowSelfPlay)
+                    foreach (var engine2 in _players)
                     {
-                        games.Add(() =>
+                        if (engine1 != engine2 || _allowSelfPlay)
                         {
-                            Stopwatch killswitch = Stopwatch.StartNew();
-                            VolcanoGame game = new VolcanoGame();
-
-                            VictoryType victory = VictoryType.None;
-                            game.OnGameOver += (p, v) => victory = v;
-
-                            try
-                            {
-                                game.RegisterEngine(Player.One, _engines.GetEngine(engine1), true);
-                                game.RegisterEngine(Player.Two, _engines.GetEngine(engine2), true);
-                                game.SecondsPerEngineMove = _secondsPerMove;
-                                game.StartNewGame();
-                                game.ComputerPlay();
-
-                                while (victory == VictoryType.None &&
-                                    game.CurrentState.Winner == Player.Empty &&
-                                    game.CurrentState.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns &&
-                                    killswitch.ElapsedMilliseconds < VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000)
-                                {
-                                    System.Threading.Thread.Sleep(100);
-                                }
-
-                                game.ForceStop();
-
-                                var termination = TournamentTerminationType.Normal;
-                                if (game.CurrentState.Winner == Player.Empty)
-                                {
-                                    if (game.CurrentState.Turn >= VolcanoGame.Settings.TournamentAdjudicateMaxTurns)
-                                    {
-                                        termination = TournamentTerminationType.AdjudicateMoves;
-                                    }
-                                    else if (killswitch.ElapsedMilliseconds >= VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000)
-                                    {
-                                        termination = TournamentTerminationType.AdjudicateTime;
-                                    }
-                                }
-                                if (victory == VictoryType.ArenaAdjudication)
-                                {
-                                    if (game.BackgroundError != null)
-                                    {
-                                        if (game.CurrentState.Winner == Player.One)
-                                        {
-                                            termination = TournamentTerminationType.PlayerTwoError;
-                                        }
-                                        else if (game.CurrentState.Winner == Player.Two)
-                                        {
-                                            termination = TournamentTerminationType.PlayerOneError;
-                                        }
-                                        else
-                                        {
-                                            termination = TournamentTerminationType.Error;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        termination = TournamentTerminationType.IllegalMove;
-                                    }
-                                }
-                                else if (victory == VictoryType.OpponentTimeout)
-                                {
-                                    termination = TournamentTerminationType.Timeout;
-                                }
-
-                                lock (results)
-                                {
-                                    results.Add(new TournamentResult(game, engine1, engine2, termination, killswitch.ElapsedMilliseconds));
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                using (StreamWriter w = new StreamWriter("errors.txt", true))
-                                {
-                                    w.WriteLine("Failed to play \"" + engine1 + "\" and \"" + engine2 + "\"! :: " + ex.Message);
-                                }
-
-                                try
-                                {
-                                    var termination = game?.CurrentState?.Player == Player.One ? TournamentTerminationType.PlayerOneError : TournamentTerminationType.PlayerTwoError;
-
-                                    lock (results)
-                                    {
-                                        results.Add(new TournamentResult(game, engine1, engine2, termination, killswitch.ElapsedMilliseconds));
-                                    }
-                                }
-                                catch (Exception eotw)
-                                {
-                                    using (StreamWriter w2 = new StreamWriter("errors.txt", true))
-                                    {
-                                        w2.WriteLine("Failed to log result! :: " + eotw.Message);
-                                    }
-                                }
-                            }
-
-                            completedGames++;
-                            worker.ReportProgress(0, new TournamentStatus(completedGames, totalGames, timeouts));
-                        });
+                            QueueGame(engine1, engine2);
+                        }
                     }
                 }
-            }
 
-            for (int r = 0; r < _rounds; r++)
+                for (int r = 0; r < _rounds; r++)
+                {
+                    Parallel.ForEach(games, x => x());
+                }
+            }
+            else if (_tournamentType == TournamentType.Swiss)
             {
-                Parallel.ForEach(games, x => x());
+                var rand = new Random();
+
+                var swissPlayers = _players.Select(x => new SwissPlayer
+                {
+                    Engine = x,
+                    Score = 0
+                }).ToList();
+
+                for (int r = 0; r < _rounds; r++)
+                {
+                    swissPlayers = swissPlayers.OrderByDescending(x => x.Score).ThenBy(x => rand.Next()).ToList();
+
+                    games = new List<Action>();
+
+                    // If there's an odd number of players, the last player doesn't play
+                    for (int i = 0; i < ((swissPlayers.Count % 2 == 1) ? swissPlayers.Count - 1 : swissPlayers.Count); i += 2)
+                    {
+                        // Play both colors
+                        QueueGame(swissPlayers[i].Engine, swissPlayers[i + 1].Engine);
+                        QueueGame(swissPlayers[i + 1].Engine, swissPlayers[i].Engine);
+                    }
+
+                    Parallel.ForEach(games, x => x());
+
+                    // Update scores for next round
+                    for (int i = 0; i < ((swissPlayers.Count % 2 == 1) ? swissPlayers.Count - 1 : swissPlayers.Count); i++)
+                    {
+                        swissPlayers[i].Score = results.Where(x => x.PlayerOne == swissPlayers[i].Engine).Sum(x => x.PlayerOneScore);
+                        swissPlayers[i].Score += results.Where(x => x.PlayerTwo == swissPlayers[i].Engine).Sum(x => x.PlayerTwoScore);
+                    }
+
+                    // If someone didn't play, they get a half point bye (per game) for the sake of pairings
+                    if (swissPlayers.Count % 2 == 1)
+                    {
+                        swissPlayers[swissPlayers.Count - 1].Score++;
+                    }
+                }
             }
 
             using (StreamWriter w = new StreamWriter(_gameDataFile))
@@ -282,6 +243,108 @@ namespace Volcano.Game
             }
         }
 
+        private void QueueGame(string engine1, string engine2)
+        {
+            games.Add(() =>
+            {
+                Stopwatch killswitch = Stopwatch.StartNew();
+                VolcanoGame game = new VolcanoGame();
+
+                VictoryType victory = VictoryType.None;
+                game.OnGameOver += (p, v) => victory = v;
+
+                try
+                {
+                    game.RegisterEngine(Player.One, _engines.GetEngine(engine1), true);
+                    game.RegisterEngine(Player.Two, _engines.GetEngine(engine2), true);
+                    game.SecondsPerEngineMove = _secondsPerMove;
+                    game.StartNewGame();
+                    game.ComputerPlay();
+
+                    while (victory == VictoryType.None &&
+                        game.CurrentState.Winner == Player.Empty &&
+                        game.CurrentState.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns &&
+                        killswitch.ElapsedMilliseconds < VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000)
+                    {
+                        System.Threading.Thread.Sleep(100);
+                    }
+
+                    game.ForceStop();
+
+                    var termination = TournamentTerminationType.Normal;
+                    if (game.CurrentState.Winner == Player.Empty)
+                    {
+                        if (game.CurrentState.Turn >= VolcanoGame.Settings.TournamentAdjudicateMaxTurns)
+                        {
+                            termination = TournamentTerminationType.AdjudicateMoves;
+                        }
+                        else if (killswitch.ElapsedMilliseconds >= VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000)
+                        {
+                            termination = TournamentTerminationType.AdjudicateTime;
+                        }
+                    }
+                    if (victory == VictoryType.ArenaAdjudication)
+                    {
+                        if (game.BackgroundError != null)
+                        {
+                            if (game.CurrentState.Winner == Player.One)
+                            {
+                                termination = TournamentTerminationType.PlayerTwoError;
+                            }
+                            else if (game.CurrentState.Winner == Player.Two)
+                            {
+                                termination = TournamentTerminationType.PlayerOneError;
+                            }
+                            else
+                            {
+                                termination = TournamentTerminationType.Error;
+                            }
+                        }
+                        else
+                        {
+                            termination = TournamentTerminationType.IllegalMove;
+                        }
+                    }
+                    else if (victory == VictoryType.OpponentTimeout)
+                    {
+                        termination = TournamentTerminationType.Timeout;
+                    }
+
+                    lock (results)
+                    {
+                        results.Add(new TournamentResult(game, engine1, engine2, termination, killswitch.ElapsedMilliseconds));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    using (StreamWriter w = new StreamWriter("errors.txt", true))
+                    {
+                        w.WriteLine("Failed to play \"" + engine1 + "\" and \"" + engine2 + "\"! :: " + ex.Message);
+                    }
+
+                    try
+                    {
+                        var termination = game?.CurrentState?.Player == Player.One ? TournamentTerminationType.PlayerOneError : TournamentTerminationType.PlayerTwoError;
+
+                        lock (results)
+                        {
+                            results.Add(new TournamentResult(game, engine1, engine2, termination, killswitch.ElapsedMilliseconds));
+                        }
+                    }
+                    catch (Exception eotw)
+                    {
+                        using (StreamWriter w2 = new StreamWriter("errors.txt", true))
+                        {
+                            w2.WriteLine("Failed to log result! :: " + eotw.Message);
+                        }
+                    }
+                }
+
+                completedGames++;
+                worker.ReportProgress(0, new TournamentStatus(completedGames, totalGames, timeouts));
+            });
+        }
+
         private static string GetWinningPath(List<int> path)
         {
             string winningPath = "";
@@ -309,6 +372,13 @@ namespace Volcano.Game
         {
             OnTournamentCompleted?.Invoke();
         }
+    }
+
+    internal class SwissPlayer
+    {
+        public string Engine { get; set; }
+
+        public decimal Score { get; set; }
     }
 
     internal class TournamentStatus

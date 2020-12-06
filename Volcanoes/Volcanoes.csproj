@@ -90,6 +90,7 @@
     <Compile Include="Engine\DeepBeelineEngine.cs" />
     <Compile Include="Engine\MiniMaxAlphaBetaEngine.cs" />
     <Compile Include="Engine\OpeningBook.cs" />
+    <Compile Include="Engine\TournamentType.cs" />
     <Compile Include="Game\GameSettings.cs" />
     <Compile Include="Game\Move.cs" />
     <Compile Include="Game\VictoryType.cs" />

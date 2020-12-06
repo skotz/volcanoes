@@ -244,7 +244,7 @@ namespace Volcano
                     games /= 2;
                 }
 
-                Tournament tourney = new Tournament(games, selfPlayForm.SecondsPerMove, gameFolder + "selfplay-table-" + date + ".csv", gameFolder + "selfplay-data-" + date + ".csv", engines, selfPlayForm.Engines, selfPlayForm.Engines.Count == 1);
+                Tournament tourney = new Tournament(games, selfPlayForm.SecondsPerMove, gameFolder + "selfplay-table-" + date + ".csv", gameFolder + "selfplay-data-" + date + ".csv", engines, selfPlayForm.Engines, selfPlayForm.Engines.Count == 1, TournamentType.RoundRobin);
                 tourney.OnTournamentCompleted += Tourney_OnTournamentCompleted;
                 tourney.OnTournamentStatus += Tourney_OnTournamentStatus;
                 tourney.Start();
@@ -264,7 +264,7 @@ namespace Volcano
 
                 string date = DateTime.Now.ToString("yyyyMMddhhmmss");
 
-                Tournament tourney = new Tournament(form.Rounds, form.SecondsPerMove, gameFolder + "tourney-table-" + date + ".csv", gameFolder + "tourney-data-" + date + ".csv", engines, form.Engines, form.SelfPlay || form.Engines.Count == 1);
+                Tournament tourney = new Tournament(form.Rounds, form.SecondsPerMove, gameFolder + "tourney-table-" + date + ".csv", gameFolder + "tourney-data-" + date + ".csv", engines, form.Engines, form.SelfPlay || form.Engines.Count == 1, form.TournamentType);
                 tourney.OnTournamentCompleted += Tourney_OnTournamentCompleted;
                 tourney.OnTournamentStatus += Tourney_OnTournamentStatus;
                 tourney.Start();
