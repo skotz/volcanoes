@@ -511,5 +511,29 @@ namespace Volcano
             var bookForm = new BookForm(openingBook);
             bookForm.ShowDialog();
         }
+
+        private void loadCGStringFromClipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var position = Clipboard.GetText().Split(' ').Select(x => int.Parse(x)).ToList();
+
+                var newTileNames = Constants.TileNames.OrderBy(x => x).ToList();
+                newTileNames.RemoveAt(0);
+
+                game.CurrentState = new Board();
+                game.CurrentState.Turn = 4;
+
+                for (int i = 0; i < 80; i++)
+                {
+                    var index = newTileNames.IndexOf(Constants.TileNames[i]);
+                    game.CurrentState.Tiles[i] = position[index];
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to load game from CG string!");
+            }
+        }
     }
 }
