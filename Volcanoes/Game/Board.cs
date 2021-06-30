@@ -495,6 +495,11 @@ namespace Volcano.Game
             return GetPlayerForTurn(Turn - 1);
         }
 
+        public Player GetPlayerForNextTurn()
+        {
+            return GetPlayerForTurn(Turn + 1);
+        }
+
         /// <summary>
         /// Get the type of move a specific turn requires.
         /// </summary>

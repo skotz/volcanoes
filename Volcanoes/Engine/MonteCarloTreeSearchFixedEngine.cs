@@ -7,7 +7,7 @@ using Volcano.Game;
 
 namespace Volcano.Engine
 {
-    internal class MonteCarloTreeSearchEngine : IEngine, IStatus
+    internal class MonteCarloTreeSearchFixedEngine : IEngine, IStatus
     {
         private Random random;
         private int simulationCount;
@@ -33,34 +33,7 @@ namespace Volcano.Engine
 
         private double _ucbFactor = 2.0;
 
-        public MonteCarloTreeSearchEngine(double ucbFactor)
-        {
-            random = new Random();
-            _ucbFactor = ucbFactor;
-        }
-
-        public MonteCarloTreeSearchEngine(bool allowForcedWins)
-        {
-            random = new Random();
-            _allowForcedWins = allowForcedWins;
-        }
-
-        public MonteCarloTreeSearchEngine(bool allowForcedWins, bool allowHash, bool allowFastWinSearch, string openingBook)
-        {
-            random = new Random();
-            _allowForcedWins = allowForcedWins;
-            _allowHash = allowHash;
-            _allowFastWinSearch = allowFastWinSearch;
-            _useOpeningBook = !string.IsNullOrEmpty(openingBook);
-
-            if (_useOpeningBook)
-            {
-                _book = new OpeningBook(openingBook);
-                _useOpeningBook = _book.Loaded;
-            }
-        }
-
-        public MonteCarloTreeSearchEngine()
+        public MonteCarloTreeSearchFixedEngine()
         {
             random = new Random();
             _allowForcedWins = true;
@@ -117,13 +90,7 @@ namespace Volcano.Engine
                 var node = rootNode;
                 var state = new Board(rootState);
 
-                state.allowHash = _allowHash;
                 state.fastWinSearch = _allowFastWinSearch;
-
-                if (_allowHash)
-                {
-                    state.winHashes = winHashes;
-                }
 
                 simulationCount++;
 
@@ -177,29 +144,36 @@ namespace Volcano.Engine
                     }
                 }
 
-                // Update Status
-                if (statusUpdate.ElapsedMilliseconds > millisecondsBetweenUpdates && OnStatus != null)
-                {
-                    EngineStatus status = new EngineStatus();
-                    foreach (var child in rootNode.Children)
-                    {
-                        double eval = Math.Round((child.Visits > 0 ? 200.0 * child.Wins / child.Visits : 0) - 100.0, 2);
-                        string pv = "";
-                        var c = child;
-                        while (c != null && c.Move >= 0 && c.Move <= 80)
-                        {
-                            pv += Constants.TileNames[c.Move] + " (" + c.Wins + "/" + c.Visits + ")   ";
-                            c = c.Children?.OrderBy(x => x.Visits)?.ThenBy(x => x.Wins)?.LastOrDefault();
-                        }
-                        status.Add(child?.Move ?? 80, eval, pv, child.Visits);
-                    }
-                    status.Sort();
-                    OnStatus?.Invoke(this, status);
-                    statusUpdate = Stopwatch.StartNew();
-                }
+                ReportStatus(rootNode);
             }
 
+            ReportStatus(rootNode);
+
             return rootNode.Children.OrderBy(x => x.Visits).LastOrDefault().Move;
+        }
+
+        private void ReportStatus(MonteCarloTreeSearchNode rootNode)
+        {
+            // Update Status
+            if (statusUpdate.ElapsedMilliseconds > millisecondsBetweenUpdates && OnStatus != null)
+            {
+                EngineStatus status = new EngineStatus();
+                foreach (var child in rootNode.Children)
+                {
+                    double eval = Math.Round((child.Visits > 0 ? 200.0 * child.Wins / child.Visits : 0) - 100.0, 2);
+                    string pv = "";
+                    var c = child;
+                    while (c != null && c.Move >= 0 && c.Move <= 80)
+                    {
+                        pv += /*(c.LastToMove == Player.One ? "b " : "o ") +*/ Constants.TileNames[c.Move] + " (" + c.Wins + "/" + c.Visits + ")   ";
+                        c = c.Children?.OrderBy(x => x.Visits)?.ThenBy(x => x.Wins)?.LastOrDefault();
+                    }
+                    status.Add(child?.Move ?? 80, eval, pv, child.Visits);
+                }
+                status.Sort();
+                OnStatus?.Invoke(this, status);
+                statusUpdate = Stopwatch.StartNew();
+            }
         }
 
         private class MonteCarloTreeSearchNode

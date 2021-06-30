@@ -149,7 +149,7 @@ namespace Volcano.Engine
                             pv += Constants.TileNames[c.Move] + " (" + Math.Round(c.Wins, 2) + "/" + c.Visits + ")   ";
                             c = c.Children?.OrderBy(x => x.Visits)?.ThenBy(x => x.Wins)?.LastOrDefault();
                         }
-                        status.Add(child?.Move ?? 80, eval, pv);
+                        status.Add(child?.Move ?? 80, eval, pv, child.Visits);
                     }
                     status.Sort();
                     OnStatus(this, status);

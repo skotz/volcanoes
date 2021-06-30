@@ -61,6 +61,7 @@ namespace Volcano
             engines.Add<MonteCarloBeelineThreeEngine>("Monte Carlo Beeline 3");
             engines.Add<MonteCarloBeelineFourEngine>("Monte Carlo Beeline 4");
             engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
+            //engines.Add<MonteCarloTreeSearchFixedEngine>("MCTS Alt");
 
             engines.Add("MCTS Opening Book", () => new MonteCarloTreeSearchEngine(true, false, false, openingBook));
             engines.Add("MCTS Victory Hash", () => new MonteCarloTreeSearchEngine(true, true, false, ""));

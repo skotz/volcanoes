@@ -76,6 +76,7 @@
     <Compile Include="Engine\MonteCarloBeelineRandParallelEngine.cs" />
     <Compile Include="Engine\MonteCarloBeelineParallelEngine.cs" />
     <Compile Include="Engine\MonteCarloBeelineThreeEngine.cs" />
+    <Compile Include="Engine\MonteCarloTreeSearchFixedEngine.cs" />
     <Compile Include="Engine\MonteCarloTreeSearchParallelEngine.cs" />
     <Compile Include="Engine\MonteCarloTreeSearchEngine.cs" />
     <Compile Include="Engine\MonteCarloTwoEngine.cs" />

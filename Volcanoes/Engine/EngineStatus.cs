@@ -15,19 +15,20 @@ namespace Volcano.Engine
             Details = new List<EngineStatusLine>();
         }
 
-        public void Add(int moveIndex, double evaluation, string extraInfo)
+        public void Add(int moveIndex, double evaluation, string extraInfo, double visits)
         {
             Details.Add(new EngineStatusLine
             {
                 MoveIndex = moveIndex,
                 Evaluation = evaluation,
-                ExtraInformation = extraInfo
+                ExtraInformation = extraInfo,
+                Visits = visits
             });
         }
 
         public void Sort()
         {
-            Details.Sort((c, n) => n.Evaluation.CompareTo(c.Evaluation));
+            Details.Sort((c, n) => n.Visits.CompareTo(c.Visits));
         }
     }
 
@@ -38,5 +39,7 @@ namespace Volcano.Engine
         public double Evaluation { get; set; }
 
         public string ExtraInformation { get; set; }
+
+        public double Visits { get; set; }
     }
 }
