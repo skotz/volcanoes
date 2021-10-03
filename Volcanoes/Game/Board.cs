@@ -144,10 +144,13 @@ namespace Volcano.Game
                 {
                     int i = eruptions.Dequeue();
 
+                    if (Dormant[i])
+                    {
+                        continue;
+                    }
+
                     if (VolcanoGame.Settings.AllowDormantVolcanoes)
                     {
-                        // Make the volcano dormant
-                        Tiles[i] = Tiles[i] > 0 ? VolcanoGame.Settings.MaxVolcanoLevel : -VolcanoGame.Settings.MaxVolcanoLevel;
                         Dormant[i] = true;
                     }
                     else
@@ -176,16 +179,13 @@ namespace Volcano.Game
                         // Same owner
                         else if ((Tiles[adjacent] > 0 && Tiles[i] > 0) || (Tiles[adjacent] < 0 && Tiles[i] < 0))
                         {
-                            if (!VolcanoGame.Settings.AllowDormantVolcanoes || !Dormant[adjacent])
+                            if (Tiles[i] > 0)
                             {
-                                if (Tiles[i] > 0)
-                                {
-                                    deltas[adjacent] += VolcanoGame.Settings.EruptOverflowFriendlyTileAmount;
-                                }
-                                else
-                                {
-                                    deltas[adjacent] -= VolcanoGame.Settings.EruptOverflowFriendlyTileAmount;
-                                }
+                                deltas[adjacent] += VolcanoGame.Settings.EruptOverflowFriendlyTileAmount;
+                            }
+                            else
+                            {
+                                deltas[adjacent] -= VolcanoGame.Settings.EruptOverflowFriendlyTileAmount;
                             }
                         }
 
@@ -232,11 +232,18 @@ namespace Volcano.Game
 
                         // So we don't process it a second time
                         deltas[i] = 0;
-                    }
 
-                    if (VolcanoGame.Settings.AllowDormantVolcanoes)
-                    {
-                        Dormant[i] = Math.Abs(Tiles[i]) == VolcanoGame.Settings.MaxVolcanoLevel;
+                        if (VolcanoGame.Settings.AllowDormantVolcanoes)
+                        {
+                            if (Math.Abs(Tiles[i]) >= VolcanoGame.Settings.MaxVolcanoLevel)
+                            {
+                                Tiles[i] = Tiles[i] > 0 ? VolcanoGame.Settings.MaxVolcanoLevel : -VolcanoGame.Settings.MaxVolcanoLevel;
+                            }
+                            else
+                            {
+                                Dormant[i] = false;
+                            }
+                        }
                     }
                 }
             }
