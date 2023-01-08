@@ -11,7 +11,6 @@ namespace Volcano.Engine
         private int _bufferMilliseconds = 5;
 
         private int _visitedNodes;
-        private int _beamWidth;
 
         private Stopwatch _statusUpdate;
         private int _millisecondsBetweenUpdates = 1000;
@@ -20,14 +19,8 @@ namespace Volcano.Engine
 
         private Random rand = new Random();
 
-        public BreadthFirstBeamSearch(int beamWidth)
-        {
-            _beamWidth = beamWidth;
-        }
-
         public BreadthFirstBeamSearch()
         {
-            _beamWidth = 2000;
         }
 
         public event EventHandler<EngineStatus> OnStatus;
@@ -41,7 +34,18 @@ namespace Volcano.Engine
 
             _visitedNodes = 0;
 
-            var best = GetBestMove(state);
+            var best = -1;
+
+            // iterative widening
+            for (var width = 10; width < 10000 && !token.Cancelled; width++)
+            {
+                var test = GetBestMove(state, width);
+
+                if (!token.Cancelled && test >= 0)
+                {
+                    best = test;
+                }
+            }
 
             return new SearchResult
             {
@@ -51,7 +55,7 @@ namespace Volcano.Engine
             };
         }
 
-        private int GetBestMove(Board start)
+        private int GetBestMove(Board start, int beamWidth)
         {
             var root = new BeamNode(-1, null, start, 0, 0);
 
@@ -61,6 +65,8 @@ namespace Volcano.Engine
 
             var startingPlayer = start.Player;
             var terminateSearch = false;
+
+            var best = root;
 
             while (beam.Count != 0 && !terminateSearch)
             {
@@ -98,6 +104,13 @@ namespace Volcano.Engine
                         if (winner == startingPlayer && winner == playerToMove)
                         {
                             terminateSearch = true;
+
+                            var final = node;
+                            while (final.Parent != null && final.Parent.Move != -1)
+                            {
+                                final = final.Parent;
+                            }
+                            return final.Move;
                         }
 
                         var child = new BeamNode(move, node, copy, node.Depth + 1, eval);
@@ -111,11 +124,16 @@ namespace Volcano.Engine
 
                 if (playerToMove == Player.One)
                 {
-                    beam.AddRange(set.OrderByDescending(x => x.Evaluation).Take(_beamWidth));
+                    beam.AddRange(set.OrderByDescending(x => x.Evaluation).Take(beamWidth));
                 }
                 else
                 {
-                    beam.AddRange(set.OrderBy(x => x.Evaluation).Take(_beamWidth));
+                    beam.AddRange(set.OrderBy(x => x.Evaluation).Take(beamWidth));
+                }
+
+                if (beam.Count > 0)
+                {
+                    best = beam[0];
                 }
 
                 // Update Status
@@ -138,7 +156,7 @@ namespace Volcano.Engine
                         {
                             Evaluation = beam[i].Evaluation,
                             MoveIndex = parent.Move,
-                            ExtraInformation = line
+                            ExtraInformation = "(" + beamWidth + ") " + line
                         });
                     }
 
@@ -149,8 +167,10 @@ namespace Volcano.Engine
                 }
             }
 
+            return best.Move;
+
             // Perform a full minimax search, but only on the tree built out by a depth-first search
-            return MiniMax(root).Move;
+            //return MiniMax(root).Move;
         }
 
         private int Evaluate(Board board, int depth)
