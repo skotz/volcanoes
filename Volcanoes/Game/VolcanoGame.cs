@@ -33,11 +33,13 @@ namespace Volcano.Game
 
         public List<int> MoveHistory { get; private set; }
 
-        public bool Thinking { get { return _worker.IsBusy; } }
+        public bool Thinking
+        { get { return _worker.IsBusy; } }
 
         public Exception BackgroundError { get; private set; }
 
-        public int NodesPerSecond { get { return _lastSearch?.NodesPerSecond ?? 0; } }
+        public int NodesPerSecond
+        { get { return _lastSearch?.NodesPerSecond ?? 0; } }
 
         public int SecondsPerEngineMove { get; set; } = 10;
 
@@ -129,6 +131,11 @@ namespace Volcano.Game
                     {
                         status.OnStatus += Status_OnStatusOne;
                     }
+                    var train = _playerOneEngine as ITrainable;
+                    if (train != null)
+                    {
+                        train.OnTrainStatus += Train_OnTrainStatus;
+                    }
                 }
             }
             if (player == Player.Two)
@@ -142,8 +149,18 @@ namespace Volcano.Game
                     {
                         status.OnStatus += Status_OnStatusTwo;
                     }
+                    var train = _playerTwoEngine as ITrainable;
+                    if (train != null)
+                    {
+                        train.OnTrainStatus += Train_OnTrainStatus;
+                    }
                 }
             }
+        }
+
+        private void Train_OnTrainStatus(object sender, TrainStatus e)
+        {
+            // TODO
         }
 
         private void BackgroundWorkProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -177,11 +194,25 @@ namespace Volcano.Game
                 if (CurrentState.State == GameState.GameOver)
                 {
                     OnGameOver?.Invoke(CurrentState.Winner, CurrentState.Winner == Player.Draw ? VictoryType.InfiniteEruption : VictoryType.AntipodePathCreation);
+
+                    SaveSamples();
                 }
                 else
                 {
                     ComputerPlay();
                 }
+            }
+        }
+
+        private void SaveSamples()
+        {
+            if (_playerOneEngine != null && _playerOneEngine as ITrainable != null)
+            {
+                (_playerOneEngine as ITrainable).SaveSamples();
+            }
+            if (_playerTwoEngine != null && _playerTwoEngine as ITrainable != null)
+            {
+                (_playerTwoEngine as ITrainable).SaveSamples();
             }
         }
 
@@ -317,6 +348,8 @@ namespace Volcano.Game
                     if (CurrentState.State == GameState.GameOver)
                     {
                         OnGameOver?.Invoke(CurrentState.Winner, CurrentState.Winner == Player.Draw ? VictoryType.InfiniteEruption : VictoryType.AntipodePathCreation);
+
+                        SaveSamples();
                     }
                     else
                     {
@@ -328,6 +361,8 @@ namespace Volcano.Game
                     // If an engine doesn't find a move, then he adjourns the game
                     CurrentState.Winner = CurrentState.Player == Player.One ? Player.Two : Player.One;
                     OnGameOver?.Invoke(CurrentState.Winner, _lastSearch.Timeout ? VictoryType.OpponentTimeout : VictoryType.ArenaAdjudication);
+
+                    SaveSamples();
                 }
             }
         }

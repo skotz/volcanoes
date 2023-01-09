@@ -1,18 +1,14 @@
-﻿using Volcano.Interface;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Volcano.Game;
-using System.IO;
-using Volcano.Engine;
 using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
+using Volcano.Engine;
+using Volcano.Game;
+using Volcano.Interface;
 using Volcano.Search;
 using static System.Environment;
 
@@ -20,19 +16,19 @@ namespace Volcano
 {
     public partial class GameForm : Form
     {
-        GameGraphics graphics;
-        VolcanoGame game;
-        EngineHelper engines;
-        GameGraphicsSettings settings;
+        private GameGraphics graphics;
+        private VolcanoGame game;
+        private EngineHelper engines;
+        private GameGraphicsSettings settings;
 
-        List<int> transcript;
-        int transcriptMove;
+        private List<int> transcript;
+        private int transcriptMove;
 
-        EngineOutputForm outputForm;
+        private EngineOutputForm outputForm;
 
-        string openingBook = "openings.dat";
+        private string openingBook = "openings.dat";
 
-        string gameFolder = $"{Environment.GetFolderPath(SpecialFolder.MyDocuments)}\\My Games\\Volcanoes\\";
+        private string gameFolder = $"{Environment.GetFolderPath(SpecialFolder.MyDocuments)}\\My Games\\Volcanoes\\";
 
         public GameForm()
         {
@@ -61,6 +57,7 @@ namespace Volcano
             engines.Add<MonteCarloBeelineThreeEngine>("Monte Carlo Beeline 3");
             engines.Add<MonteCarloBeelineFourEngine>("Monte Carlo Beeline 4");
             engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
+            engines.Add<NeuralNetworkEngine>("Neural Network");
             //engines.Add<MonteCarloTreeSearchFixedEngine>("MCTS Alt");
 
             engines.Add("MCTS Opening Book", () => new MonteCarloTreeSearchEngine(true, false, false, openingBook));
@@ -489,6 +486,7 @@ namespace Volcano
                 }
             }
         }
+
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             if (keyData == Keys.Left)
@@ -535,6 +533,38 @@ namespace Volcano
             {
                 MessageBox.Show("Failed to load game from CG string!");
             }
+        }
+
+        private void trainNeuralNetworkToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!trainingWorker.IsBusy)
+            {
+                trainingWorker.RunWorkerAsync();
+            }
+        }
+
+        private void trainingWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        {
+            var nn = new NeuralNetworkEngine();
+            nn.OnTrainStatus += Nn_OnTrainStatus;
+            nn.Train();
+        }
+
+        private void Nn_OnTrainStatus(object sender, TrainStatus e)
+        {
+            trainingWorker.ReportProgress(0, e);
+        }
+
+        private void trainingWorker_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+        {
+            var status = e.UserState as TrainStatus;
+
+            lblStatusBar.Text = status.Status;
+        }
+
+        private void trainingWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+        {
+            lblStatusBar.Text += " (done)";
         }
     }
 }

@@ -53,6 +53,8 @@
             this.dEBUGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stressTestPathSearchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stressTestEngineSearchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
+            this.loadCGStringFromClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.exportRulesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.resetRulesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -87,8 +89,8 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.growthMoveTimer = new System.Windows.Forms.Timer(this.components);
-            this.loadCGStringFromClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
+            this.trainNeuralNetworkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.trainingWorker = new System.ComponentModel.BackgroundWorker();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -139,8 +141,8 @@
             // 
             this.statusStrip1.Dock = System.Windows.Forms.DockStyle.None;
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.progStatus,
-            this.lblStatusBar});
+            this.lblStatusBar,
+            this.progStatus});
             this.statusStrip1.Location = new System.Drawing.Point(0, 0);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(1052, 22);
@@ -266,7 +268,7 @@
             // newTournamentToolStripMenuItem
             // 
             this.newTournamentToolStripMenuItem.Name = "newTournamentToolStripMenuItem";
-            this.newTournamentToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.newTournamentToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.newTournamentToolStripMenuItem.Text = "&New Tournament";
             this.newTournamentToolStripMenuItem.Click += new System.EventHandler(this.newTournamentToolStripMenuItem_Click);
             // 
@@ -293,7 +295,8 @@
             this.toolStripSeparator9,
             this.whiteboardModeToolStripMenuItem,
             this.toolStripSeparator10,
-            this.generateOpeningBooksToolStripMenuItem});
+            this.generateOpeningBooksToolStripMenuItem,
+            this.trainNeuralNetworkToolStripMenuItem});
             this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
             this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
             this.dEBUGToolStripMenuItem.Text = "DEBUG";
@@ -312,6 +315,18 @@
             this.stressTestEngineSearchToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
             this.stressTestEngineSearchToolStripMenuItem.Text = "Stress Test Engine Search";
             this.stressTestEngineSearchToolStripMenuItem.Click += new System.EventHandler(this.stressTestEngineSearchToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator11
+            // 
+            this.toolStripSeparator11.Name = "toolStripSeparator11";
+            this.toolStripSeparator11.Size = new System.Drawing.Size(236, 6);
+            // 
+            // loadCGStringFromClipboardToolStripMenuItem
+            // 
+            this.loadCGStringFromClipboardToolStripMenuItem.Name = "loadCGStringFromClipboardToolStripMenuItem";
+            this.loadCGStringFromClipboardToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
+            this.loadCGStringFromClipboardToolStripMenuItem.Text = "Load CG String From Clipboard";
+            this.loadCGStringFromClipboardToolStripMenuItem.Click += new System.EventHandler(this.loadCGStringFromClipboardToolStripMenuItem_Click);
             // 
             // toolStripSeparator7
             // 
@@ -577,17 +592,19 @@
             this.growthMoveTimer.Interval = 1000;
             this.growthMoveTimer.Tick += new System.EventHandler(this.growthMoveTimer_Tick);
             // 
-            // loadCGStringFromClipboardToolStripMenuItem
+            // trainNeuralNetworkToolStripMenuItem
             // 
-            this.loadCGStringFromClipboardToolStripMenuItem.Name = "loadCGStringFromClipboardToolStripMenuItem";
-            this.loadCGStringFromClipboardToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
-            this.loadCGStringFromClipboardToolStripMenuItem.Text = "Load CG String From Clipboard";
-            this.loadCGStringFromClipboardToolStripMenuItem.Click += new System.EventHandler(this.loadCGStringFromClipboardToolStripMenuItem_Click);
+            this.trainNeuralNetworkToolStripMenuItem.Name = "trainNeuralNetworkToolStripMenuItem";
+            this.trainNeuralNetworkToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
+            this.trainNeuralNetworkToolStripMenuItem.Text = "Train Neural Network";
+            this.trainNeuralNetworkToolStripMenuItem.Click += new System.EventHandler(this.trainNeuralNetworkToolStripMenuItem_Click);
             // 
-            // toolStripSeparator11
+            // trainingWorker
             // 
-            this.toolStripSeparator11.Name = "toolStripSeparator11";
-            this.toolStripSeparator11.Size = new System.Drawing.Size(236, 6);
+            this.trainingWorker.WorkerReportsProgress = true;
+            this.trainingWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.trainingWorker_DoWork);
+            this.trainingWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.trainingWorker_ProgressChanged);
+            this.trainingWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.trainingWorker_RunWorkerCompleted);
             // 
             // GameForm
             // 
@@ -680,6 +697,8 @@
         private System.Windows.Forms.ToolStripMenuItem generateOpeningBooksToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
         private System.Windows.Forms.ToolStripMenuItem loadCGStringFromClipboardToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem trainNeuralNetworkToolStripMenuItem;
+        private System.ComponentModel.BackgroundWorker trainingWorker;
     }
 }
 
