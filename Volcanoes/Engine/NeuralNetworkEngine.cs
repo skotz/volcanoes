@@ -79,9 +79,8 @@ namespace Volcano.Engine
         private void ForceLoad()
         {
             _nn = new NeuralNetwork(new SquaredErrorLoss(), 0.0005);
-            _nn.Add(new ConvolutionLayer(9, 9, 2, 3, 16, 1, new LeakyReLuActivation()));
-            _nn.Add(new FlattenLayer(7, 7, 16));
-            _nn.Add(new FullyConnectedLayer(7 * 7 * 16, 80, new LeakyReLuActivation()));
+            _nn.Add(new FullyConnectedLayer(80 * 4, 160, new LeakyReLuActivation()));
+            _nn.Add(new FullyConnectedLayer(160, 80, new LeakyReLuActivation()));
 
             if (File.Exists("nn.dat"))
             {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using Volcano.Game;
 
 namespace Volcano.Neural
@@ -25,38 +24,27 @@ namespace Volcano.Neural
 
         public BoardSample(Board board)
         {
-            Inputs = new double[9, 9, 2];
-            for (int i = 0; i < 80; i++)
+            var factor = board.Player == Player.Two ? -1.0 : 1.0;
+
+            Inputs = new double[80 + 80 * 3, 1, 1];
+            for (int i = 0; i < 80; i += 4)
             {
-                var x = i % 9;
-                var y = i / 9;
+                Inputs[i, 0, 0] = factor * board.Tiles[i] / VolcanoGame.Settings.MaxVolcanoLevel;
 
-                // my tiles
-                Inputs[x, y, 0] = (board.Tiles[i] > 0 && board.Player == Player.One) || (board.Tiles[i] < 0 && board.Player == Player.Two) ? Math.Abs((double)board.Tiles[i] / VolcanoGame.Settings.MaxVolcanoLevel) : 0;
-
-                // enemy tiles
-                Inputs[x, y, 1] = (board.Tiles[i] > 0 && board.Player == Player.Two) || (board.Tiles[i] < 0 && board.Player == Player.One) ? -Math.Abs((double)board.Tiles[i] / VolcanoGame.Settings.MaxVolcanoLevel) : 0;
+                var ni = 1;
+                foreach (var neighbor in Constants.AdjacentIndexes[i])
+                {
+                    Inputs[i + ni, 0, 0] = factor * board.Tiles[neighbor] / VolcanoGame.Settings.MaxVolcanoLevel;
+                    ni++;
+                }
             }
 
             Outputs = new double[80, 1, 1];
         }
 
         public BoardSample(Board board, double[] scores)
+            : this(board)
         {
-            Inputs = new double[9, 9, 2];
-            for (int i = 0; i < 80; i++)
-            {
-                var x = i % 9;
-                var y = i / 9;
-
-                // my tiles
-                Inputs[x, y, 0] = (board.Tiles[i] > 0 && board.Player == Player.One) || (board.Tiles[i] < 0 && board.Player == Player.Two) ? Math.Abs((double)board.Tiles[i] / VolcanoGame.Settings.MaxVolcanoLevel) : 0;
-
-                // enemy tiles
-                Inputs[x, y, 1] = (board.Tiles[i] > 0 && board.Player == Player.Two) || (board.Tiles[i] < 0 && board.Player == Player.One) ? -Math.Abs((double)board.Tiles[i] / VolcanoGame.Settings.MaxVolcanoLevel) : 0;
-            }
-
-            Outputs = new double[scores.Length, 1, 1];
             for (int i = 0; i < scores.Length; i++)
             {
                 Outputs[i, 0, 0] = scores[i];
