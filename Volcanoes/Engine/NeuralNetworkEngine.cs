@@ -39,15 +39,26 @@ namespace Volcano.Engine
         private NeuralNetwork _nn;
         private bool _train = true;
 
+        private List<Board> _preSamples;
         private List<ISample> _samples;
 
         private static Semaphore _nnFileSemaphore = new Semaphore(1, 1);
 
+        public bool _policyOnly;
+
         public NeuralNetworkEngine()
+            : this(false)
         {
+        }
+
+        public NeuralNetworkEngine(bool usePolicyOnly)
+        {
+            _policyOnly = usePolicyOnly;
+
             random = new Random();
             _allowForcedWins = true;
 
+            _preSamples = new List<Board>();
             _samples = new List<ISample>();
 
             LoadNeuralNetwork();
@@ -68,10 +79,9 @@ namespace Volcano.Engine
         private void ForceLoad()
         {
             _nn = new NeuralNetwork(new SquaredErrorLoss(), 0.0005);
-            _nn.Add(new FullyConnectedLayer(80, 320, new LeakyReLuActivation()));
-            _nn.Add(new FullyConnectedLayer(320, 160, new LeakyReLuActivation()));
-            _nn.Add(new FullyConnectedLayer(160, 160, new LeakyReLuActivation()));
-            _nn.Add(new FullyConnectedLayer(160, 80, new LeakyReLuActivation()));
+            _nn.Add(new ConvolutionLayer(9, 9, 2, 3, 16, 1, new LeakyReLuActivation()));
+            _nn.Add(new FlattenLayer(7, 7, 16));
+            _nn.Add(new FullyConnectedLayer(7 * 7 * 16, 80, new LeakyReLuActivation()));
 
             if (File.Exists("nn.dat"))
             {
@@ -84,10 +94,29 @@ namespace Volcano.Engine
 
         public void SaveSamples()
         {
-            if (_samples.Count == 0)
+            if (_preSamples.Count == 0)
             {
                 return;
             }
+
+            var solver = new MonteCarloTreeSearchEngine();
+            foreach (var state in _preSamples)
+            {
+                if (state.Player == Player.One || state.Player == Player.Two)
+                {
+                    var probabilities = solver.GetProbabilities(state, 10000);
+
+                    var scores = new double[80];
+                    for (int i = 0; i < scores.Length; i++)
+                    {
+                        scores[i] = probabilities[i].WinRate;
+                    }
+
+                    _samples.Add(new BoardSample(state, scores));
+                }
+            }
+
+            _preSamples.Clear();
 
             _nnFileSemaphore.WaitOne();
 
@@ -143,19 +172,19 @@ namespace Volcano.Engine
             {
                 w.WriteLine("iteration,trainLoss,testLoss,testRate");
 
-                for (int i = 0; i < 1000 && loss > 0.05; i++)
+                for (int i = 0; i < 500 && loss > 0.05; i++)
                 {
                     _samples.Shuffle();
-                    var subset = _samples.Take(100).ToList();
+                    //var subset = _samples.Take(100).ToList();
 
-                    loss = _nn.Train(subset);
+                    loss = _nn.Train(_samples);
 
                     var test = _nn.TestLoss(_samples);
                     var rate = _nn.TestRate<BoardSample>(_samples, (c, n) => c.OutputToIndex() == n.OutputToIndex());
 
                     OnTrainStatus?.Invoke(this, new TrainStatus()
                     {
-                        Status = $"Iteration {i} total loss = {test}"
+                        Status = $"Iteration {(i + 1)} total loss = {test}"
                     });
 
                     w.WriteLine($"{i},{loss},{test},{rate}");
@@ -179,7 +208,50 @@ namespace Volcano.Engine
 
             cancel = new EngineCancellationToken(() => token.Cancelled || timer.ElapsedMilliseconds >= maxSeconds * 1000L - bufferMilliseconds);
 
-            int best = MonteCarloTreeSearch(state);
+            int best = -1;
+
+            if (_policyOnly)
+            {
+                var sample = new BoardSample(state);
+                var feedForward = (BoardSample)_nn.FeedForward(sample);
+                var outputs = feedForward.OutputToArray();
+                var bestScore = double.MinValue;
+                var validMoves = state.GetMoves();
+                var status = new EngineStatus();
+
+                for (int i = 0; i < 80; i++)
+                {
+                    if (validMoves.Contains(i))
+                    {
+                        if (outputs[i] > bestScore)
+                        {
+                            bestScore = outputs[i];
+                            best = i;
+                        }
+
+                        if (OnStatus != null)
+                        {
+                            status.Add(i, Math.Round(outputs[i], 3), Constants.TileNames[i], outputs[i]);
+                        }
+                    }
+                }
+
+                if (OnStatus != null)
+                {
+                    status.Sort();
+                    OnStatus?.Invoke(this, status);
+                }
+
+                if (_train)
+                {
+                    _preSamples.Add(new Board(state));
+                }
+            }
+
+            if (best == -1)
+            {
+                best = MonteCarloTreeSearch(state);
+            }
 
             return new SearchResult
             {
@@ -289,24 +361,7 @@ namespace Volcano.Engine
 
             if (_train)
             {
-                var scores = new double[80];
-
-                var minVisits = rootNode.Children.Min(x => x.Visits);
-                var maxVisits = rootNode.Children.Max(x => x.Visits);
-                var diff = (maxVisits - minVisits) * 2;
-                if (diff == 0)
-                {
-                    diff = 1;
-                }
-                foreach (var child in rootNode.Children)
-                {
-                    scores[child.Move] = child.Visits / diff - 1;
-                }
-
-                if (rootState.Player == Player.One || rootState.Player == Player.Two)
-                {
-                    _samples.Add(new BoardSample(rootState, scores));
-                }
+                _preSamples.Add(new Board(rootState));
             }
 
             return rootNode.Children.OrderBy(x => x.Visits).LastOrDefault().Move;
@@ -323,6 +378,7 @@ namespace Volcano.Engine
             public int Move;
             public List<MonteCarloTreeSearchNode> Children;
             public List<int> Untried;
+            public Board State;
 
             public MonteCarloTreeSearchNode(Board state, Func<Board, List<int>> getMoves, NeuralNetwork nn)
                 : this(state, -2, null, getMoves, nn)
@@ -336,16 +392,22 @@ namespace Volcano.Engine
                 Move = move;
                 Parent = parent;
 
-                var sample = new BoardSample(state);
-                var feedForward = nn.FeedForward(sample);
-                var scores = (feedForward as BoardSample).OutputToArray();
+                State = state;
 
-                var maxPrediction = move >= 0 ? 100 : 0;
-                var prediction = move >= 0 ? Math.Max(0, Math.Round((scores[move] + 1) * (maxPrediction / 2), 2)) : 0;
+                var prediction = 0.0;
+                if (parent?.State != null)
+                {
+                    var sample = new BoardSample(parent.State);
+                    var feedForward = nn.FeedForward(sample);
+                    var scores = (feedForward as BoardSample).OutputToArray();
+
+                    var maxPrediction = move >= 0 ? 100 : 0;
+                    prediction = move >= 0 && scores[move] > 0 ? scores[move] * maxPrediction : 0;
+                }
 
                 Children = new List<MonteCarloTreeSearchNode>();
                 Wins = prediction;
-                Visits = maxPrediction;
+                Visits = prediction;
 
                 if (state != null)
                 {

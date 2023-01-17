@@ -57,13 +57,15 @@ namespace Volcano
             engines.Add<MonteCarloBeelineThreeEngine>("Monte Carlo Beeline 3");
             engines.Add<MonteCarloBeelineFourEngine>("Monte Carlo Beeline 4");
             engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
-            engines.Add<NeuralNetworkEngine>("Neural Network");
             //engines.Add<MonteCarloTreeSearchFixedEngine>("MCTS Alt");
 
             engines.Add("MCTS Opening Book", () => new MonteCarloTreeSearchEngine(true, false, false, openingBook));
             engines.Add("MCTS Victory Hash", () => new MonteCarloTreeSearchEngine(true, true, false, ""));
             engines.Add("MCTS Fast Win Check", () => new MonteCarloTreeSearchEngine(true, false, true, ""));
             engines.Add("MCTS Trio", () => new MonteCarloTreeSearchEngine(true, true, true, openingBook));
+
+            engines.Add<NeuralNetworkEngine>("Neural Network (MCTS)");
+            engines.Add("Neural Network (Policy)", () => new NeuralNetworkEngine(true));
 
             //engines.Add<MonteCarloPlayoutEngine>("MCTS Playout");
             //engines.Add<MonteCarloBeelineParallelEngine>("Parallel MCTS Beeline Full");
@@ -132,7 +134,7 @@ namespace Volcano
         private void gameTimer_Tick(object sender, EventArgs e)
         {
             Point mouse = gamePanel.PointToClient(Cursor.Position);
-            graphics.Draw(game, mouse, transcriptMove, chkHighlightLastMove.Checked, displayHeatmap.Checked);
+            graphics.Draw(game, mouse, transcriptMove, chkHighlightLastMove.Checked, displayHeatmap.Checked, tsmNeural.Checked);
         }
 
         private void gamePanel_Click(object sender, EventArgs e)

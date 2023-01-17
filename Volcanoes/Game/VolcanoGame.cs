@@ -47,6 +47,8 @@ namespace Volcano.Game
 
         private int _graceTimeout = 250;
 
+        public bool AnalysisMode { get; set; }
+
         public VolcanoGame()
         {
             CurrentState = new Board();
@@ -330,7 +332,7 @@ namespace Volcano.Game
 
         private void BackgroundWorkCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (!e.Cancelled)
+            if (!e.Cancelled && !AnalysisMode)
             {
                 _lastSearch = (SearchResult)e.Result;
 

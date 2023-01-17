@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Volcano.Game;
 
 namespace Volcano.Neural
@@ -24,10 +25,17 @@ namespace Volcano.Neural
 
         public BoardSample(Board board)
         {
-            Inputs = new double[80, 1, 1];
+            Inputs = new double[9, 9, 2];
             for (int i = 0; i < 80; i++)
             {
-                Inputs[i, 0, 0] = (double)board.Tiles[i] * (board.Player == Player.One ? 1 : -1) / VolcanoGame.Settings.MaxVolcanoLevel;
+                var x = i % 9;
+                var y = i / 9;
+
+                // my tiles
+                Inputs[x, y, 0] = (board.Tiles[i] > 0 && board.Player == Player.One) || (board.Tiles[i] < 0 && board.Player == Player.Two) ? Math.Abs((double)board.Tiles[i] / VolcanoGame.Settings.MaxVolcanoLevel) : 0;
+
+                // enemy tiles
+                Inputs[x, y, 1] = (board.Tiles[i] > 0 && board.Player == Player.Two) || (board.Tiles[i] < 0 && board.Player == Player.One) ? -Math.Abs((double)board.Tiles[i] / VolcanoGame.Settings.MaxVolcanoLevel) : 0;
             }
 
             Outputs = new double[80, 1, 1];
@@ -35,10 +43,17 @@ namespace Volcano.Neural
 
         public BoardSample(Board board, double[] scores)
         {
-            Inputs = new double[80, 1, 1];
+            Inputs = new double[9, 9, 2];
             for (int i = 0; i < 80; i++)
             {
-                Inputs[i, 0, 0] = (double)board.Tiles[i] * (board.Player == Player.One ? 1 : -1) / VolcanoGame.Settings.MaxVolcanoLevel;
+                var x = i % 9;
+                var y = i / 9;
+
+                // my tiles
+                Inputs[x, y, 0] = (board.Tiles[i] > 0 && board.Player == Player.One) || (board.Tiles[i] < 0 && board.Player == Player.Two) ? Math.Abs((double)board.Tiles[i] / VolcanoGame.Settings.MaxVolcanoLevel) : 0;
+
+                // enemy tiles
+                Inputs[x, y, 1] = (board.Tiles[i] > 0 && board.Player == Player.Two) || (board.Tiles[i] < 0 && board.Player == Player.One) ? -Math.Abs((double)board.Tiles[i] / VolcanoGame.Settings.MaxVolcanoLevel) : 0;
             }
 
             Outputs = new double[scores.Length, 1, 1];

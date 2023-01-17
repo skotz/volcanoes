@@ -531,7 +531,7 @@ namespace Volcano.Interface
             analysisStatus = status;
         }
 
-        public void Draw(VolcanoGame game, Point mouseLocation, int moveNumber, bool highlightLastMove, bool displayHeatmap)
+        public void Draw(VolcanoGame game, Point mouseLocation, int moveNumber, bool highlightLastMove, bool displayHeatmap, bool neuralHeatmap)
         {
             Resize();
 
@@ -564,9 +564,18 @@ namespace Volcano.Interface
                     EndAnalysis();
                     analysisMove = gameState.Turn;
                     analysisEngine = new VolcanoGame();
+                    analysisEngine.AnalysisMode = true;
                     analysisEngine.SecondsPerEngineMove = 1000000;
-                    analysisEngine.RegisterEngine(Player.One, new MonteCarloTreeSearchEngine(false, true, true, ""));
-                    analysisEngine.RegisterEngine(Player.Two, new MonteCarloTreeSearchEngine(false, true, true, ""));
+                    if (neuralHeatmap)
+                    {
+                        analysisEngine.RegisterEngine(Player.One, new NeuralNetworkEngine(true));
+                        analysisEngine.RegisterEngine(Player.Two, new NeuralNetworkEngine(true));
+                    }
+                    else
+                    {
+                        analysisEngine.RegisterEngine(Player.One, new MonteCarloTreeSearchEngine(false, true, true, ""));
+                        analysisEngine.RegisterEngine(Player.Two, new MonteCarloTreeSearchEngine(false, true, true, ""));
+                    }
                     analysisEngine.OnEngineStatus += AnalysisEngine_OnEngineStatus;
                     analysisEngine.CurrentState = new Board(gameState);
                     analysisEngine.ComputerPlay();

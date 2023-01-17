@@ -70,6 +70,7 @@
     <Compile Include="Engine\ExceptionEngine.cs" />
     <Compile Include="Engine\IStatus.cs" />
     <Compile Include="Engine\ITrainable.cs" />
+    <Compile Include="Engine\MctsNode.cs" />
     <Compile Include="Engine\MonteCarloPlayoutEngine.cs" />
     <Compile Include="Engine\MonteCarloBarricadeEngine.cs" />
     <Compile Include="Engine\MonteCarloBeelineFourEngine.cs" />
@@ -102,6 +103,8 @@
     <Compile Include="Interface\MenuProfessionalRenderer.cs" />
     <Compile Include="Interface\GameRotation.cs" />
     <Compile Include="Neural\BoardSample.cs" />
+    <Compile Include="Neural\ConvolutionLayer.cs" />
+    <Compile Include="Neural\FlattenLayer.cs" />
     <Compile Include="Neural\FullyConnectedLayer.cs" />
     <Compile Include="Neural\GaussianRandom.cs" />
     <Compile Include="Neural\IActivation.cs" />

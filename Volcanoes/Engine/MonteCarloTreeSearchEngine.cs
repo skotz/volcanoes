@@ -33,6 +33,10 @@ namespace Volcano.Engine
 
         private double _ucbFactor = 2.0;
 
+        private int _maxIterations = -1;
+
+        private MonteCarloTreeSearchNode _rootNode;
+
         public MonteCarloTreeSearchEngine(double ucbFactor)
         {
             random = new Random();
@@ -64,6 +68,37 @@ namespace Volcano.Engine
         {
             random = new Random();
             _allowForcedWins = true;
+        }
+
+        public MctsNode[] GetProbabilities(Board state, int maxIterations)
+        {
+            _maxIterations = maxIterations;
+
+            GetBestMove(state, int.MaxValue, new EngineCancellationToken(() => false));
+
+            var nodes = new MctsNode[80];
+            foreach (var node in _rootNode.Children)
+            {
+                nodes[node.Move] = new MctsNode
+                {
+                    Move = node.Move,
+                    Wins = (int)node.Wins,
+                    Visits = (int)node.Visits,
+                };
+            }
+
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                if (nodes[i] == null)
+                {
+                    nodes[i] = new MctsNode
+                    {
+                        Move = i,
+                    };
+                }
+            }
+
+            return nodes;
         }
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
@@ -109,12 +144,12 @@ namespace Volcano.Engine
 
         private int MonteCarloTreeSearch(Board rootState)
         {
-            var rootNode = new MonteCarloTreeSearchNode(rootState, GetMoves);
+            _rootNode = new MonteCarloTreeSearchNode(rootState, GetMoves);
             var forceWin = false;
 
-            while (!cancel.Cancelled && !forceWin)
+            while (!cancel.Cancelled && !forceWin && (_maxIterations < 0 || simulationCount < _maxIterations))
             {
-                var node = rootNode;
+                var node = _rootNode;
                 var state = new Board(rootState);
 
                 state.allowHash = _allowHash;
@@ -167,7 +202,7 @@ namespace Volcano.Engine
                 // Cut Short
                 if (_allowForcedWins)
                 {
-                    foreach (var child in rootNode.Children)
+                    foreach (var child in _rootNode.Children)
                     {
                         // If we have a potential move that has a 100% win rate and it's been visited a lot of times, stop searching
                         if (child.Visits > 500 && child.Wins == child.Visits)
@@ -181,7 +216,7 @@ namespace Volcano.Engine
                 if (statusUpdate.ElapsedMilliseconds > millisecondsBetweenUpdates && OnStatus != null)
                 {
                     EngineStatus status = new EngineStatus();
-                    foreach (var child in rootNode.Children)
+                    foreach (var child in _rootNode.Children)
                     {
                         double eval = Math.Round((child.Visits > 0 ? 200.0 * child.Wins / child.Visits : 0) - 100.0, 2);
                         string pv = "";
@@ -199,7 +234,7 @@ namespace Volcano.Engine
                 }
             }
 
-            return rootNode.Children.OrderBy(x => x.Visits).LastOrDefault().Move;
+            return _rootNode.Children.OrderBy(x => x.Visits).LastOrDefault().Move;
         }
 
         private class MonteCarloTreeSearchNode
