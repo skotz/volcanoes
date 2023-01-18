@@ -79,8 +79,9 @@ namespace Volcano.Engine
         private void ForceLoad()
         {
             _nn = new NeuralNetwork(new SquaredErrorLoss(), 0.0005);
-            _nn.Add(new FullyConnectedLayer(80 * 4, 160, new LeakyReLuActivation()));
-            _nn.Add(new FullyConnectedLayer(160, 80, new LeakyReLuActivation()));
+            _nn.Add(new FullyConnectedLayer(80 * 4, 1600, new LeakyReLuActivation()));
+            _nn.Add(new FullyConnectedLayer(1600, 320, new LeakyReLuActivation()));
+            _nn.Add(new FullyConnectedLayer(320, 80, new LeakyReLuActivation()));
 
             if (File.Exists("nn.dat"))
             {
@@ -183,7 +184,7 @@ namespace Volcano.Engine
 
                     OnTrainStatus?.Invoke(this, new TrainStatus()
                     {
-                        Status = $"Iteration {(i + 1)} total loss = {test}"
+                        Status = $"Iteration {(i + 1)}, loss = {test}, rate = {rate}"
                     });
 
                     w.WriteLine($"{i},{loss},{test},{rate}");
@@ -400,7 +401,7 @@ namespace Volcano.Engine
                     var feedForward = nn.FeedForward(sample);
                     var scores = (feedForward as BoardSample).OutputToArray();
 
-                    var maxPrediction = move >= 0 ? 100 : 0;
+                    var maxPrediction = move >= 0 ? 1 : 0;
                     prediction = move >= 0 && scores[move] > 0 ? scores[move] * maxPrediction : 0;
                 }
 
