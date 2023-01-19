@@ -50,12 +50,17 @@ namespace Volcano
             engines = new EngineHelper();
             engines.Add<BarricadeEngine>("Barricade");
             engines.Add<RandomEngine>("Random");
+            //engines.Add<BeeLineEngine>("Beeline");
+            //engines.Add<BeelineTwoEngine>("Beeline 2");
             engines.Add<DeepBeelineEngine>("Deep Beeline");
             engines.Add<MonteCarloBarricadeEngine>("Monte Carlo Barricade");
             engines.Add<MonteCarloBeelineRandParallelEngine>("Parallel MCTS Beeline");
             engines.Add<MonteCarloTreeSearchParallelEngine>("Parallel MCTS");
             engines.Add<MonteCarloBeelineThreeEngine>("Monte Carlo Beeline 3");
             engines.Add<MonteCarloBeelineFourEngine>("Monte Carlo Beeline 4");
+            engines.Add<MonteCarloBeelineFiveEngine>("Monte Carlo Beeline 5");
+            engines.Add<MonteCarloBeelineSixEngine>("Monte Carlo Beeline 6");
+            engines.Add<MonteCarloBeelineSevenEngine>("Monte Carlo Beeline 7");
             engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
             //engines.Add<MonteCarloTreeSearchFixedEngine>("MCTS Alt");
 

@@ -65,12 +65,16 @@
       <DependentUpon>EngineOutputForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Engine\BarricadeEngine.cs" />
+    <Compile Include="Engine\BeelineTwoEngine.cs" />
     <Compile Include="Engine\BeeLineEngine.cs" />
     <Compile Include="Engine\EngineStatus.cs" />
     <Compile Include="Engine\ExceptionEngine.cs" />
     <Compile Include="Engine\IStatus.cs" />
     <Compile Include="Engine\ITrainable.cs" />
     <Compile Include="Engine\MctsNode.cs" />
+    <Compile Include="Engine\MonteCarloBeelineSevenEngine.cs" />
+    <Compile Include="Engine\MonteCarloBeelineSixEngine.cs" />
+    <Compile Include="Engine\MonteCarloBeelineFiveEngine.cs" />
     <Compile Include="Engine\MonteCarloPlayoutEngine.cs" />
     <Compile Include="Engine\MonteCarloBarricadeEngine.cs" />
     <Compile Include="Engine\MonteCarloBeelineFourEngine.cs" />
@@ -120,6 +124,7 @@
     <Compile Include="Search\LongestPathFinder.cs" />
     <Compile Include="Engine\PositionHash.cs" />
     <Compile Include="Search\PathFinder.cs" />
+    <Compile Include="Search\BeelinePathFinder.cs" />
     <Compile Include="Search\WeightedNonEnemyPathFinder.cs" />
     <Compile Include="Search\NonEnemyPathFinder.cs" />
     <Compile Include="Engine\RandomEngine.cs" />
