@@ -1,213 +1,24 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9124719E-F0E3-43DE-B9C7-59B191857B2E}</ProjectGuid>
+    <TargetFramework>net9.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Volcano</RootNamespace>
-    <AssemblyName>Volcanoes</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Deterministic>true</Deterministic>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <PlatformTarget>x64</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>x64</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="BookForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="BookForm.Designer.cs">
-      <DependentUpon>BookForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="EngineOutputForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="EngineOutputForm.Designer.cs">
-      <DependentUpon>EngineOutputForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Engine\BarricadeEngine.cs" />
-    <Compile Include="Engine\BeelineTwoEngine.cs" />
-    <Compile Include="Engine\BeeLineEngine.cs" />
-    <Compile Include="Engine\EngineStatus.cs" />
-    <Compile Include="Engine\ExceptionEngine.cs" />
-    <Compile Include="Engine\IStatus.cs" />
-    <Compile Include="Engine\ITrainable.cs" />
-    <Compile Include="Engine\MctsNode.cs" />
-    <Compile Include="Engine\MonteCarloBeelineSevenEngine.cs" />
-    <Compile Include="Engine\MonteCarloBeelineSixEngine.cs" />
-    <Compile Include="Engine\MonteCarloBeelineFiveEngine.cs" />
-    <Compile Include="Engine\MonteCarloPlayoutEngine.cs" />
-    <Compile Include="Engine\MonteCarloBarricadeEngine.cs" />
-    <Compile Include="Engine\MonteCarloBeelineFourEngine.cs" />
-    <Compile Include="Engine\MonteCarloBeelineParallelDeepEngine.cs" />
-    <Compile Include="Engine\MonteCarloBeelineRandParallelEngine.cs" />
-    <Compile Include="Engine\MonteCarloBeelineParallelEngine.cs" />
-    <Compile Include="Engine\MonteCarloBeelineThreeEngine.cs" />
-    <Compile Include="Engine\NeuralNetworkEngine.cs" />
-    <Compile Include="Engine\MonteCarloTreeSearchFixedEngine.cs" />
-    <Compile Include="Engine\MonteCarloTreeSearchParallelEngine.cs" />
-    <Compile Include="Engine\MonteCarloTreeSearchEngine.cs" />
-    <Compile Include="Engine\MonteCarloTwoEngine.cs" />
-    <Compile Include="Engine\MonteCarloBeelineEngine.cs" />
-    <Compile Include="Engine\EngineCancellationToken.cs" />
-    <Compile Include="Engine\EngineMove.cs" />
-    <Compile Include="Engine\KittyCornerEngine.cs" />
-    <Compile Include="Engine\AlphaEngine.cs" />
-    <Compile Include="Engine\EngineHelper.cs" />
-    <Compile Include="Engine\IEngine.cs" />
-    <Compile Include="Engine\LongestPathEngine.cs" />
-    <Compile Include="Engine\DeepBeelineEngine.cs" />
-    <Compile Include="Engine\MiniMaxAlphaBetaEngine.cs" />
-    <Compile Include="Engine\OpeningBook.cs" />
-    <Compile Include="Engine\TournamentType.cs" />
-    <Compile Include="Engine\TrainStatus.cs" />
-    <Compile Include="Game\GameSettings.cs" />
-    <Compile Include="Game\Move.cs" />
-    <Compile Include="Game\VictoryType.cs" />
-    <Compile Include="Interface\MenuColorTable.cs" />
-    <Compile Include="Interface\MenuProfessionalRenderer.cs" />
-    <Compile Include="Interface\GameRotation.cs" />
-    <Compile Include="Neural\BoardSample.cs" />
-    <Compile Include="Neural\ConvolutionLayer.cs" />
-    <Compile Include="Neural\FlattenLayer.cs" />
-    <Compile Include="Neural\FullyConnectedLayer.cs" />
-    <Compile Include="Neural\GaussianRandom.cs" />
-    <Compile Include="Neural\IActivation.cs" />
-    <Compile Include="Neural\ILayer.cs" />
-    <Compile Include="Neural\ILoss.cs" />
-    <Compile Include="Neural\ISample.cs" />
-    <Compile Include="Neural\LeakyReluActivation.cs" />
-    <Compile Include="Neural\ListShuffle.cs" />
-    <Compile Include="Neural\NeuralNetwork.cs" />
-    <Compile Include="Neural\SquaredErrorLoss.cs" />
-    <Compile Include="Search\KittyPathFinder.cs" />
-    <Compile Include="Search\UnrestrictedPathFinder.cs" />
-    <Compile Include="Search\LongestPathFinder.cs" />
-    <Compile Include="Engine\PositionHash.cs" />
-    <Compile Include="Search\PathFinder.cs" />
-    <Compile Include="Search\BeelinePathFinder.cs" />
-    <Compile Include="Search\WeightedNonEnemyPathFinder.cs" />
-    <Compile Include="Search\NonEnemyPathFinder.cs" />
-    <Compile Include="Engine\RandomEngine.cs" />
-    <Compile Include="Engine\SearchResult.cs" />
-    <Compile Include="Engine\SkipTileEngine.cs" />
-    <Compile Include="GameForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GameForm.Designer.cs">
-      <DependentUpon>GameForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Game\Board.cs" />
-    <Compile Include="Game\Constants.cs" />
-    <Compile Include="Game\GameState.cs" />
-    <Compile Include="Game\TileType.cs" />
-    <Compile Include="Game\Tournament.cs" />
-    <Compile Include="Game\VolcanoGame.cs" />
-    <Compile Include="Game\MoveType.cs" />
-    <Compile Include="Game\Player.cs" />
-    <Compile Include="Interface\GameGraphics.cs" />
-    <Compile Include="Interface\GameGraphicsSettings.cs" />
-    <Compile Include="Interface\GameTile.cs" />
-    <Compile Include="Interface\JsonColorConverter.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Search\PathResult.cs" />
-    <Compile Include="SelfPlayForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SelfPlayForm.Designer.cs">
-      <DependentUpon>SelfPlayForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="TournamentForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="TournamentForm.Designer.cs">
-      <DependentUpon>TournamentForm.cs</DependentUpon>
-    </Compile>
-    <EmbeddedResource Include="BookForm.resx">
-      <DependentUpon>BookForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="EngineOutputForm.resx">
-      <DependentUpon>EngineOutputForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GameForm.resx">
-      <DependentUpon>GameForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <EmbeddedResource Include="SelfPlayForm.resx">
-      <DependentUpon>SelfPlayForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="TournamentForm.resx">
-      <DependentUpon>TournamentForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <Content Include="icon.ico" />
-    <None Include="Resources\rotate-right.png" />
-    <None Include="Resources\rotate-clockwise.png" />
-    <None Include="Resources\rotate-counter-clockwise.png" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
 </Project>
