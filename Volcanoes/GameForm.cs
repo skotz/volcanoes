@@ -1,18 +1,20 @@
-﻿using Volcano.Interface;
+﻿using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Volcano.Game;
-using System.IO;
 using Volcano.Engine;
-using System.Diagnostics;
+using Volcano.Game;
+using Volcano.Interface;
 using Volcano.Search;
 using static System.Environment;
 
@@ -20,19 +22,19 @@ namespace Volcano
 {
     public partial class GameForm : Form
     {
-        GameGraphics graphics;
-        VolcanoGame game;
-        EngineHelper engines;
-        GameGraphicsSettings settings;
+        private GameGraphics graphics;
+        private VolcanoGame game;
+        private EngineHelper engines;
+        private GameGraphicsSettings settings;
 
-        List<int> transcript;
-        int transcriptMove;
+        private List<int> transcript;
+        private int transcriptMove;
 
-        EngineOutputForm outputForm;
+        private EngineOutputForm outputForm;
 
-        string openingBook = "openings.dat";
+        private string openingBook = "openings.dat";
 
-        string gameFolder = $"{Environment.GetFolderPath(SpecialFolder.MyDocuments)}\\My Games\\Volcanoes\\";
+        private string gameFolder = $"{Environment.GetFolderPath(SpecialFolder.MyDocuments)}\\My Games\\Volcanoes\\";
 
         public GameForm()
         {
@@ -489,6 +491,7 @@ namespace Volcano
                 }
             }
         }
+
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             if (keyData == Keys.Left)
@@ -535,6 +538,10 @@ namespace Volcano
             {
                 MessageBox.Show("Failed to load game from CG string!");
             }
+        }
+
+        private void trainQLearningToolStripMenuItem_Click(object sender, EventArgs e)
+        {
         }
     }
 }

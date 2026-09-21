@@ -53,6 +53,8 @@
             this.dEBUGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stressTestPathSearchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stressTestEngineSearchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
+            this.loadCGStringFromClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.exportRulesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.resetRulesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -87,8 +89,7 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.growthMoveTimer = new System.Windows.Forms.Timer(this.components);
-            this.loadCGStringFromClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
+            this.trainQLearningToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -293,7 +294,8 @@
             this.toolStripSeparator9,
             this.whiteboardModeToolStripMenuItem,
             this.toolStripSeparator10,
-            this.generateOpeningBooksToolStripMenuItem});
+            this.generateOpeningBooksToolStripMenuItem,
+            this.trainQLearningToolStripMenuItem});
             this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
             this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
             this.dEBUGToolStripMenuItem.Text = "DEBUG";
@@ -312,6 +314,18 @@
             this.stressTestEngineSearchToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
             this.stressTestEngineSearchToolStripMenuItem.Text = "Stress Test Engine Search";
             this.stressTestEngineSearchToolStripMenuItem.Click += new System.EventHandler(this.stressTestEngineSearchToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator11
+            // 
+            this.toolStripSeparator11.Name = "toolStripSeparator11";
+            this.toolStripSeparator11.Size = new System.Drawing.Size(236, 6);
+            // 
+            // loadCGStringFromClipboardToolStripMenuItem
+            // 
+            this.loadCGStringFromClipboardToolStripMenuItem.Name = "loadCGStringFromClipboardToolStripMenuItem";
+            this.loadCGStringFromClipboardToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
+            this.loadCGStringFromClipboardToolStripMenuItem.Text = "Load CG String From Clipboard";
+            this.loadCGStringFromClipboardToolStripMenuItem.Click += new System.EventHandler(this.loadCGStringFromClipboardToolStripMenuItem_Click);
             // 
             // toolStripSeparator7
             // 
@@ -577,17 +591,12 @@
             this.growthMoveTimer.Interval = 1000;
             this.growthMoveTimer.Tick += new System.EventHandler(this.growthMoveTimer_Tick);
             // 
-            // loadCGStringFromClipboardToolStripMenuItem
+            // trainQLearningToolStripMenuItem
             // 
-            this.loadCGStringFromClipboardToolStripMenuItem.Name = "loadCGStringFromClipboardToolStripMenuItem";
-            this.loadCGStringFromClipboardToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
-            this.loadCGStringFromClipboardToolStripMenuItem.Text = "Load CG String From Clipboard";
-            this.loadCGStringFromClipboardToolStripMenuItem.Click += new System.EventHandler(this.loadCGStringFromClipboardToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator11
-            // 
-            this.toolStripSeparator11.Name = "toolStripSeparator11";
-            this.toolStripSeparator11.Size = new System.Drawing.Size(236, 6);
+            this.trainQLearningToolStripMenuItem.Name = "trainQLearningToolStripMenuItem";
+            this.trainQLearningToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
+            this.trainQLearningToolStripMenuItem.Text = "Train Q-Learning";
+            this.trainQLearningToolStripMenuItem.Click += new System.EventHandler(this.trainQLearningToolStripMenuItem_Click);
             // 
             // GameForm
             // 
@@ -680,6 +689,7 @@
         private System.Windows.Forms.ToolStripMenuItem generateOpeningBooksToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
         private System.Windows.Forms.ToolStripMenuItem loadCGStringFromClipboardToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem trainQLearningToolStripMenuItem;
     }
 }
 
