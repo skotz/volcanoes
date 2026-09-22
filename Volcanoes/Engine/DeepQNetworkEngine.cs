@@ -25,8 +25,8 @@ namespace Volcano.Engine
         private int totalEpisodes = 50000; // Increased from 100 for longer training window
 
         private double gamma = 0.99; // discount factor
-        private double learningRate = 0.0001; // Increased for faster learning with gradient clipping
-        private int miniBatchSize = 128;
+        private double learningRate = 0.01; // Increased for faster learning with gradient clipping
+        private int miniBatchSize = 64;
 
         private int episodeCounter = 0;
         private int targetUpdateFrequency = 10; // Update target network every 10 episodes
@@ -224,6 +224,7 @@ namespace Volcano.Engine
                 if ((batch + 1) % (validationFrequency / 5) == 0 && replayBuffer.Count >= replayBufferMinCount)
                 {
                     Debug($"Running validation at batch {batch + 1}...");
+                    currentGameExplore = false;
                     double validationWinRate = ValidateNetwork();
 
                     // Check if this is the best performance so far
@@ -359,33 +360,71 @@ namespace Volcano.Engine
             List<Transition> batch = replayBuffer.SampleMiniBatch(miniBatchSize);
             double totalLoss = 0.0;
 
+            // Create batch-wide accumulator arrays for gradients
+            double[,] totalW1Grad = new double[726, 128];
+            double[] totalB1Grad = new double[128];
+            double[,] totalW2Grad = new double[128, 80];
+            double[] totalB2Grad = new double[80];
+
             foreach (Transition transition in batch)
             {
-                //var isOpponent = transition.PlayerSwap ? -1 : 1;
+                //// --- Dummy Test Logic ---
+                //if (transition.Action == 0) { transition.Reward = 1; transition.Done = true; }
+                //else { transition.Reward = -1; transition.Done = true; }
 
-                // Use target network for stable Q-value estimation
+                // 1. Calculate Target using Target Network
                 double[] nextQValues = targetNetwork.Forward(transition.NextState);
                 double maxNextQ = nextQValues.Max();
                 double targetQ = transition.Done ? transition.Reward : transition.Reward + gamma * maxNextQ;
 
-                // Forward pass
+                // 2. Forward pass on Main Network to cache its internal states
                 double[] qValues = network.Forward(transition.State);
                 double currentQ = qValues[transition.Action];
 
-                // Compute loss (Bellman error squared)
+                // 3. Compute loss metrics
                 double bellmanError = currentQ - targetQ;
                 totalLoss += bellmanError * bellmanError;
 
-                // Compute loss gradient
+                // 4. Calculate local gradients for this individual transition
+                // Using the derivative of Mean Squared Error: 2 * error
                 double[] lossGradient = new double[80];
-                lossGradient[transition.Action] = bellmanError;
+                lossGradient[transition.Action] = 2.0 * bellmanError;
 
-                // Backward pass
-                network.Backward(lossGradient, 1.0 / miniBatchSize);
+                // 5. Run a modified backprop pass that extracts gradients WITHOUT updating weights
+                network.ComputeGradients(lossGradient, out double[,] w1G, out double[] b1G, out double[,] w2G, out double[] b2G);
+
+                // 6. Accumulate the gradients across the mini-batch
+                AccumulateGradients(totalW1Grad, w1G);
+                AccumulateArrays(totalB1Grad, b1G);
+                AccumulateGradients(totalW2Grad, w2G);
+                AccumulateArrays(totalB2Grad, b2G);
             }
+
+            // 7. Apply the accumulated mini-batch gradients to the weights exactly ONCE
+            network.ApplyMiniBatchUpdates(totalW1Grad, totalB1Grad, totalW2Grad, totalB2Grad, 1.0 / miniBatchSize);
+
+            //Console.WriteLine($"--- STEP DEBUG ---");
+            //Console.WriteLine($"Sample State Sum: {batch[0].State.Sum()}");
+            //Console.WriteLine($"First Element of W1: {network.w1[0, 0]}");
+            //Console.WriteLine($"First Element of W2: {network.w2[0, 0]}");
 
             return totalLoss / miniBatchSize;
         }
+
+        // Simple helper methods to sum up your arrays
+        private void AccumulateGradients(double[,] target, double[,] source)
+        {
+            for (int i = 0; i < target.GetLength(0); i++)
+                for (int j = 0; j < target.GetLength(1); j++)
+                    target[i, j] += source[i, j];
+        }
+
+        private void AccumulateArrays(double[] target, double[] source)
+        {
+            for (int i = 0; i < target.Length; i++)
+                target[i] += source[i];
+        }
+
 
         private double[] EncodeState(Board board, bool invertForPlayer2 = false)
         {

@@ -1,4 +1,3 @@
-using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 
@@ -9,25 +8,28 @@ namespace Volcano.Engine.Neural
         private Random random = new Random();
 
         // Layer 1: 726 → 128
-        private double[,] w1;
+        public double[,] w1;
+
         private double[] b1;
         private double[,] w1_grad;
         private double[] b1_grad;
 
         // Layer 2: 128 → 80
-        private double[,] w2;
+        public double[,] w2;
+
         private double[] b2;
         private double[,] w2_grad;
         private double[] b2_grad;
 
         // Cached activations for backprop
         private double[] a0; // input
+
         private double[] z1; // pre-activation
         private double[] a1; // activation
         private double[] z2; // output layer (linear)
 
         private double learningRate;
-        private const double L2_REGULARIZATION = 0.0001;
+        private const double L2_REGULARIZATION = 0; // 0.0001;
 
         public NeuralNetwork(double learningRate = 0.001)
         {
@@ -133,7 +135,7 @@ namespace Volcano.Engine.Neural
             double[] dz1 = new double[128];
             for (int i = 0; i < 128; i++)
             {
-                dz1[i] = z1[i] > 0 ? da1[i] : 0.0;
+                dz1[i] = z1[i] > 0 ? 1 : 0.1; // z1[i] > 0 ? da1[i] : 0.0;
             }
 
             // Gradient for w1 and b1
@@ -156,6 +158,81 @@ namespace Volcano.Engine.Neural
             // Update weights
             UpdateWeights(w1, w1_grad, b1, b1_grad, learningRateScale);
             UpdateWeights(w2, w2_grad, b2, b2_grad, learningRateScale);
+        }
+
+        // Computes local gradients using the internal cached activations from the last Forward pass
+        public void ComputeGradients(double[] lossGradient, out double[,] outW1Grad, out double[] outB1Grad, out double[,] outW2Grad, out double[] outB2Grad)
+        {
+            double[] dz2 = lossGradient;
+            outW2Grad = new double[128, 80];
+            outB1Grad = new double[128];
+            outW1Grad = new double[726, 128];
+            outB2Grad = (double[])dz2.Clone();
+
+            // Layer 2 gradients
+            for (int i = 0; i < 128; i++)
+                for (int j = 0; j < 80; j++)
+                    outW2Grad[i, j] = a1[i] * dz2[j];
+
+            // Backprop to Layer 1
+            double[] da1 = new double[128];
+            for (int i = 0; i < 128; i++)
+                for (int j = 0; j < 80; j++)
+                    da1[i] += w2[i, j] * dz2[j];
+
+            // Fixed LeakyReLU derivative logic (0.1 multiplier)
+            double[] dz1 = new double[128];
+            for (int i = 0; i < 128; i++)
+                dz1[i] = z1[i] > 0 ? da1[i] : da1[i] * 0.1;
+
+            // Layer 1 gradients
+            for (int i = 0; i < 726; i++)
+                for (int j = 0; j < 128; j++)
+                    outW1Grad[i, j] = a0[i] * dz1[j];
+
+            for (int j = 0; j < 128; j++)
+                outB1Grad[j] = dz1[j];
+        }
+
+        // Applies accumulated batch gradients with optional scaling
+        public void ApplyMiniBatchUpdates(double[,] aggregatedW1G, double[] aggregatedB1G, double[,] aggregatedW2G, double[] aggregatedB2G, double batchScale)
+        {
+            double effectiveRate = learningRate * batchScale;
+            const double GRAD_CLIP = 1.0;
+
+            // Remember to set L2_REGULARIZATION to 0.0 at the top of your class!
+
+            // Update Layer 1
+            for (int i = 0; i < w1.GetLength(0); i++)
+            {
+                for (int j = 0; j < w1.GetLength(1); j++)
+                {
+                    double clippedGrad = Math.Max(-GRAD_CLIP, Math.Min(GRAD_CLIP, aggregatedW1G[i, j]));
+                    double l2Grad = 2 * L2_REGULARIZATION * w1[i, j];
+                    w1[i, j] -= effectiveRate * (clippedGrad + l2Grad);
+                }
+            }
+            for (int j = 0; j < b1.Length; j++)
+            {
+                double clippedGrad = Math.Max(-GRAD_CLIP, Math.Min(GRAD_CLIP, aggregatedB1G[j]));
+                b1[j] -= effectiveRate * clippedGrad;
+            }
+
+            // Update Layer 2
+            for (int i = 0; i < w2.GetLength(0); i++)
+            {
+                for (int j = 0; j < w2.GetLength(1); j++)
+                {
+                    double clippedGrad = Math.Max(-GRAD_CLIP, Math.Min(GRAD_CLIP, aggregatedW2G[i, j]));
+                    double l2Grad = 2 * L2_REGULARIZATION * w2[i, j];
+                    w2[i, j] -= effectiveRate * (clippedGrad + l2Grad);
+                }
+            }
+            for (int j = 0; j < b2.Length; j++)
+            {
+                double clippedGrad = Math.Max(-GRAD_CLIP, Math.Min(GRAD_CLIP, aggregatedB2G[j]));
+                b2[j] -= effectiveRate * clippedGrad;
+            }
         }
 
         private void UpdateWeights(double[,] w, double[,] w_grad, double[] b, double[] b_grad, double learningRateScale)
