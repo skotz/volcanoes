@@ -361,12 +361,12 @@ namespace Volcano.Engine
 
             foreach (Transition transition in batch)
             {
-                var isOpponent = transition.PlayerSwap ? -1 : 1;
+                //var isOpponent = transition.PlayerSwap ? -1 : 1;
 
                 // Use target network for stable Q-value estimation
                 double[] nextQValues = targetNetwork.Forward(transition.NextState);
                 double maxNextQ = nextQValues.Max();
-                double targetQ = transition.Done ? transition.Reward : transition.Reward + gamma * maxNextQ * isOpponent;
+                double targetQ = transition.Done ? transition.Reward : transition.Reward + gamma * maxNextQ;
 
                 // Forward pass
                 double[] qValues = network.Forward(transition.State);
