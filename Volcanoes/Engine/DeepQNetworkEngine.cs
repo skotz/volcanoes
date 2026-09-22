@@ -65,8 +65,7 @@ namespace Volcano.Engine
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
-            bool isPlayer2 = state.Player == Player.Two;
-            double[] qValues = network.Forward(EncodeState(state, isPlayer2));
+            double[] qValues = network.Forward(EncodeState(state, state.Player == Player.Two));
             List<int> validMoves = state.GetMoves();
 
             int bestMove = -1;
@@ -162,9 +161,6 @@ namespace Volcano.Engine
                     // Decay epsilon based on total games played
                     int totalGamesPlayed = episodeCounter;
                     epsilon = epsilonStart - (epsilonStart - epsilonEnd) * (totalGamesPlayed / (double)(totalEpisodes * gamesPerBatch));
-
-                    // Set exploration for this entire game
-                    currentGameExplore = random.NextDouble() < epsilon;
 
                     // Randomly assign learner to Player 1 or 2
                     bool learnerIsPlayerOne = random.Next(2) == 0;
@@ -292,6 +288,9 @@ namespace Volcano.Engine
             // Play game step by step
             while (board.Winner == Player.Empty && board.Turn < 500)
             {
+                // Set exploration for this move
+                currentGameExplore = random.NextDouble() < epsilon;
+
                 // Determine current engine
                 IEngine currentEngine = board.Player == Player.One ? engineP1 : engineP2;
                 bool isLearnerMove = (board.Player == Player.One && learnerIsPlayerOne) || (board.Player == Player.Two && !learnerIsPlayerOne);
@@ -322,7 +321,7 @@ namespace Volcano.Engine
                 var playerSwap = board.Player != playerToMove;
 
                 // Encode state after move
-                double[] nextStateEnc = EncodeState(board, playerSwap ? learnerIsPlayerOne : isLearnerPlayer2 );
+                double[] nextStateEnc = EncodeState(board, isLearnerPlayer2);
 
                 // Only store transition if learner made this move
                 if (isLearnerMove)
@@ -371,6 +370,8 @@ namespace Volcano.Engine
                 //// --- Dummy Test Logic ---
                 //if (transition.Action == 0) { transition.Reward = 1; transition.Done = true; }
                 //else { transition.Reward = -1; transition.Done = true; }
+
+                //var flip = transition.NextTurnIsOpponent ? -1 : 1;
 
                 // 1. Calculate Target using Target Network
                 double[] nextQValues = targetNetwork.Forward(transition.NextState);
@@ -425,8 +426,7 @@ namespace Volcano.Engine
                 target[i] += source[i];
         }
 
-
-        private double[] EncodeState(Board board, bool invertForPlayer2 = false)
+        private double[] EncodeState(Board board, bool invertForPlayer2)
         {
             double[] encoded = new double[726]; // 80 tiles * 9 + 6 phases
 
@@ -463,6 +463,9 @@ namespace Volcano.Engine
 
         private double ValidateNetwork()
         {
+            Debug("VALIDATION DISABLED");
+            return 0;
+
             int validationWins = 0;
 
             Parallel.For(0, validationGamesPerCheckpoint, gameNum =>

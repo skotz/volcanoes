@@ -10,7 +10,7 @@ namespace Volcano.Engine.Neural
         public double[] NextState { get; set; }
         public bool Done { get; set; }
 
-        public bool PlayerSwap { get; set; }
+        public bool NextTurnIsOpponent { get; set; }
 
         public Transition(double[] state, int action, double reward, double[] nextState, bool done, bool playerSwap)
         {
@@ -19,7 +19,7 @@ namespace Volcano.Engine.Neural
             Reward = reward;
             NextState = nextState;
             Done = done;
-            PlayerSwap = playerSwap;
+            NextTurnIsOpponent = playerSwap;
         }
     }
 }
