@@ -21,15 +21,24 @@ namespace Volcano.Engine
         private double epsilon;
         private double epsilonStart = 1.0;
         private double epsilonEnd = 0.1;
-        private int totalEpisodes = 100;
+        private int totalEpisodes = 5000; // Increased from 100 for longer training window
 
         private double gamma = 0.99; // discount factor
-        private double learningRate = 0.00001; // Reduced from 0.001
+        private double learningRate = 0.001; // Increased for faster learning with gradient clipping
         private int miniBatchSize = 32;
 
         private int episodeCounter = 0;
         private int targetUpdateFrequency = 10; // Update target network every 10 episodes
+        private bool currentGameExplore = false; // Exploration flag set once per episode
         private const string NETWORK_FILE = "dqn.dat";
+        private const string BEST_NETWORK_FILE = "dqn_best.dat";
+
+        // Validation-based early stopping
+        private int validationFrequency = 50; // Validate every 50 episodes
+        private int validationGamesPerCheckpoint = 5; // Play 5 games per validation
+        private double bestValidationWinRate = -1.0;
+        private int patienceCounter = 0;
+        private int patienceLimit = 200; // Stop if no improvement for 200 episodes
 
         public DeepQNetworkEngine()
         {
@@ -55,33 +64,22 @@ namespace Volcano.Engine
             List<int> validMoves = state.GetMoves();
 
             int bestMove = -1;
-            double bestQValue = double.MinValue;
 
             // Collect move evaluations
             EngineStatus status = new EngineStatus();
 
-            // Epsilon-greedy policy (only during training/inference distinction if needed)
-            bool explore = random.NextDouble() < epsilon;
-
-            foreach (int move in validMoves)
+            if (currentGameExplore)
             {
-                double qValue = qValues[move];
-                double visits = Math.Abs(qValue); // pseudo-visit count for display
-
-                status.Add(move, qValue, "", visits);
-
-                if (explore)
+                // Pure random exploration for this entire game
+                bestMove = validMoves[random.Next(validMoves.Count)];
+            }
+            else
+            {
+                // Greedy: pick move with highest Q-value
+                double bestQValue = double.MinValue;
+                foreach (int move in validMoves)
                 {
-                    // Random selection during exploration
-                    if (bestMove == -1 || random.NextDouble() < 1.0 / validMoves.Count)
-                    {
-                        bestMove = move;
-                        bestQValue = qValue;
-                    }
-                }
-                else
-                {
-                    // Greedy selection
+                    double qValue = qValues[move];
                     if (qValue > bestQValue)
                     {
                         bestQValue = qValue;
@@ -95,6 +93,13 @@ namespace Volcano.Engine
                 bestMove = validMoves[random.Next(validMoves.Count)];
             }
 
+            // Report Q-values for all moves
+            foreach (int move in validMoves)
+            {
+                double visits = Math.Abs(qValues[move]);
+                status.Add(move, qValues[move], "", visits);
+            }
+
             status.Sort();
             Report(status);
 
@@ -103,7 +108,7 @@ namespace Volcano.Engine
 
         public void Train()
         {
-            Debug("Starting Q-Learning training for 100 episodes");
+            Debug($"Starting Deep Q-Learning training for up to {totalEpisodes} episodes with validation-based early stopping");
 
             episodeCounter = 0;
             int totalWins = 0;
@@ -112,11 +117,26 @@ namespace Volcano.Engine
             double episodeLoss = 0.0;
 
             const string CSV_FILE = "training.csv";
+            const string VALIDATION_CSV_FILE = "validation_progress.csv";
 
-            // Initialize CSV with headers
+            // Initialize training CSV with headers
             using (System.IO.StreamWriter csv = new System.IO.StreamWriter(CSV_FILE, false))
             {
                 csv.WriteLine("Episode,Loss,WinRate");
+            }
+
+            // Initialize validation CSV with headers
+            using (System.IO.StreamWriter csv = new System.IO.StreamWriter(VALIDATION_CSV_FILE, false))
+            {
+                csv.WriteLine("Episode,ValidationWinRate,BestWinRate,Patience");
+            }
+
+            // Load best network if it exists
+            if (File.Exists(BEST_NETWORK_FILE))
+            {
+                network.Load(BEST_NETWORK_FILE);
+                targetNetwork.CopyWeightsFrom(network);
+                Debug("Loaded best network from checkpoint");
             }
 
             for (int episode = 0; episode < totalEpisodes; episode++)
@@ -125,6 +145,9 @@ namespace Volcano.Engine
 
                 // Decay epsilon
                 epsilon = epsilonStart - (epsilonStart - epsilonEnd) * (episode / (double)totalEpisodes);
+
+                // Set exploration for this entire episode
+                currentGameExplore = random.NextDouble() < epsilon;
 
                 // Randomly assign learner to Player 1 or 2
                 bool learnerIsPlayerOne = random.Next(2) == 0;
@@ -155,11 +178,11 @@ namespace Volcano.Engine
                 if (replayBuffer.Count >= miniBatchSize)
                 {
                     // Run multiple minibatch updates for stability
-                    for (int i = 0; i < 4; i++)
+                    for (int i = 0; i < 8; i++)
                     {
                         episodeLoss += TrainOnMiniBatch();
                     }
-                    episodeLoss /= 4.0; // Average loss across 4 updates
+                    episodeLoss /= 8.0; // Average loss across 8 updates
                 }
 
                 // Update target network periodically
@@ -178,6 +201,44 @@ namespace Volcano.Engine
                     csv.WriteLine($"{episode + 1},{episodeLoss:F6},{winRate:F6}");
                 }
 
+                // Validation every N episodes
+                if ((episode + 1) % validationFrequency == 0)
+                {
+                    Debug($"Running validation at episode {episode + 1}...");
+                    double validationWinRate = ValidateNetwork();
+
+                    // Check if this is the best performance so far
+                    if (validationWinRate > bestValidationWinRate)
+                    {
+                        bestValidationWinRate = validationWinRate;
+                        patienceCounter = 0; // Reset patience
+
+                        // Save best network
+                        network.Save(BEST_NETWORK_FILE);
+                        Debug($"Validation win rate improved to {validationWinRate:F3}! Saving best network.");
+                    }
+                    else
+                    {
+                        patienceCounter += validationFrequency; // Increment by validation frequency
+                        Debug($"Validation win rate: {validationWinRate:F3} (no improvement). Patience: {patienceCounter}/{patienceLimit}");
+                    }
+
+                    // Log validation result
+                    using (System.IO.StreamWriter csv = new System.IO.StreamWriter(VALIDATION_CSV_FILE, true))
+                    {
+                        csv.WriteLine($"{episode + 1},{validationWinRate:F6},{bestValidationWinRate:F6},{patienceCounter}");
+                    }
+
+                    // Early stopping check
+                    if (patienceCounter >= patienceLimit)
+                    {
+                        Debug($"Early stopping triggered! No improvement for {patienceLimit} episodes. Training complete.");
+                        network.Load(BEST_NETWORK_FILE); // Load best weights before ending
+                        network.Save(NETWORK_FILE);
+                        break;
+                    }
+                }
+
                 // Save network every 10 episodes
                 if ((episode + 1) % 10 == 0)
                 {
@@ -188,7 +249,7 @@ namespace Volcano.Engine
 
             // Save network at end
             network.Save(NETWORK_FILE);
-            Debug("Training complete. Network saved to dqn.dat");
+            Debug($"Training complete. Best validation win rate: {bestValidationWinRate:F3}. Networks saved to dqn.dat and dqn_best.dat");
         }
 
         private Player PlayGame(Board board, bool learnerIsPlayerOne, bool playAgainstOpponent)
@@ -233,18 +294,19 @@ namespace Volcano.Engine
                 // Only store transition if learner made this move
                 if (isLearnerMove)
                 {
-                    double reward = 0;
+                    double reward = 0.01; // Small positive reward for each move to encourage learning
                     bool done = board.Winner != Player.Empty;
 
                     if (done)
                     {
-                        // Reward from learner's perspective
+                        // Terminal reward from learner's perspective
                         Player learnerPlayer = learnerIsPlayerOne ? Player.One : Player.Two;
                         if (board.Winner == learnerPlayer)
-                            reward = 1.0;
+                            reward = 1.0; // Win overrides intermediate reward
                         else if (board.Winner != Player.Draw)
-                            reward = -1.0;
-                        // Draw stays 0
+                            reward = -1.0; // Loss overrides intermediate reward
+                        else
+                            reward = 0.0; // Draw is neutral
                     }
 
                     replayBuffer.Add(new Transition(stateEnc, move, reward, nextStateEnc, done));
@@ -317,6 +379,53 @@ namespace Volcano.Engine
             encoded[720 + phase] = 1.0;
 
             return encoded;
+        }
+
+        private double ValidateNetwork()
+        {
+            // Play validation games against MCTS to measure current performance
+            IEngine validationOpponent = new MonteCarloTreeSearchEngine();
+            EngineCancellationToken token = new EngineCancellationToken(() => false);
+
+            int validationWins = 0;
+
+            for (int gameNum = 0; gameNum < validationGamesPerCheckpoint; gameNum++)
+            {
+                // Learner is Player.One for validation
+                Board gameBoard = new Board();
+                IEngine engineP1 = this;
+                IEngine engineP2 = validationOpponent;
+
+                // Play game without storing transitions
+                while (gameBoard.Winner == Player.Empty && gameBoard.Turn < 500)
+                {
+                    IEngine currentEngine = gameBoard.Player == Player.One ? engineP1 : engineP2;
+
+                    SearchResult searchResult = currentEngine.GetBestMove(gameBoard, 1, token);
+                    int move = searchResult.BestMove;
+
+                    // Validate move
+                    if (move < 0 || move >= 80)
+                    {
+                        List<int> validMoves = gameBoard.GetMoves();
+                        if (validMoves.Count > 0)
+                            move = validMoves[random.Next(validMoves.Count)];
+                        else
+                            break;
+                    }
+
+                    gameBoard.MakeMove(move);
+                }
+
+                // Check if learner (Player.One) won
+                if (gameBoard.Winner == Player.One)
+                {
+                    validationWins++;
+                }
+            }
+
+            double validationWinRate = validationWins / (double)validationGamesPerCheckpoint;
+            return validationWinRate;
         }
 
         private void Debug(string status)
