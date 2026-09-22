@@ -10,13 +10,16 @@ namespace Volcano.Engine.Neural
         public double[] NextState { get; set; }
         public bool Done { get; set; }
 
-        public Transition(double[] state, int action, double reward, double[] nextState, bool done)
+        public bool PlayerSwap { get; set; }
+
+        public Transition(double[] state, int action, double reward, double[] nextState, bool done, bool playerSwap)
         {
             State = state;
             Action = action;
             Reward = reward;
             NextState = nextState;
             Done = done;
+            PlayerSwap = playerSwap;
         }
     }
 }

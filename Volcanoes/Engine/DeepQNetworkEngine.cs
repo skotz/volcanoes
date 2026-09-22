@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Volcano.Engine.Neural;
 using Volcano.Game;
@@ -23,11 +22,11 @@ namespace Volcano.Engine
         private double epsilon;
         private double epsilonStart = 1.0;
         private double epsilonEnd = 0.1;
-        private int totalEpisodes = 5000; // Increased from 100 for longer training window
+        private int totalEpisodes = 50000; // Increased from 100 for longer training window
 
         private double gamma = 0.99; // discount factor
         private double learningRate = 0.0001; // Increased for faster learning with gradient clipping
-        private int miniBatchSize = 32;
+        private int miniBatchSize = 128;
 
         private int episodeCounter = 0;
         private int targetUpdateFrequency = 10; // Update target network every 10 episodes
@@ -43,12 +42,15 @@ namespace Volcano.Engine
         private int patienceCounter = 0;
         private int patienceLimit = 200; // Stop if no improvement for 200 episodes
 
+        private int replayBufferSize = 50000;
+        private int replayBufferMinCount = 5000;
+
         public DeepQNetworkEngine()
         {
             random = new Random();
             network = new NeuralNetwork(learningRate);
             targetNetwork = new NeuralNetwork(learningRate);
-            replayBuffer = new ReplayBuffer(5000);
+            replayBuffer = new ReplayBuffer(replayBufferSize);
 
             // Initialize target network with same weights
             targetNetwork.CopyWeightsFrom(network);
@@ -63,7 +65,8 @@ namespace Volcano.Engine
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
-            double[] qValues = network.Forward(EncodeState(state));
+            bool isPlayer2 = state.Player == Player.Two;
+            double[] qValues = network.Forward(EncodeState(state, isPlayer2));
             List<int> validMoves = state.GetMoves();
 
             int bestMove = -1;
@@ -99,8 +102,7 @@ namespace Volcano.Engine
             // Report Q-values for all moves
             foreach (int move in validMoves)
             {
-                double visits = Math.Abs(qValues[move]);
-                status.Add(move, qValues[move], "", visits);
+                status.Add(move, qValues[move], "", qValues[move]);
             }
 
             status.Sort();
@@ -192,7 +194,7 @@ namespace Volcano.Engine
 
                 // Train on mini-batches after collecting 5 games
                 episodeLoss = 0.0;
-                if (replayBuffer.Count >= miniBatchSize)
+                if (replayBuffer.Count >= miniBatchSize && replayBuffer.Count >= replayBufferMinCount)
                 {
                     // Run multiple minibatch updates for stability
                     for (int i = 0; i < 8; i++)
@@ -219,7 +221,7 @@ namespace Volcano.Engine
                 }
 
                 // Validation every N batches (~N*5 games)
-                if ((batch + 1) % (validationFrequency / 5) == 0)
+                if ((batch + 1) % (validationFrequency / 5) == 0 && replayBuffer.Count >= replayBufferMinCount)
                 {
                     Debug($"Running validation at batch {batch + 1}...");
                     double validationWinRate = ValidateNetwork();
@@ -291,10 +293,11 @@ namespace Volcano.Engine
             {
                 // Determine current engine
                 IEngine currentEngine = board.Player == Player.One ? engineP1 : engineP2;
-                bool isLearnerMove = (board.Player == Player.One) == learnerIsPlayerOne;
+                bool isLearnerMove = (board.Player == Player.One && learnerIsPlayerOne) || (board.Player == Player.Two && !learnerIsPlayerOne);
 
                 // Encode state before move
-                double[] stateEnc = EncodeState(board);
+                bool isLearnerPlayer2 = !learnerIsPlayerOne;
+                double[] stateEnc = EncodeState(board, isLearnerPlayer2);
 
                 // Get best move from current engine
                 SearchResult searchResult = currentEngine.GetBestMove(board, 1, token);
@@ -310,11 +313,15 @@ namespace Volcano.Engine
                         break;
                 }
 
+                var playerToMove = board.Player;
+
                 // Make the move
                 board.MakeMove(move);
 
+                var playerSwap = board.Player != playerToMove;
+
                 // Encode state after move
-                double[] nextStateEnc = EncodeState(board);
+                double[] nextStateEnc = EncodeState(board, playerSwap ? learnerIsPlayerOne : isLearnerPlayer2 );
 
                 // Only store transition if learner made this move
                 if (isLearnerMove)
@@ -334,7 +341,7 @@ namespace Volcano.Engine
                             reward = 0.0; // Draw is neutral
                     }
 
-                    replayBuffer.Add(new Transition(stateEnc, move, reward, nextStateEnc, done));
+                    replayBuffer.Add(new Transition(stateEnc, move, reward, nextStateEnc, done, playerSwap));
                 }
             }
 
@@ -354,10 +361,12 @@ namespace Volcano.Engine
 
             foreach (Transition transition in batch)
             {
+                var isOpponent = transition.PlayerSwap ? -1 : 1;
+
                 // Use target network for stable Q-value estimation
                 double[] nextQValues = targetNetwork.Forward(transition.NextState);
                 double maxNextQ = nextQValues.Max();
-                double targetQ = transition.Done ? transition.Reward : transition.Reward + gamma * maxNextQ;
+                double targetQ = transition.Done ? transition.Reward : transition.Reward + gamma * maxNextQ * isOpponent;
 
                 // Forward pass
                 double[] qValues = network.Forward(transition.State);
@@ -378,7 +387,7 @@ namespace Volcano.Engine
             return totalLoss / miniBatchSize;
         }
 
-        private double[] EncodeState(Board board)
+        private double[] EncodeState(Board board, bool invertForPlayer2 = false)
         {
             double[] encoded = new double[726]; // 80 tiles * 9 + 6 phases
 
@@ -387,14 +396,21 @@ namespace Volcano.Engine
             for (int i = 0; i < 80; i++)
             {
                 int tileValue = board.Tiles[i];
+
+                // Invert perspective if player is Player 2
+                if (invertForPlayer2)
+                {
+                    tileValue = -tileValue;  // Now Player 2's pieces are positive
+                }
+
                 int oneHotIndex = 0;
 
                 if (tileValue == 0)
                     oneHotIndex = 0;
                 else if (tileValue < 0)
-                    oneHotIndex = 5 + tileValue; // -4 -> 1, -3 -> 2, -2 -> 3, -1 -> 4
+                    oneHotIndex = 5 + tileValue; // -4 → 1, -3 → 2, -2 → 3, -1 → 4
                 else
-                    oneHotIndex = 4 + tileValue; // +1 -> 5, +2 -> 6, +3 -> 7, +4 -> 8
+                    oneHotIndex = 4 + tileValue; // +1 → 5, +2 → 6, +3 → 7, +4 → 8
 
                 encoded[i * 9 + oneHotIndex] = 1.0;
             }

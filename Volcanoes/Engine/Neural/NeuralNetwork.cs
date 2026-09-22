@@ -1,3 +1,4 @@
+using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 
@@ -7,13 +8,13 @@ namespace Volcano.Engine.Neural
     {
         private Random random = new Random();
 
-        // Layer 1: 726 → 256
+        // Layer 1: 726 → 128
         private double[,] w1;
         private double[] b1;
         private double[,] w1_grad;
         private double[] b1_grad;
 
-        // Layer 2: 256 → 80
+        // Layer 2: 128 → 80
         private double[,] w2;
         private double[] b2;
         private double[,] w2_grad;
@@ -37,17 +38,17 @@ namespace Volcano.Engine.Neural
         private void InitializeWeights()
         {
             // He initialization for ReLU
-            HeInit(out w1, out b1, 726, 256);
-            HeInit(out w2, out b2, 256, 80);
+            HeInit(out w1, out b1, 726, 128);
+            HeInit(out w2, out b2, 128, 80);
 
-            w1_grad = new double[726, 256];
-            b1_grad = new double[256];
-            w2_grad = new double[256, 80];
+            w1_grad = new double[726, 128];
+            b1_grad = new double[128];
+            w2_grad = new double[128, 80];
             b2_grad = new double[80];
 
             a0 = new double[726];
-            z1 = new double[256];
-            a1 = new double[256];
+            z1 = new double[128];
+            a1 = new double[128];
             z2 = new double[80];
         }
 
@@ -83,11 +84,11 @@ namespace Volcano.Engine.Neural
         {
             Array.Copy(input, a0, Math.Min(input.Length, a0.Length));
 
-            // Layer 1: 726 → 256 (ReLU)
+            // Layer 1: 726 → 128 (ReLU)
             MatrixVectorMultiply(a0, w1, b1, z1);
             ApplyReLU(z1, a1);
 
-            // Layer 2: 256 → 80 (Linear output)
+            // Layer 2: 128 → 80 (Linear output)
             MatrixVectorMultiply(a1, w2, b2, z2);
 
             double[] output = new double[80];
@@ -104,7 +105,7 @@ namespace Volcano.Engine.Neural
             Array.Clear(w2_grad, 0, w2_grad.Length);
             Array.Clear(b2_grad, 0, b2_grad.Length);
 
-            for (int i = 0; i < 256; i++)
+            for (int i = 0; i < 128; i++)
             {
                 for (int j = 0; j < 80; j++)
                 {
@@ -118,8 +119,8 @@ namespace Volcano.Engine.Neural
             }
 
             // Backprop to layer 1
-            double[] da1 = new double[256];
-            for (int i = 0; i < 256; i++)
+            double[] da1 = new double[128];
+            for (int i = 0; i < 128; i++)
             {
                 da1[i] = 0.0;
                 for (int j = 0; j < 80; j++)
@@ -129,8 +130,8 @@ namespace Volcano.Engine.Neural
             }
 
             // ReLU derivative
-            double[] dz1 = new double[256];
-            for (int i = 0; i < 256; i++)
+            double[] dz1 = new double[128];
+            for (int i = 0; i < 128; i++)
             {
                 dz1[i] = z1[i] > 0 ? da1[i] : 0.0;
             }
@@ -141,13 +142,13 @@ namespace Volcano.Engine.Neural
 
             for (int i = 0; i < 726; i++)
             {
-                for (int j = 0; j < 256; j++)
+                for (int j = 0; j < 128; j++)
                 {
                     w1_grad[i, j] = a0[i] * dz1[j];
                 }
             }
 
-            for (int j = 0; j < 256; j++)
+            for (int j = 0; j < 128; j++)
             {
                 b1_grad[j] = dz1[j];
             }
@@ -199,7 +200,8 @@ namespace Volcano.Engine.Neural
         {
             for (int i = 0; i < input.Length; i++)
             {
-                output[i] = Math.Max(0.0, input[i]);
+                // leaky relu
+                output[i] = Math.Max(0.1 * input[i], input[i]); // Math.Max(0.0, input[i]);
             }
         }
 
