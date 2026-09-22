@@ -93,9 +93,9 @@
     <Compile Include="Engine\LongestPathEngine.cs" />
     <Compile Include="Engine\DeepBeelineEngine.cs" />
     <Compile Include="Engine\MiniMaxAlphaBetaEngine.cs" />
-    <Compile Include="Engine\Neural\NeuralNetwork.cs" />
-    <Compile Include="Engine\Neural\ReplayBuffer.cs" />
-    <Compile Include="Engine\Neural\Transition.cs" />
+    <Compile Include="Neural\NeuralNetwork.cs" />
+    <Compile Include="Neural\ReplayBuffer.cs" />
+    <Compile Include="Neural\Transition.cs" />
     <Compile Include="Engine\OpeningBook.cs" />
     <Compile Include="Engine\DeepQNetworkEngine.cs" />
     <Compile Include="Engine\TournamentType.cs" />

@@ -463,8 +463,8 @@ namespace Volcano.Engine
 
         private double ValidateNetwork()
         {
-            Debug("VALIDATION DISABLED");
-            return 0;
+            //Debug("VALIDATION DISABLED");
+            //return 0;
 
             int validationWins = 0;
 
@@ -478,7 +478,7 @@ namespace Volcano.Engine
                 // Learner is Player.One for validation
                 Board gameBoard = new Board();
                 IEngine test = this;
-                IEngine enemy = new MonteCarloTreeSearchEngine();
+                IEngine enemy = new RandomEngine(); // TODO: new MonteCarloTreeSearchEngine();
                 IEngine engineP1 = playAsP1 ? test : enemy;
                 IEngine engineP2 = playAsP1 ? enemy : test;
 
