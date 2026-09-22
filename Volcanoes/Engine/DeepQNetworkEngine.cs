@@ -35,7 +35,7 @@ namespace Volcano.Engine
 
         // Validation-based early stopping
         private int validationFrequency = 50; // Validate every 50 episodes
-        private int validationGamesPerCheckpoint = 5; // Play 5 games per validation
+        private int validationGamesPerCheckpoint = 10; // Play 10 games per validation
         private double bestValidationWinRate = -1.0;
         private int patienceCounter = 0;
         private int patienceLimit = 200; // Stop if no improvement for 200 episodes
@@ -116,7 +116,7 @@ namespace Volcano.Engine
             int totalDraws = 0;
             double episodeLoss = 0.0;
 
-            const string CSV_FILE = "training.csv";
+            const string CSV_FILE = "training_progress.csv";
             const string VALIDATION_CSV_FILE = "validation_progress.csv";
 
             // Initialize training CSV with headers
@@ -139,41 +139,48 @@ namespace Volcano.Engine
                 Debug("Loaded best network from checkpoint");
             }
 
-            for (int episode = 0; episode < totalEpisodes; episode++)
+            for (int batch = 0; batch < totalEpisodes; batch++)
             {
-                episodeCounter = episode;
+                // Collect 5 games per batch
+                const int gamesPerBatch = 5;
 
-                // Decay epsilon
-                epsilon = epsilonStart - (epsilonStart - epsilonEnd) * (episode / (double)totalEpisodes);
-
-                // Set exploration for this entire episode
-                currentGameExplore = random.NextDouble() < epsilon;
-
-                // Randomly assign learner to Player 1 or 2
-                bool learnerIsPlayerOne = random.Next(2) == 0;
-
-                // Decide if we play against opponent or random
-                bool playAgainstOpponent = (episode % 10 == 0 && episode > 0);
-
-                Board gameBoard = new Board();
-                Player winner = PlayGame(gameBoard, learnerIsPlayerOne, playAgainstOpponent);
-
-                // Track wins/losses from learner's perspective
-                Player learnerPlayer = learnerIsPlayerOne ? Player.One : Player.Two;
-                if (winner == learnerPlayer)
+                for (int gameInBatch = 0; gameInBatch < gamesPerBatch; gameInBatch++)
                 {
-                    totalWins++;
-                }
-                else if (winner != Player.Draw)
-                {
-                    totalLosses++;
-                }
-                else
-                {
-                    totalDraws++;
+                    episodeCounter = batch * gamesPerBatch + gameInBatch;
+
+                    // Decay epsilon based on total games played
+                    int totalGamesPlayed = episodeCounter;
+                    epsilon = epsilonStart - (epsilonStart - epsilonEnd) * (totalGamesPlayed / (double)(totalEpisodes * gamesPerBatch));
+
+                    // Set exploration for this entire game
+                    currentGameExplore = random.NextDouble() < epsilon;
+
+                    // Randomly assign learner to Player 1 or 2
+                    bool learnerIsPlayerOne = random.Next(2) == 0;
+
+                    // Decide if we play against opponent or random
+                    bool playAgainstOpponent = (episodeCounter % 10 == 0 && episodeCounter > 0);
+
+                    Board gameBoard = new Board();
+                    Player winner = PlayGame(gameBoard, learnerIsPlayerOne, playAgainstOpponent);
+
+                    // Track wins/losses from learner's perspective
+                    Player learnerPlayer = learnerIsPlayerOne ? Player.One : Player.Two;
+                    if (winner == learnerPlayer)
+                    {
+                        totalWins++;
+                    }
+                    else if (winner != Player.Draw)
+                    {
+                        totalLosses++;
+                    }
+                    else
+                    {
+                        totalDraws++;
+                    }
                 }
 
-                // Train on mini-batches and get loss
+                // Train on mini-batches after collecting 5 games
                 episodeLoss = 0.0;
                 if (replayBuffer.Count >= miniBatchSize)
                 {
@@ -186,25 +193,25 @@ namespace Volcano.Engine
                 }
 
                 // Update target network periodically
-                if ((episode + 1) % targetUpdateFrequency == 0)
+                if ((batch + 1) % targetUpdateFrequency == 0)
                 {
                     targetNetwork.CopyWeightsFrom(network);
-                    Debug($"Target network synchronized after episode {episode + 1}");
+                    Debug($"Target network synchronized after batch {batch + 1}");
                 }
 
-                double winRate = totalWins / (double)(episode + 1);
-                Debug($"Episode {episode + 1}/{totalEpisodes} | Win Rate: {winRate:F3} | Loss: {episodeLoss:F6} | Epsilon: {epsilon:F3} | Opponent: {playAgainstOpponent} | LearnerIsP1: {learnerIsPlayerOne}");
+                double winRate = totalWins / (double)(episodeCounter + 1);
+                Debug($"Batch {batch + 1} (Games {episodeCounter + 1}) | Win Rate: {winRate:F3} | Loss: {episodeLoss:F6} | Epsilon: {epsilon:F3}");
 
                 // Write to CSV
                 using (System.IO.StreamWriter csv = new System.IO.StreamWriter(CSV_FILE, true))
                 {
-                    csv.WriteLine($"{episode + 1},{episodeLoss:F6},{winRate:F6}");
+                    csv.WriteLine($"{episodeCounter + 1},{episodeLoss:F6},{winRate:F6}");
                 }
 
-                // Validation every N episodes
-                if ((episode + 1) % validationFrequency == 0)
+                // Validation every N batches (~N*5 games)
+                if ((batch + 1) % (validationFrequency / 5) == 0)
                 {
-                    Debug($"Running validation at episode {episode + 1}...");
+                    Debug($"Running validation at batch {batch + 1}...");
                     double validationWinRate = ValidateNetwork();
 
                     // Check if this is the best performance so far
@@ -219,31 +226,39 @@ namespace Volcano.Engine
                     }
                     else
                     {
-                        patienceCounter += validationFrequency; // Increment by validation frequency
-                        Debug($"Validation win rate: {validationWinRate:F3} (no improvement). Patience: {patienceCounter}/{patienceLimit}");
+                        // Only apply patience if we've seen at least one win
+                        if (bestValidationWinRate > 0.0)
+                        {
+                            patienceCounter += validationFrequency / 5;
+                            Debug($"Validation win rate: {validationWinRate:F3} (no improvement). Patience: {patienceCounter}/{patienceLimit}");
+                        }
+                        else
+                        {
+                            Debug($"Validation win rate: {validationWinRate:F3} (still searching for first win, patience disabled)");
+                        }
                     }
 
                     // Log validation result
                     using (System.IO.StreamWriter csv = new System.IO.StreamWriter(VALIDATION_CSV_FILE, true))
                     {
-                        csv.WriteLine($"{episode + 1},{validationWinRate:F6},{bestValidationWinRate:F6},{patienceCounter}");
+                        csv.WriteLine($"{episodeCounter + 1},{validationWinRate:F6},{bestValidationWinRate:F6},{patienceCounter}");
                     }
 
-                    // Early stopping check
-                    if (patienceCounter >= patienceLimit)
+                    // Early stopping check (only if we've had at least one win)
+                    if (bestValidationWinRate > 0.0 && patienceCounter >= patienceLimit)
                     {
-                        Debug($"Early stopping triggered! No improvement for {patienceLimit} episodes. Training complete.");
+                        Debug($"Early stopping triggered! No improvement for {patienceLimit} games. Training complete.");
                         network.Load(BEST_NETWORK_FILE); // Load best weights before ending
                         network.Save(NETWORK_FILE);
                         break;
                     }
                 }
 
-                // Save network every 10 episodes
-                if ((episode + 1) % 10 == 0)
+                // Save network every 10 batches (~50 games)
+                if ((batch + 1) % 10 == 0)
                 {
                     network.Save(NETWORK_FILE);
-                    Debug($"Checkpoint: Network saved after episode {episode + 1}");
+                    Debug($"Checkpoint: Network saved after batch {batch + 1}");
                 }
             }
 
