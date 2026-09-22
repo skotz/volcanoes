@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Volcano.Engine.Neural;
 using Volcano.Game;
 
@@ -24,7 +26,7 @@ namespace Volcano.Engine
         private int totalEpisodes = 5000; // Increased from 100 for longer training window
 
         private double gamma = 0.99; // discount factor
-        private double learningRate = 0.001; // Increased for faster learning with gradient clipping
+        private double learningRate = 0.0001; // Increased for faster learning with gradient clipping
         private int miniBatchSize = 32;
 
         private int episodeCounter = 0;
@@ -35,6 +37,7 @@ namespace Volcano.Engine
 
         // Validation-based early stopping
         private int validationFrequency = 50; // Validate every 50 episodes
+
         private int validationGamesPerCheckpoint = 10; // Play 10 games per validation
         private double bestValidationWinRate = -1.0;
         private int patienceCounter = 0;
@@ -120,15 +123,21 @@ namespace Volcano.Engine
             const string VALIDATION_CSV_FILE = "validation_progress.csv";
 
             // Initialize training CSV with headers
-            using (System.IO.StreamWriter csv = new System.IO.StreamWriter(CSV_FILE, false))
+            if (!File.Exists(CSV_FILE))
             {
-                csv.WriteLine("Episode,Loss,WinRate");
+                using (System.IO.StreamWriter csv = new System.IO.StreamWriter(CSV_FILE, false))
+                {
+                    csv.WriteLine("Episode,Loss,WinRate");
+                }
             }
 
             // Initialize validation CSV with headers
-            using (System.IO.StreamWriter csv = new System.IO.StreamWriter(VALIDATION_CSV_FILE, false))
+            if (!File.Exists(VALIDATION_CSV_FILE))
             {
-                csv.WriteLine("Episode,ValidationWinRate,BestWinRate,Patience");
+                using (System.IO.StreamWriter csv = new System.IO.StreamWriter(VALIDATION_CSV_FILE, false))
+                {
+                    csv.WriteLine("Episode,ValidationWinRate,BestWinRate,Patience");
+                }
             }
 
             // Load best network if it exists
@@ -159,7 +168,8 @@ namespace Volcano.Engine
                     bool learnerIsPlayerOne = random.Next(2) == 0;
 
                     // Decide if we play against opponent or random
-                    bool playAgainstOpponent = (episodeCounter % 10 == 0 && episodeCounter > 0);
+                    // TODO: enable when the bot is stronger
+                    bool playAgainstOpponent = false; // (episodeCounter % 10 == 0 && episodeCounter > 0);
 
                     Board gameBoard = new Board();
                     Player winner = PlayGame(gameBoard, learnerIsPlayerOne, playAgainstOpponent);
@@ -192,15 +202,15 @@ namespace Volcano.Engine
                     episodeLoss /= 8.0; // Average loss across 8 updates
                 }
 
+                double winRate = totalWins / (double)(episodeCounter + 1);
+                Debug($"Batch {batch + 1} (Games {episodeCounter + 1}) | Win Rate: {winRate:F3} | Loss: {episodeLoss:F6} | Epsilon: {epsilon:F3}");
+
                 // Update target network periodically
                 if ((batch + 1) % targetUpdateFrequency == 0)
                 {
                     targetNetwork.CopyWeightsFrom(network);
                     Debug($"Target network synchronized after batch {batch + 1}");
                 }
-
-                double winRate = totalWins / (double)(episodeCounter + 1);
-                Debug($"Batch {batch + 1} (Games {episodeCounter + 1}) | Win Rate: {winRate:F3} | Loss: {episodeLoss:F6} | Epsilon: {epsilon:F3}");
 
                 // Write to CSV
                 using (System.IO.StreamWriter csv = new System.IO.StreamWriter(CSV_FILE, true))
@@ -398,18 +408,21 @@ namespace Volcano.Engine
 
         private double ValidateNetwork()
         {
-            // Play validation games against MCTS to measure current performance
-            IEngine validationOpponent = new MonteCarloTreeSearchEngine();
-            EngineCancellationToken token = new EngineCancellationToken(() => false);
-
             int validationWins = 0;
 
-            for (int gameNum = 0; gameNum < validationGamesPerCheckpoint; gameNum++)
+            Parallel.For(0, validationGamesPerCheckpoint, gameNum =>
             {
+                // Play validation games against MCTS to measure current performance
+                EngineCancellationToken token = new EngineCancellationToken(() => false);
+
+                var playAsP1 = gameNum % 2 == 0;
+
                 // Learner is Player.One for validation
                 Board gameBoard = new Board();
-                IEngine engineP1 = this;
-                IEngine engineP2 = validationOpponent;
+                IEngine test = this;
+                IEngine enemy = new MonteCarloTreeSearchEngine();
+                IEngine engineP1 = playAsP1 ? test : enemy;
+                IEngine engineP2 = playAsP1 ? enemy : test;
 
                 // Play game without storing transitions
                 while (gameBoard.Winner == Player.Empty && gameBoard.Turn < 500)
@@ -433,11 +446,15 @@ namespace Volcano.Engine
                 }
 
                 // Check if learner (Player.One) won
-                if (gameBoard.Winner == Player.One)
+                if (gameBoard.Winner == Player.One && playAsP1)
                 {
                     validationWins++;
                 }
-            }
+                else if (gameBoard.Winner == Player.Two && !playAsP1)
+                {
+                    validationWins++;
+                }
+            });
 
             double validationWinRate = validationWins / (double)validationGamesPerCheckpoint;
             return validationWinRate;

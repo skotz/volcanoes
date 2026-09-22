@@ -64,6 +64,8 @@ namespace Volcano
             engines.Add("MCTS Fast Win Check", () => new MonteCarloTreeSearchEngine(true, false, true, ""));
             engines.Add("MCTS Trio", () => new MonteCarloTreeSearchEngine(true, true, true, openingBook));
 
+            engines.Add<DeepQNetworkEngine>("Deep Q-Network");
+
             //engines.Add<MonteCarloPlayoutEngine>("MCTS Playout");
             //engines.Add<MonteCarloBeelineParallelEngine>("Parallel MCTS Beeline Full");
             //engines.Add<MonteCarloBeelineParallelDeepEngine>("Parallel MCTS Beeline Sim");
