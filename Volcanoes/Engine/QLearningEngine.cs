@@ -10,6 +10,7 @@ namespace Volcano.Engine
     internal class QLearningEngine : IEngine, IStatus, ILearn
     {
         public event EventHandler<LearnStatus> OnDebug;
+
         public event EventHandler<EngineStatus> OnStatus;
 
         private NeuralNetwork network;
@@ -30,8 +31,7 @@ namespace Volcano.Engine
         private const string NETWORK_FILE = "dqn.dat";
 
         // Opponent engines for training (default to MCTS, can be configured)
-        private List<string> opponentEngineNames;
-        private EngineHelper engineHelper;
+        private List<IEngine> opponentEngines;
 
         public QLearningEngine()
         {
@@ -39,7 +39,10 @@ namespace Volcano.Engine
             network = new NeuralNetwork(learningRate);
             replayBuffer = new ReplayBuffer(5000);
 
-            opponentEngineNames = new List<string> { "MonteCarloTreeSearchEngine" };
+            opponentEngines = new List<IEngine>()
+            {
+                new MonteCarloTreeSearchEngine()
+            };
 
             // Try to load existing network
             if (File.Exists(NETWORK_FILE))
@@ -188,29 +191,9 @@ namespace Volcano.Engine
 
         private IEngine LoadOpponentEngine()
         {
-            if (opponentEngineNames.Count == 0)
-                return new RandomEngine();
-
-            string engineName = opponentEngineNames[random.Next(opponentEngineNames.Count)];
-
-            try
+            if (opponentEngines.Count > 0)
             {
-                // Try to get from EngineHelper if available
-                if (engineHelper != null)
-                {
-                    return engineHelper.GetEngine(engineName);
-                }
-
-                // Fallback: create specific engines
-                if (engineName == "MonteCarloTreeSearchEngine")
-                {
-                    // Note: You may need to instantiate this directly if not via EngineHelper
-                    return new RandomEngine(); // Fallback
-                }
-            }
-            catch
-            {
-                return new RandomEngine();
+                return opponentEngines[random.Next(opponentEngines.Count)];
             }
 
             return new RandomEngine();
