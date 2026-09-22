@@ -69,7 +69,9 @@
     <Compile Include="Engine\BeeLineEngine.cs" />
     <Compile Include="Engine\EngineStatus.cs" />
     <Compile Include="Engine\ExceptionEngine.cs" />
+    <Compile Include="Engine\ILearn.cs" />
     <Compile Include="Engine\IStatus.cs" />
+    <Compile Include="Engine\LearnResult.cs" />
     <Compile Include="Engine\MonteCarloPlayoutEngine.cs" />
     <Compile Include="Engine\MonteCarloBarricadeEngine.cs" />
     <Compile Include="Engine\MonteCarloBeelineFourEngine.cs" />
@@ -94,6 +96,7 @@
     <Compile Include="Engine\OpeningBook.cs" />
     <Compile Include="Engine\QLearningEngine.cs" />
     <Compile Include="Engine\TournamentType.cs" />
+    <Compile Include="Engine\LearnStatus.cs" />
     <Compile Include="Game\GameSettings.cs" />
     <Compile Include="Game\Move.cs" />
     <Compile Include="Game\VictoryType.cs" />
@@ -143,6 +146,12 @@
     <Compile Include="TournamentForm.Designer.cs">
       <DependentUpon>TournamentForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="TrainingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TrainingForm.Designer.cs">
+      <DependentUpon>TrainingForm.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="BookForm.resx">
       <DependentUpon>BookForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -167,6 +176,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="TournamentForm.resx">
       <DependentUpon>TournamentForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TrainingForm.resx">
+      <DependentUpon>TrainingForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

@@ -1,16 +1,10 @@
-﻿using Microsoft.Win32.SafeHandles;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Volcano.Engine;
 using Volcano.Game;
@@ -542,6 +536,8 @@ namespace Volcano
 
         private void trainQLearningToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            var trainingForm = new TrainingForm();
+            trainingForm.ShowDialog();
         }
     }
 }
