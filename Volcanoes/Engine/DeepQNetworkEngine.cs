@@ -7,7 +7,7 @@ using Volcano.Game;
 
 namespace Volcano.Engine
 {
-    internal class DeepQNetwork : IEngine, IStatus, ILearn
+    internal class DeepQNetworkEngine : IEngine, IStatus, ILearn
     {
         public event EventHandler<LearnStatus> OnDebug;
 
@@ -30,7 +30,7 @@ namespace Volcano.Engine
         private int trainingGamesMask = 0; // bitmask to track play against opponents
         private const string NETWORK_FILE = "dqn.dat";
 
-        public DeepQNetwork()
+        public DeepQNetworkEngine()
         {
             random = new Random();
             network = new NeuralNetwork(learningRate);
@@ -111,22 +111,26 @@ namespace Volcano.Engine
                 // Decay epsilon
                 epsilon = epsilonStart - (epsilonStart - epsilonEnd) * (episode / (double)totalEpisodes);
 
-                // Decide if we play against opponent or self/random
+                // Randomly assign learner to Player 1 or 2
+                bool learnerIsPlayerOne = random.Next(2) == 0;
+
+                // Decide if we play against opponent or random
                 bool playAgainstOpponent = (episode % 10 == 0 && episode > 0);
 
-                VolcanoGame game = new VolcanoGame();
-                Player winner = PlayGame(game, playAgainstOpponent);
+                Board gameBoard = new Board();
+                Player winner = PlayGame(gameBoard, learnerIsPlayerOne, playAgainstOpponent);
 
-                // Collect outcome
-                if (winner == Player.One)
+                // Track wins/losses from learner's perspective
+                Player learnerPlayer = learnerIsPlayerOne ? Player.One : Player.Two;
+                if (winner == learnerPlayer)
                 {
                     totalWins++;
                 }
-                else if (winner == Player.Two)
+                else if (winner != Player.Draw)
                 {
                     totalLosses++;
                 }
-                else if (winner == Player.Draw)
+                else
                 {
                     totalDraws++;
                 }
@@ -138,7 +142,7 @@ namespace Volcano.Engine
                 }
 
                 double winRate = totalWins / (double)(episode + 1);
-                Debug($"Episode {episode + 1}/100 | Win Rate: {winRate:F3} | Epsilon: {epsilon:F3} | Opponent: {playAgainstOpponent}");
+                Debug($"Episode {episode + 1}/100 | Win Rate: {winRate:F3} | Epsilon: {epsilon:F3} | Opponent: {playAgainstOpponent} | LearnerIsP1: {learnerIsPlayerOne}");
             }
 
             // Save network
@@ -146,49 +150,67 @@ namespace Volcano.Engine
             Debug("Training complete. Network saved to dqn.dat");
         }
 
-        private Player PlayGame(VolcanoGame game, bool playAgainstOpponent)
+        private Player PlayGame(Board board, bool learnerIsPlayerOne, bool playAgainstOpponent)
         {
-            IEngine opponent = playAgainstOpponent ? LoadOpponentEngine() : new RandomEngine();
+            IEngine opponentEngine = playAgainstOpponent ? LoadOpponentEngine() : new RandomEngine();
+            EngineCancellationToken token = new EngineCancellationToken(() => false);
 
-            game.RegisterEngine(Player.One, this, true);
-            game.RegisterEngine(Player.Two, opponent, true);
-            game.SecondsPerEngineMove = 1;
-            game.StartNewGame();
+            // Assign engines based on learner's player role
+            IEngine engineP1 = learnerIsPlayerOne ? this : opponentEngine;
+            IEngine engineP2 = learnerIsPlayerOne ? opponentEngine : this;
 
-            // Play game to completion
-            while (game.CurrentState.Winner == Player.Empty && game.CurrentState.Turn < 500)
+            // Play game step by step
+            while (board.Winner == Player.Empty && board.Turn < 500)
             {
-                // Store transition before move
-                Board stateBefore = new Board(game.CurrentState);
-                double[] stateEnc = EncodeState(stateBefore);
+                // Determine current engine
+                IEngine currentEngine = board.Player == Player.One ? engineP1 : engineP2;
+                bool isLearnerMove = (board.Player == Player.One) == learnerIsPlayerOne;
 
-                game.ComputerPlay();
+                // Encode state before move
+                double[] stateEnc = EncodeState(board);
 
-                Board stateAfter = new Board(game.CurrentState);
-                double[] nextStateEnc = EncodeState(stateAfter);
+                // Get best move from current engine
+                SearchResult searchResult = currentEngine.GetBestMove(board, 1, token);
+                int move = searchResult.BestMove;
 
-                // Determine reward and action
-                // Note: This is simplified; tracking which move led to which state is complex
-                // For now, we reward only at game end
-                if (game.CurrentState.Winner != Player.Empty)
+                // Validate move
+                if (move < 0 || move >= 80)
+                {
+                    List<int> validMoves = board.GetMoves();
+                    if (validMoves.Count > 0)
+                        move = validMoves[random.Next(validMoves.Count)];
+                    else
+                        break;
+                }
+
+                // Make the move
+                board.MakeMove(move);
+
+                // Encode state after move
+                double[] nextStateEnc = EncodeState(board);
+
+                // Only store transition if learner made this move
+                if (isLearnerMove)
                 {
                     double reward = 0;
-                    if (game.CurrentState.Winner == Player.One)
+                    bool done = board.Winner != Player.Empty;
+
+                    if (done)
                     {
-                        reward = 1.0;
-                    }
-                    else if (game.CurrentState.Winner == Player.Two)
-                    {
-                        reward = -1.0;
+                        // Reward from learner's perspective
+                        Player learnerPlayer = learnerIsPlayerOne ? Player.One : Player.Two;
+                        if (board.Winner == learnerPlayer)
+                            reward = 1.0;
+                        else if (board.Winner != Player.Draw)
+                            reward = -1.0;
+                        // Draw stays 0
                     }
 
-                    // Store final transition (approximation)
-                    replayBuffer.Add(new Transition(stateEnc, 0, reward, nextStateEnc, true));
-                    break;
+                    replayBuffer.Add(new Transition(stateEnc, move, reward, nextStateEnc, done));
                 }
             }
 
-            return game.CurrentState.Winner;
+            return board.Winner;
         }
 
         private IEngine LoadOpponentEngine()
