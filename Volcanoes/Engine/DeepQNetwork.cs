@@ -7,7 +7,7 @@ using Volcano.Game;
 
 namespace Volcano.Engine
 {
-    internal class QLearningEngine : IEngine, IStatus, ILearn
+    internal class DeepQNetwork : IEngine, IStatus, ILearn
     {
         public event EventHandler<LearnStatus> OnDebug;
 
@@ -30,19 +30,11 @@ namespace Volcano.Engine
         private int trainingGamesMask = 0; // bitmask to track play against opponents
         private const string NETWORK_FILE = "dqn.dat";
 
-        // Opponent engines for training (default to MCTS, can be configured)
-        private List<IEngine> opponentEngines;
-
-        public QLearningEngine()
+        public DeepQNetwork()
         {
             random = new Random();
             network = new NeuralNetwork(learningRate);
             replayBuffer = new ReplayBuffer(5000);
-
-            opponentEngines = new List<IEngine>()
-            {
-                new MonteCarloTreeSearchEngine()
-            };
 
             // Try to load existing network
             if (File.Exists(NETWORK_FILE))
@@ -127,11 +119,17 @@ namespace Volcano.Engine
 
                 // Collect outcome
                 if (winner == Player.One)
+                {
                     totalWins++;
+                }
                 else if (winner == Player.Two)
+                {
                     totalLosses++;
+                }
                 else if (winner == Player.Draw)
+                {
                     totalDraws++;
+                }
 
                 // Train on mini-batches
                 if (replayBuffer.Count >= miniBatchSize)
@@ -176,9 +174,13 @@ namespace Volcano.Engine
                 {
                     double reward = 0;
                     if (game.CurrentState.Winner == Player.One)
+                    {
                         reward = 1.0;
+                    }
                     else if (game.CurrentState.Winner == Player.Two)
+                    {
                         reward = -1.0;
+                    }
 
                     // Store final transition (approximation)
                     replayBuffer.Add(new Transition(stateEnc, 0, reward, nextStateEnc, true));
@@ -191,12 +193,8 @@ namespace Volcano.Engine
 
         private IEngine LoadOpponentEngine()
         {
-            if (opponentEngines.Count > 0)
-            {
-                return opponentEngines[random.Next(opponentEngines.Count)];
-            }
-
-            return new RandomEngine();
+            // hardcoded to just mcts for now
+            return new MonteCarloTreeSearchEngine();
         }
 
         private void TrainOnMiniBatch()

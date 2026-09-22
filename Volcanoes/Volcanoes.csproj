@@ -97,7 +97,7 @@
     <Compile Include="Engine\Neural\ReplayBuffer.cs" />
     <Compile Include="Engine\Neural\Transition.cs" />
     <Compile Include="Engine\OpeningBook.cs" />
-    <Compile Include="Engine\QLearningEngine.cs" />
+    <Compile Include="Engine\DeepQNetwork.cs" />
     <Compile Include="Engine\TournamentType.cs" />
     <Compile Include="Engine\LearnStatus.cs" />
     <Compile Include="Game\GameSettings.cs" />

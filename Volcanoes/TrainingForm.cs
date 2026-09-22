@@ -14,7 +14,7 @@ namespace Volcano
         {
             InitializeComponent();
 
-            _engine = new QLearningEngine();
+            _engine = new DeepQNetwork();
             _engine.OnDebug += engineToTrain_OnDebug;
 
             _worker = new BackgroundWorker();
