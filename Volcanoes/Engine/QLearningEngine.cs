@@ -1,29 +1,31 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Volcano.Game;
 
 namespace Volcano.Engine
 {
-    internal class QLearningEngine : IEngine, ILearn
+    internal class QLearningEngine : IEngine, IStatus, ILearn
     {
-        public event EventHandler<LearnStatus> OnStatus;
+        public event EventHandler<LearnStatus> OnDebug;
 
-        public event EventHandler<LearnResult> OnComplete;
+        public event EventHandler<EngineStatus> OnStatus;
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
             throw new NotImplementedException();
         }
 
+        private void Debug(string status)
+        {
+            OnDebug?.Invoke(this, new LearnStatus(status));
+        }
+        private void Report(EngineStatus status)
+        {
+            OnStatus?.Invoke(this, status);
+        }
+
         public void Train()
         {
-            OnStatus.Invoke(this, new LearnStatus("Starting"));
-            Thread.Sleep(5000);
-            OnStatus.Invoke(this, new LearnStatus("Blah"));
+            Debug("Starting");
         }
     }
 }

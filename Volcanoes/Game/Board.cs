@@ -531,6 +531,7 @@ namespace Volcano.Game
 
         public long GetHash()
         {
+            // TODO: I think this needs to include turn number, or at least player to move, or position on the turn clock
             long hash = 0;
 
             for (int i = 0; i < 80; i++)

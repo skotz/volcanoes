@@ -15,7 +15,7 @@ namespace Volcano
             InitializeComponent();
 
             _engine = new QLearningEngine();
-            _engine.OnStatus += engineToTrain_OnStatus;
+            _engine.OnDebug += engineToTrain_OnDebug;
 
             _worker = new BackgroundWorker();
             _worker.WorkerReportsProgress = true;
@@ -43,7 +43,7 @@ namespace Volcano
             _engine.Train();
         }
 
-        private void engineToTrain_OnStatus(object sender, LearnStatus e)
+        private void engineToTrain_OnDebug(object sender, LearnStatus e)
         {
             _worker.ReportProgress(0, e);
         }
