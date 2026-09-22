@@ -14,32 +14,38 @@ namespace Volcano.Engine
         public event EventHandler<EngineStatus> OnStatus;
 
         private NeuralNetwork network;
+        private NeuralNetwork targetNetwork; // Target network for stable Q-value estimation
         private ReplayBuffer replayBuffer;
         private Random random;
 
         private double epsilon;
         private double epsilonStart = 1.0;
         private double epsilonEnd = 0.1;
-        private int totalEpisodes = 100000;
+        private int totalEpisodes = 100;
 
         private double gamma = 0.99; // discount factor
-        private double learningRate = 0.001;
+        private double learningRate = 0.00001; // Reduced from 0.001
         private int miniBatchSize = 32;
 
         private int episodeCounter = 0;
-        private int trainingGamesMask = 0; // bitmask to track play against opponents
+        private int targetUpdateFrequency = 10; // Update target network every 10 episodes
         private const string NETWORK_FILE = "dqn.dat";
 
         public DeepQNetworkEngine()
         {
             random = new Random();
             network = new NeuralNetwork(learningRate);
+            targetNetwork = new NeuralNetwork(learningRate);
             replayBuffer = new ReplayBuffer(5000);
+
+            // Initialize target network with same weights
+            targetNetwork.CopyWeightsFrom(network);
 
             // Try to load existing network
             if (File.Exists(NETWORK_FILE))
             {
                 network.Load(NETWORK_FILE);
+                targetNetwork.CopyWeightsFrom(network);
             }
         }
 
@@ -148,11 +154,23 @@ namespace Volcano.Engine
                 episodeLoss = 0.0;
                 if (replayBuffer.Count >= miniBatchSize)
                 {
-                    episodeLoss = TrainOnMiniBatch();
+                    // Run multiple minibatch updates for stability
+                    for (int i = 0; i < 4; i++)
+                    {
+                        episodeLoss += TrainOnMiniBatch();
+                    }
+                    episodeLoss /= 4.0; // Average loss across 4 updates
+                }
+
+                // Update target network periodically
+                if ((episode + 1) % targetUpdateFrequency == 0)
+                {
+                    targetNetwork.CopyWeightsFrom(network);
+                    Debug($"Target network synchronized after episode {episode + 1}");
                 }
 
                 double winRate = totalWins / (double)(episode + 1);
-                Debug($"Episode {episode + 1}/100 | Win Rate: {winRate:F3} | Loss: {episodeLoss:F6} | Epsilon: {epsilon:F3} | Opponent: {playAgainstOpponent} | LearnerIsP1: {learnerIsPlayerOne}");
+                Debug($"Episode {episode + 1}/{totalEpisodes} | Win Rate: {winRate:F3} | Loss: {episodeLoss:F6} | Epsilon: {epsilon:F3} | Opponent: {playAgainstOpponent} | LearnerIsP1: {learnerIsPlayerOne}");
 
                 // Write to CSV
                 using (System.IO.StreamWriter csv = new System.IO.StreamWriter(CSV_FILE, true))
@@ -249,8 +267,8 @@ namespace Volcano.Engine
 
             foreach (Transition transition in batch)
             {
-                // Compute target Q-value
-                double[] nextQValues = network.Forward(transition.NextState);
+                // Use target network for stable Q-value estimation
+                double[] nextQValues = targetNetwork.Forward(transition.NextState);
                 double maxNextQ = nextQValues.Max();
                 double targetQ = transition.Done ? transition.Reward : transition.Reward + gamma * maxNextQ;
 

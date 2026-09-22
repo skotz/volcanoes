@@ -211,20 +211,26 @@ namespace Volcano.Engine.Neural
         private void UpdateWeights(double[,] w, double[,] w_grad, double[] b, double[] b_grad, double learningRateScale)
         {
             double effectiveRate = learningRate * learningRateScale;
+            const double GRAD_CLIP = 1.0; // Clip gradients to [-1.0, 1.0]
 
             for (int i = 0; i < w.GetLength(0); i++)
             {
                 for (int j = 0; j < w.GetLength(1); j++)
                 {
+                    // Gradient clipping
+                    double clippedGrad = Math.Max(-GRAD_CLIP, Math.Min(GRAD_CLIP, w_grad[i, j]));
+
                     // L2 regularization gradient
                     double l2Grad = 2 * L2_REGULARIZATION * w[i, j];
-                    w[i, j] -= effectiveRate * (w_grad[i, j] + l2Grad);
+                    w[i, j] -= effectiveRate * (clippedGrad + l2Grad);
                 }
             }
 
             for (int j = 0; j < b.Length; j++)
             {
-                b[j] -= effectiveRate * b_grad[j];
+                // Gradient clipping for biases
+                double clippedGrad = Math.Max(-GRAD_CLIP, Math.Min(GRAD_CLIP, b_grad[j]));
+                b[j] -= effectiveRate * clippedGrad;
             }
         }
 
@@ -329,6 +335,17 @@ namespace Volcano.Engine.Neural
                     matrix[i, j] = reader.ReadDouble();
                 }
             }
+        }
+
+        public void CopyWeightsFrom(NeuralNetwork other)
+        {
+            // Copy weights and biases from other network
+            Array.Copy(other.w1, this.w1, other.w1.Length);
+            Array.Copy(other.b1, this.b1, other.b1.Length);
+            Array.Copy(other.w2, this.w2, other.w2.Length);
+            Array.Copy(other.b2, this.b2, other.b2.Length);
+            Array.Copy(other.w3, this.w3, other.w3.Length);
+            Array.Copy(other.b3, this.b3, other.b3.Length);
         }
 
         private void SaveArray(BinaryWriter writer, double[] array)
