@@ -20,7 +20,7 @@ namespace Volcano.Engine
         private double epsilon;
         private double epsilonStart = 1.0;
         private double epsilonEnd = 0.1;
-        private int totalEpisodes = 100;
+        private int totalEpisodes = 100000;
 
         private double gamma = 0.99; // discount factor
         private double learningRate = 0.001;
@@ -103,6 +103,15 @@ namespace Volcano.Engine
             int totalWins = 0;
             int totalLosses = 0;
             int totalDraws = 0;
+            double episodeLoss = 0.0;
+
+            const string CSV_FILE = "training.csv";
+
+            // Initialize CSV with headers
+            using (System.IO.StreamWriter csv = new System.IO.StreamWriter(CSV_FILE, false))
+            {
+                csv.WriteLine("Episode,Loss,WinRate");
+            }
 
             for (int episode = 0; episode < totalEpisodes; episode++)
             {
@@ -135,17 +144,31 @@ namespace Volcano.Engine
                     totalDraws++;
                 }
 
-                // Train on mini-batches
+                // Train on mini-batches and get loss
+                episodeLoss = 0.0;
                 if (replayBuffer.Count >= miniBatchSize)
                 {
-                    TrainOnMiniBatch();
+                    episodeLoss = TrainOnMiniBatch();
                 }
 
                 double winRate = totalWins / (double)(episode + 1);
-                Debug($"Episode {episode + 1}/100 | Win Rate: {winRate:F3} | Epsilon: {epsilon:F3} | Opponent: {playAgainstOpponent} | LearnerIsP1: {learnerIsPlayerOne}");
+                Debug($"Episode {episode + 1}/100 | Win Rate: {winRate:F3} | Loss: {episodeLoss:F6} | Epsilon: {epsilon:F3} | Opponent: {playAgainstOpponent} | LearnerIsP1: {learnerIsPlayerOne}");
+
+                // Write to CSV
+                using (System.IO.StreamWriter csv = new System.IO.StreamWriter(CSV_FILE, true))
+                {
+                    csv.WriteLine($"{episode + 1},{episodeLoss:F6},{winRate:F6}");
+                }
+
+                // Save network every 10 episodes
+                if ((episode + 1) % 10 == 0)
+                {
+                    network.Save(NETWORK_FILE);
+                    Debug($"Checkpoint: Network saved after episode {episode + 1}");
+                }
             }
 
-            // Save network
+            // Save network at end
             network.Save(NETWORK_FILE);
             Debug("Training complete. Network saved to dqn.dat");
         }
@@ -219,9 +242,10 @@ namespace Volcano.Engine
             return new MonteCarloTreeSearchEngine();
         }
 
-        private void TrainOnMiniBatch()
+        private double TrainOnMiniBatch()
         {
             List<Transition> batch = replayBuffer.SampleMiniBatch(miniBatchSize);
+            double totalLoss = 0.0;
 
             foreach (Transition transition in batch)
             {
@@ -234,13 +258,19 @@ namespace Volcano.Engine
                 double[] qValues = network.Forward(transition.State);
                 double currentQ = qValues[transition.Action];
 
-                // Compute loss gradient (Bellman error)
+                // Compute loss (Bellman error squared)
+                double bellmanError = currentQ - targetQ;
+                totalLoss += bellmanError * bellmanError;
+
+                // Compute loss gradient
                 double[] lossGradient = new double[80];
-                lossGradient[transition.Action] = currentQ - targetQ;
+                lossGradient[transition.Action] = bellmanError;
 
                 // Backward pass
                 network.Backward(lossGradient, 1.0 / miniBatchSize);
             }
+
+            return totalLoss / miniBatchSize;
         }
 
         private double[] EncodeState(Board board)

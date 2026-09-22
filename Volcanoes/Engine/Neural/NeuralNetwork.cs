@@ -254,17 +254,37 @@ namespace Volcano.Engine.Neural
 
         public void Save(string filepath)
         {
-            using (BinaryWriter writer = new BinaryWriter(File.Create(filepath)))
-            {
-                writer.Write(learningRate);
+            const int maxRetries = 10;
+            const int initialDelayMs = 100;
 
-                SaveMatrix(writer, w1);
-                SaveArray(writer, b1);
-                SaveMatrix(writer, w2);
-                SaveArray(writer, b2);
-                SaveMatrix(writer, w3);
-                SaveArray(writer, b3);
+            for (int attempt = 0; attempt < maxRetries; attempt++)
+            {
+                try
+                {
+                    using (BinaryWriter writer = new BinaryWriter(File.Create(filepath)))
+                    {
+                        writer.Write(learningRate);
+
+                        SaveMatrix(writer, w1);
+                        SaveArray(writer, b1);
+                        SaveMatrix(writer, w2);
+                        SaveArray(writer, b2);
+                        SaveMatrix(writer, w3);
+                        SaveArray(writer, b3);
+                    }
+                    // Success, exit
+                    return;
+                }
+                catch (System.IO.IOException ex) when (attempt < maxRetries - 1)
+                {
+                    // File is locked, wait with exponential backoff and retry
+                    int delayMs = initialDelayMs * (int)Math.Pow(2, attempt);
+                    System.Threading.Thread.Sleep(delayMs);
+                }
             }
+
+            // If we get here, all retries failed
+            throw new System.IO.IOException($"Failed to save network file after {maxRetries} attempts");
         }
 
         public void Load(string filepath)
