@@ -21,29 +21,29 @@ namespace Volcano.Engine
 
         private double epsilon;
         private double epsilonStart = 1.0;
-        private double epsilonEnd = 0.1;
-        private int totalEpisodes = 50000; // Increased from 100 for longer training window
+        private double epsilonEnd = 0.05;
+        private int totalEpisodes = 100000;
 
-        private double gamma = 0.99; // discount factor
-        private double learningRate = 0.0001; // Reduced for new conv architecture stability
-        private int miniBatchSize = 64;
+        private double gamma = 0.95;
+        private double learningRate = 0.001;
+        private int miniBatchSize = 32;
 
         private int episodeCounter = 0;
-        private int targetUpdateFrequency = 10; // Update target network every 10 episodes
-        private bool currentGameExplore = false; // Exploration flag set once per episode
+        private int targetUpdateFrequency = 5;
+        private bool currentGameExplore = false;
         private const string NETWORK_FILE = "dqn.dat";
         private const string BEST_NETWORK_FILE = "dqn_best.dat";
 
         // Validation-based early stopping
-        private int validationFrequency = 50; // Validate every 50 episodes
+        private int validationFrequency = 100;
 
-        private int validationGamesPerCheckpoint = 10; // Play 10 games per validation
+        private int validationGamesPerCheckpoint = 10;
         private double bestValidationWinRate = -1.0;
         private int patienceCounter = 0;
-        private int patienceLimit = 200; // Stop if no improvement for 200 episodes
+        private int patienceLimit = 500;
 
-        private int replayBufferSize = 5000;
-        private int replayBufferMinCount = 5000;
+        private int replayBufferSize = 100000;
+        private int replayBufferMinCount = 1000;
 
         public DeepQNetworkEngine()
         {
@@ -328,8 +328,8 @@ namespace Volcano.Engine
                 // Collect transition if learner made this move
                 if (isLearnerMove)
                 {
-                    // Always use intermediate reward for now; will update terminal move below
-                    double reward = 0.01;
+                    // Use higher intermediate reward for stronger signal propagation
+                    double reward = 0.05;
                     bool done = false; // Assume not done; will be corrected for final move
                     gameTransitions.Add(new Transition(stateEnc, move, reward, nextStateEnc, done, playerSwap));
                 }
