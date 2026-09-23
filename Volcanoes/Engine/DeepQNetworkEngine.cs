@@ -25,7 +25,7 @@ namespace Volcano.Engine
         private int totalEpisodes = 50000; // Increased from 100 for longer training window
 
         private double gamma = 0.99; // discount factor
-        private double learningRate = 0.01; // Increased for faster learning with gradient clipping
+        private double learningRate = 0.0001; // Reduced for new conv architecture stability
         private int miniBatchSize = 64;
 
         private int episodeCounter = 0;
@@ -359,21 +359,22 @@ namespace Volcano.Engine
             List<Transition> batch = replayBuffer.SampleMiniBatch(miniBatchSize);
             double totalLoss = 0.0;
 
-            // Create batch-wide accumulator arrays for gradients
-            double[,] totalW1Grad = new double[726, 128];
+            // Set training mode for batch normalization
+            network.SetTrainingMode(true);
+
+            // Create batch-wide accumulator arrays for gradients (new dimensions)
+            double[,] totalConvWGrad = new double[52, 32];
+            double[,] totalW1Grad = new double[2560, 128];
             double[] totalB1Grad = new double[128];
             double[,] totalW2Grad = new double[128, 80];
             double[] totalB2Grad = new double[80];
 
+            const double GRAD_CLIP = 0.1;
+
             foreach (Transition transition in batch)
             {
-                //// --- Dummy Test Logic ---
-                //if (transition.Action == 0) { transition.Reward = 1; transition.Done = true; }
-                //else { transition.Reward = -1; transition.Done = true; }
-
-                //var flip = transition.NextTurnIsOpponent ? -1 : 1;
-
                 // 1. Calculate Target using Target Network
+                targetNetwork.SetTrainingMode(false);
                 double[] nextQValues = targetNetwork.Forward(transition.NextState);
                 double maxNextQ = nextQValues.Max();
                 double targetQ = transition.Done ? transition.Reward : transition.Reward + gamma * maxNextQ;
@@ -387,29 +388,54 @@ namespace Volcano.Engine
                 totalLoss += bellmanError * bellmanError;
 
                 // 4. Calculate local gradients for this individual transition
-                // Using the derivative of Mean Squared Error: 2 * error
                 double[] lossGradient = new double[80];
                 lossGradient[transition.Action] = 2.0 * bellmanError;
 
-                // 5. Run a modified backprop pass that extracts gradients WITHOUT updating weights
-                network.ComputeGradients(lossGradient, out double[,] w1G, out double[] b1G, out double[,] w2G, out double[] b2G);
+                // Clip the initial loss gradient to prevent explosion
+                lossGradient[transition.Action] = Math.Max(-GRAD_CLIP, Math.Min(GRAD_CLIP, lossGradient[transition.Action]));
 
-                // 6. Accumulate the gradients across the mini-batch
-                AccumulateGradients(totalW1Grad, w1G);
-                AccumulateArrays(totalB1Grad, b1G);
-                AccumulateGradients(totalW2Grad, w2G);
-                AccumulateArrays(totalB2Grad, b2G);
+                // 5. Run a modified backprop pass that extracts gradients WITHOUT updating weights
+                network.ComputeGradients(lossGradient, out double[,] convWG, out double[,] w1G, out double[] b1G, out double[,] w2G, out double[] b2G);
+
+                // 6. Accumulate the gradients across the mini-batch with clipping
+                AccumulateGradientsWithClip(totalConvWGrad, convWG, GRAD_CLIP);
+                AccumulateGradientsWithClip(totalW1Grad, w1G, GRAD_CLIP);
+                AccumulateArraysWithClip(totalB1Grad, b1G, GRAD_CLIP);
+                AccumulateGradientsWithClip(totalW2Grad, w2G, GRAD_CLIP);
+                AccumulateArraysWithClip(totalB2Grad, b2G, GRAD_CLIP);
+            }
+
+            double avgLoss = totalLoss / miniBatchSize;
+            if (avgLoss > 1e6 || double.IsNaN(avgLoss) || double.IsInfinity(avgLoss))
+            {
+                Debug($"WARNING: Loss explosion! avgLoss={avgLoss}");
             }
 
             // 7. Apply the accumulated mini-batch gradients to the weights exactly ONCE
-            network.ApplyMiniBatchUpdates(totalW1Grad, totalB1Grad, totalW2Grad, totalB2Grad, 1.0 / miniBatchSize);
+            network.ApplyMiniBatchUpdates(totalConvWGrad, totalW1Grad, totalB1Grad, totalW2Grad, totalB2Grad, 1.0 / miniBatchSize);
 
-            //Console.WriteLine($"--- STEP DEBUG ---");
-            //Console.WriteLine($"Sample State Sum: {batch[0].State.Sum()}");
-            //Console.WriteLine($"First Element of W1: {network.w1[0, 0]}");
-            //Console.WriteLine($"First Element of W2: {network.w2[0, 0]}");
+            return avgLoss;
+        }
 
-            return totalLoss / miniBatchSize;
+        private void AccumulateGradientsWithClip(double[,] target, double[,] source, double clip)
+        {
+            for (int i = 0; i < target.GetLength(0); i++)
+            {
+                for (int j = 0; j < target.GetLength(1); j++)
+                {
+                    double clipped = Math.Max(-clip, Math.Min(clip, source[i, j]));
+                    target[i, j] += clipped;
+                }
+            }
+        }
+
+        private void AccumulateArraysWithClip(double[] target, double[] source, double clip)
+        {
+            for (int i = 0; i < target.Length; i++)
+            {
+                double clipped = Math.Max(-clip, Math.Min(clip, source[i]));
+                target[i] += clipped;
+            }
         }
 
         // Simple helper methods to sum up your arrays
@@ -428,18 +454,29 @@ namespace Volcano.Engine
 
         private double[] EncodeState(Board board, bool invertForPlayer2)
         {
-            double[] encoded = new double[726]; // 80 tiles * 9 + 6 phases
+            const int NUM_TILES = 80;
+            const int NUM_PIECE_CHANNELS = 9;
+            const int NUM_TURN_CHANNELS = 4;
+            const int TOTAL_INPUT = NUM_TILES * (NUM_PIECE_CHANNELS + NUM_TURN_CHANNELS);
 
-            // Encode tiles: each tile is one-hot encoded into 9 dimensions
-            // Values: empty(0), -4, -3, -2, -1, +1, +2, +3, +4
-            for (int i = 0; i < 80; i++)
+            double[] encoded = new double[TOTAL_INPUT]; // 80 tiles * 13 channels
+
+            // Determine turn phase: (0=p1, 1=p2, 2=grow, 3=p2, 4=p1, 5=grow)
+            int phase = (board.Turn - 1) % 6;
+
+            // Compute turn-state channels
+            bool p1Active = (phase == 0 || phase == 4);
+            bool p2Active = (phase == 1 || phase == 3);
+            bool nextNonGrowthIsP1 = (phase == 1 || phase == 2); // Next is 3 or 0
+            bool nextNonGrowthIsP2 = (phase == 0 || phase == 5); // Next is 1 or 4
+
+            for (int i = 0; i < NUM_TILES; i++)
             {
                 int tileValue = board.Tiles[i];
 
-                // Invert perspective if player is Player 2
                 if (invertForPlayer2)
                 {
-                    tileValue = -tileValue;  // Now Player 2's pieces are positive
+                    tileValue = -tileValue;
                 }
 
                 int oneHotIndex = 0;
@@ -447,16 +484,19 @@ namespace Volcano.Engine
                 if (tileValue == 0)
                     oneHotIndex = 0;
                 else if (tileValue < 0)
-                    oneHotIndex = 5 + tileValue; // -4 → 1, -3 → 2, -2 → 3, -1 → 4
+                    oneHotIndex = 5 + tileValue;
                 else
-                    oneHotIndex = 4 + tileValue; // +1 → 5, +2 → 6, +3 → 7, +4 → 8
+                    oneHotIndex = 4 + tileValue;
 
-                encoded[i * 9 + oneHotIndex] = 1.0;
+                encoded[i * NUM_PIECE_CHANNELS + oneHotIndex] = 1.0;
+
+                // Encode 4 turn-state channels per tile
+                int turnChannelBase = NUM_TILES * NUM_PIECE_CHANNELS + i * NUM_TURN_CHANNELS;
+                if (p1Active) encoded[turnChannelBase + 0] = 1.0;
+                if (p2Active) encoded[turnChannelBase + 1] = 1.0;
+                if (nextNonGrowthIsP1) encoded[turnChannelBase + 2] = 1.0;
+                if (nextNonGrowthIsP2) encoded[turnChannelBase + 3] = 1.0;
             }
-
-            // Encode phase: which of 6 positions in the turn cycle
-            int phase = (board.Turn - 1) % 6;
-            encoded[720 + phase] = 1.0;
 
             return encoded;
         }

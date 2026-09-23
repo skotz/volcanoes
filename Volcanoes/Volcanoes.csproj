@@ -93,6 +93,7 @@
     <Compile Include="Engine\LongestPathEngine.cs" />
     <Compile Include="Engine\DeepBeelineEngine.cs" />
     <Compile Include="Engine\MiniMaxAlphaBetaEngine.cs" />
+    <Compile Include="Tests\NeuralNetworkGradientTest.cs" />
     <Compile Include="Neural\NeuralNetwork.cs" />
     <Compile Include="Neural\ReplayBuffer.cs" />
     <Compile Include="Neural\Transition.cs" />
