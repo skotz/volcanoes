@@ -377,6 +377,10 @@ namespace Volcano.Engine
                 targetNetwork.SetTrainingMode(false);
                 double[] nextQValues = targetNetwork.Forward(transition.NextState);
                 double maxNextQ = nextQValues.Max();
+                if (transition.NextTurnIsOpponent)
+                {
+                    maxNextQ = -maxNextQ;
+                }
                 double targetQ = transition.Done ? transition.Reward : transition.Reward + gamma * maxNextQ;
 
                 // 2. Forward pass on Main Network to cache its internal states
@@ -474,10 +478,10 @@ namespace Volcano.Engine
             {
                 int tileValue = board.Tiles[i];
 
-                if (invertForPlayer2)
-                {
-                    tileValue = -tileValue;
-                }
+                //if (invertForPlayer2)
+                //{
+                //    tileValue = -tileValue;
+                //}
 
                 int oneHotIndex = 0;
 
