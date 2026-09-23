@@ -42,7 +42,7 @@ namespace Volcano.Engine
         private int patienceCounter = 0;
         private int patienceLimit = 200; // Stop if no improvement for 200 episodes
 
-        private int replayBufferSize = 50000;
+        private int replayBufferSize = 5000;
         private int replayBufferMinCount = 5000;
 
         public DeepQNetworkEngine()
@@ -65,7 +65,7 @@ namespace Volcano.Engine
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
-            double[] qValues = network.Forward(EncodeState(state, state.Player == Player.Two));
+            double[] qValues = network.Forward(EncodeState(state));
             List<int> validMoves = state.GetMoves();
 
             int bestMove = -1;
@@ -285,6 +285,9 @@ namespace Volcano.Engine
             IEngine engineP1 = learnerIsPlayerOne ? this : opponentEngine;
             IEngine engineP2 = learnerIsPlayerOne ? opponentEngine : this;
 
+            // Collect learner transitions for this game
+            List<Transition> gameTransitions = new List<Transition>();
+
             // Play game step by step
             while (board.Winner == Player.Empty && board.Turn < 500)
             {
@@ -296,8 +299,7 @@ namespace Volcano.Engine
                 bool isLearnerMove = (board.Player == Player.One && learnerIsPlayerOne) || (board.Player == Player.Two && !learnerIsPlayerOne);
 
                 // Encode state before move
-                bool isLearnerPlayer2 = !learnerIsPlayerOne;
-                double[] stateEnc = EncodeState(board, isLearnerPlayer2);
+                double[] stateEnc = EncodeState(board);
 
                 // Get best move from current engine
                 SearchResult searchResult = currentEngine.GetBestMove(board, 1, token);
@@ -321,28 +323,59 @@ namespace Volcano.Engine
                 var playerSwap = board.Player != playerToMove;
 
                 // Encode state after move
-                double[] nextStateEnc = EncodeState(board, isLearnerPlayer2);
+                double[] nextStateEnc = EncodeState(board);
 
-                // Only store transition if learner made this move
+                // Collect transition if learner made this move
                 if (isLearnerMove)
                 {
-                    double reward = 0.01; // Small positive reward for each move to encourage learning
-                    bool done = board.Winner != Player.Empty;
-
-                    if (done)
-                    {
-                        // Terminal reward from learner's perspective
-                        Player learnerPlayer = learnerIsPlayerOne ? Player.One : Player.Two;
-                        if (board.Winner == learnerPlayer)
-                            reward = 1.0; // Win overrides intermediate reward
-                        else if (board.Winner != Player.Draw)
-                            reward = -1.0; // Loss overrides intermediate reward
-                        else
-                            reward = 0.0; // Draw is neutral
-                    }
-
-                    replayBuffer.Add(new Transition(stateEnc, move, reward, nextStateEnc, done, playerSwap));
+                    // Always use intermediate reward for now; will update terminal move below
+                    double reward = 0.01;
+                    bool done = false; // Assume not done; will be corrected for final move
+                    gameTransitions.Add(new Transition(stateEnc, move, reward, nextStateEnc, done, playerSwap));
                 }
+            }
+
+            // After game ends, backup terminal reward through trajectory
+            if (gameTransitions.Count > 0)
+            {
+                Player learnerPlayer = learnerIsPlayerOne ? Player.One : Player.Two;
+                double terminalReward = 0.0;
+                if (board.Winner == learnerPlayer)
+                    terminalReward = 1.0; // Win
+                else if (board.Winner != Player.Draw)
+                    terminalReward = -1.0; // Loss
+                // else terminalReward = 0.0; // Draw
+
+                // Backup the terminal reward through the trajectory with proper discounting
+                // Earlier moves get a discounted version of the terminal outcome
+                double backupReward = terminalReward;
+
+                for (int i = gameTransitions.Count - 1; i >= 0; i--)
+                {
+                    var transition = gameTransitions[i];
+                    bool isDone = (i == gameTransitions.Count - 1); // Only final move is terminal
+
+                    // For this move, use the backup reward
+                    double moveReward = isDone ? backupReward : 0.01;
+
+                    gameTransitions[i] = new Transition(
+                        transition.State,
+                        transition.Action,
+                        moveReward,
+                        transition.NextState,
+                        isDone,
+                        transition.NextTurnIsOpponent
+                    );
+
+                    // For earlier moves, discount the future signal
+                    backupReward = 0.01 + gamma * backupReward;
+                }
+            }
+
+            // Add all transitions to replay buffer
+            foreach (var transition in gameTransitions)
+            {
+                replayBuffer.Add(transition);
             }
 
             return board.Winner;
@@ -456,7 +489,7 @@ namespace Volcano.Engine
                 target[i] += source[i];
         }
 
-        private double[] EncodeState(Board board, bool invertForPlayer2)
+        private double[] EncodeState(Board board)
         {
             const int NUM_TILES = 80;
             const int NUM_PIECE_CHANNELS = 9;
