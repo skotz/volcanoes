@@ -45,6 +45,8 @@ namespace Volcano.Engine
         private int replayBufferSize = 100000;
         private int replayBufferMinCount = 1000;
 
+        private Canonical _canonical;
+
         public DeepQNetworkEngine()
         {
             random = new Random();
@@ -65,13 +67,12 @@ namespace Volcano.Engine
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
-            var canonical = new Canonical();
-            canonical.SetIndex(state.Tiles);
+            // TODO: canonicalize
+            _canonical = new Canonical();
+            _canonical.SetIndex(state);
 
-            var canonicalState = canonical.Canonicalize(state);
-
-            double[] qValues = network.Forward(EncodeState(canonicalState));
-            List<int> validMoves = canonicalState.GetMoves();
+            double[] qValues = network.Forward(EncodeState(state));
+            List<int> validMoves = state.GetMoves();
 
             int bestMove = -1;
 
@@ -112,9 +113,7 @@ namespace Volcano.Engine
             status.Sort();
             Report(status);
 
-            var originalMove = canonical.CanonicalToBoard(bestMove);
-
-            return new SearchResult(originalMove);
+            return new SearchResult(bestMove);
         }
 
         public void Train()

@@ -104,6 +104,11 @@ namespace Volcano.Engine
 
         protected virtual List<int> GetMoves(Board state)
         {
+            //if (state.Turn == 1)
+            //{
+            //    return new List<int>() { 0, 1 };
+            //}
+
             return state.GetMoves();
         }
 

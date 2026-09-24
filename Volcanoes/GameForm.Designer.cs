@@ -65,7 +65,10 @@
             this.whiteboardModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             this.generateOpeningBooksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
             this.trainQLearningToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
+            this.canonicalizeBoardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btnNewGame = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
@@ -90,9 +93,6 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.growthMoveTimer = new System.Windows.Forms.Timer(this.components);
-            this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
-            this.canonicalizeBoardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -395,12 +395,29 @@
             this.generateOpeningBooksToolStripMenuItem.Text = "Generate Opening Books";
             this.generateOpeningBooksToolStripMenuItem.Click += new System.EventHandler(this.generateOpeningBooksToolStripMenuItem_Click);
             // 
+            // toolStripSeparator12
+            // 
+            this.toolStripSeparator12.Name = "toolStripSeparator12";
+            this.toolStripSeparator12.Size = new System.Drawing.Size(236, 6);
+            // 
             // trainQLearningToolStripMenuItem
             // 
             this.trainQLearningToolStripMenuItem.Name = "trainQLearningToolStripMenuItem";
             this.trainQLearningToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
             this.trainQLearningToolStripMenuItem.Text = "Train Q-Learning";
             this.trainQLearningToolStripMenuItem.Click += new System.EventHandler(this.trainQLearningToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator13
+            // 
+            this.toolStripSeparator13.Name = "toolStripSeparator13";
+            this.toolStripSeparator13.Size = new System.Drawing.Size(236, 6);
+            // 
+            // canonicalizeBoardToolStripMenuItem
+            // 
+            this.canonicalizeBoardToolStripMenuItem.Name = "canonicalizeBoardToolStripMenuItem";
+            this.canonicalizeBoardToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
+            this.canonicalizeBoardToolStripMenuItem.Text = "Canonicalize Board";
+            this.canonicalizeBoardToolStripMenuItem.Click += new System.EventHandler(this.canonicalizeBoardToolStripMenuItem_Click);
             // 
             // toolStrip1
             // 
@@ -603,23 +620,6 @@
             // 
             this.growthMoveTimer.Interval = 1000;
             this.growthMoveTimer.Tick += new System.EventHandler(this.growthMoveTimer_Tick);
-            // 
-            // toolStripSeparator12
-            // 
-            this.toolStripSeparator12.Name = "toolStripSeparator12";
-            this.toolStripSeparator12.Size = new System.Drawing.Size(236, 6);
-            // 
-            // toolStripSeparator13
-            // 
-            this.toolStripSeparator13.Name = "toolStripSeparator13";
-            this.toolStripSeparator13.Size = new System.Drawing.Size(236, 6);
-            // 
-            // canonicalizeBoardToolStripMenuItem
-            // 
-            this.canonicalizeBoardToolStripMenuItem.Name = "canonicalizeBoardToolStripMenuItem";
-            this.canonicalizeBoardToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
-            this.canonicalizeBoardToolStripMenuItem.Text = "Canonicalize Board";
-            this.canonicalizeBoardToolStripMenuItem.Click += new System.EventHandler(this.canonicalizeBoardToolStripMenuItem_Click);
             // 
             // GameForm
             // 

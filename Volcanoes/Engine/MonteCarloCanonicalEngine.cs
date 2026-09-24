@@ -7,13 +7,9 @@ namespace Volcano.Engine
         protected override int MonteCarloTreeSearch(Board rootState)
         {
             var canonical = new Canonical();
-            canonical.SetIndex(rootState.Tiles);
+            canonical.SetIndex(rootState);
 
-            var canonicalized = new Board(rootState)
-            {
-                Tiles = canonical.Canonicalize(rootState.Tiles),
-                Dormant = canonical.Canonicalize(rootState.Dormant)
-            };
+            var canonicalized = canonical.Canonicalize(rootState);
 
             var best = base.MonteCarloTreeSearch(canonicalized);
 

@@ -548,8 +548,8 @@ namespace Volcano
         private void canonicalizeBoardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var canonical = new Canonical();
-            canonical.SetIndex(game.CurrentState.Tiles);
-            game.CurrentState.Tiles = canonical.Canonicalize(game.CurrentState.Tiles);
+            canonical.SetIndex(game.CurrentState);
+            game.CurrentState = canonical.Canonicalize(game.CurrentState);
         }
     }
 }
