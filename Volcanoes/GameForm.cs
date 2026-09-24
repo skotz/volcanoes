@@ -57,6 +57,7 @@ namespace Volcano
             engines.Add<MonteCarloBeelineThreeEngine>("Monte Carlo Beeline 3");
             engines.Add<MonteCarloBeelineFourEngine>("Monte Carlo Beeline 4");
             engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
+            engines.Add<MonteCarloCanonicalEngine>("Monte Carlo Canonical");
             //engines.Add<MonteCarloTreeSearchFixedEngine>("MCTS Alt");
 
             engines.Add("MCTS Opening Book", () => new MonteCarloTreeSearchEngine(true, false, false, openingBook));
@@ -101,6 +102,8 @@ namespace Volcano
             FileSystemWatcher graphicsSettingsFsw = new FileSystemWatcher(".", gameFolder + "graphics.json");
             graphicsSettingsFsw.EnableRaisingEvents = true;
             graphicsSettingsFsw.Changed += GraphicsSettingsFsw_Changed;
+
+            //new Canonical(new Board().Tiles).Generate(graphics);
         }
 
         private void Game_OnMoveMade(bool growthHappened)
@@ -540,6 +543,13 @@ namespace Volcano
         {
             var trainingForm = new TrainingForm();
             trainingForm.ShowDialog();
+        }
+
+        private void canonicalizeBoardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var canonical = new Canonical();
+            canonical.SetIndex(game.CurrentState.Tiles);
+            game.CurrentState.Tiles = canonical.Canonicalize(game.CurrentState.Tiles);
         }
     }
 }

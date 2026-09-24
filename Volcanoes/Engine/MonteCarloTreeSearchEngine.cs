@@ -107,7 +107,7 @@ namespace Volcano.Engine
             return state.GetMoves();
         }
 
-        private int MonteCarloTreeSearch(Board rootState)
+        protected virtual int MonteCarloTreeSearch(Board rootState)
         {
             var rootNode = new MonteCarloTreeSearchNode(rootState, GetMoves);
             var forceWin = false;

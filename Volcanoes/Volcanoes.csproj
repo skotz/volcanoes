@@ -72,6 +72,7 @@
     <Compile Include="Engine\ILearn.cs" />
     <Compile Include="Engine\IStatus.cs" />
     <Compile Include="Engine\LearnResult.cs" />
+    <Compile Include="Engine\MonteCarloCanonicalEngine.cs" />
     <Compile Include="Engine\MonteCarloPlayoutEngine.cs" />
     <Compile Include="Engine\MonteCarloBarricadeEngine.cs" />
     <Compile Include="Engine\MonteCarloBeelineFourEngine.cs" />
@@ -93,6 +94,7 @@
     <Compile Include="Engine\LongestPathEngine.cs" />
     <Compile Include="Engine\DeepBeelineEngine.cs" />
     <Compile Include="Engine\MiniMaxAlphaBetaEngine.cs" />
+    <Compile Include="Game\Canonical.cs" />
     <Compile Include="Tests\NeuralNetworkGradientTest.cs" />
     <Compile Include="Neural\NeuralNetwork.cs" />
     <Compile Include="Neural\ReplayBuffer.cs" />

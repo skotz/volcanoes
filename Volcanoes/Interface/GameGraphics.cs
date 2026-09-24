@@ -15,11 +15,11 @@ namespace Volcano.Interface
         private Panel _panel;
         private Size _size;
         private List<GameTile> _tiles;
-        private List<GameRotation> _rotations;
+        internal List<GameRotation> _rotations;
         private Rectangle _clock;
         private RectangleF _reference;
 
-        private int[] boardIndexFromTileIndex;
+        internal int[] boardIndexFromTileIndex;
 
         private float _initialWidth;
         private float _fontScale;
@@ -476,7 +476,7 @@ namespace Volcano.Interface
             _reference = new Rectangle();
         }
 
-        private void RotateBoard(int[][] rotationLoops)
+        internal void RotateBoard(int[][] rotationLoops)
         {
             int[] redirects = new int[80];
 

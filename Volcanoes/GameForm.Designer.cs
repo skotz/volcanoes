@@ -65,6 +65,7 @@
             this.whiteboardModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             this.generateOpeningBooksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.trainQLearningToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btnNewGame = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
@@ -89,7 +90,9 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.growthMoveTimer = new System.Windows.Forms.Timer(this.components);
-            this.trainQLearningToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
+            this.canonicalizeBoardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -295,7 +298,10 @@
             this.whiteboardModeToolStripMenuItem,
             this.toolStripSeparator10,
             this.generateOpeningBooksToolStripMenuItem,
-            this.trainQLearningToolStripMenuItem});
+            this.toolStripSeparator12,
+            this.trainQLearningToolStripMenuItem,
+            this.toolStripSeparator13,
+            this.canonicalizeBoardToolStripMenuItem});
             this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
             this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
             this.dEBUGToolStripMenuItem.Text = "DEBUG";
@@ -388,6 +394,13 @@
             this.generateOpeningBooksToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
             this.generateOpeningBooksToolStripMenuItem.Text = "Generate Opening Books";
             this.generateOpeningBooksToolStripMenuItem.Click += new System.EventHandler(this.generateOpeningBooksToolStripMenuItem_Click);
+            // 
+            // trainQLearningToolStripMenuItem
+            // 
+            this.trainQLearningToolStripMenuItem.Name = "trainQLearningToolStripMenuItem";
+            this.trainQLearningToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
+            this.trainQLearningToolStripMenuItem.Text = "Train Q-Learning";
+            this.trainQLearningToolStripMenuItem.Click += new System.EventHandler(this.trainQLearningToolStripMenuItem_Click);
             // 
             // toolStrip1
             // 
@@ -591,12 +604,22 @@
             this.growthMoveTimer.Interval = 1000;
             this.growthMoveTimer.Tick += new System.EventHandler(this.growthMoveTimer_Tick);
             // 
-            // trainQLearningToolStripMenuItem
+            // toolStripSeparator12
             // 
-            this.trainQLearningToolStripMenuItem.Name = "trainQLearningToolStripMenuItem";
-            this.trainQLearningToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
-            this.trainQLearningToolStripMenuItem.Text = "Train Q-Learning";
-            this.trainQLearningToolStripMenuItem.Click += new System.EventHandler(this.trainQLearningToolStripMenuItem_Click);
+            this.toolStripSeparator12.Name = "toolStripSeparator12";
+            this.toolStripSeparator12.Size = new System.Drawing.Size(236, 6);
+            // 
+            // toolStripSeparator13
+            // 
+            this.toolStripSeparator13.Name = "toolStripSeparator13";
+            this.toolStripSeparator13.Size = new System.Drawing.Size(236, 6);
+            // 
+            // canonicalizeBoardToolStripMenuItem
+            // 
+            this.canonicalizeBoardToolStripMenuItem.Name = "canonicalizeBoardToolStripMenuItem";
+            this.canonicalizeBoardToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
+            this.canonicalizeBoardToolStripMenuItem.Text = "Canonicalize Board";
+            this.canonicalizeBoardToolStripMenuItem.Click += new System.EventHandler(this.canonicalizeBoardToolStripMenuItem_Click);
             // 
             // GameForm
             // 
@@ -690,6 +713,9 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
         private System.Windows.Forms.ToolStripMenuItem loadCGStringFromClipboardToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem trainQLearningToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator12;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
+        private System.Windows.Forms.ToolStripMenuItem canonicalizeBoardToolStripMenuItem;
     }
 }
 
