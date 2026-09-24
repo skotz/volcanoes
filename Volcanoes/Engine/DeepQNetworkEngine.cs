@@ -65,8 +65,13 @@ namespace Volcano.Engine
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
-            double[] qValues = network.Forward(EncodeState(state));
-            List<int> validMoves = state.GetMoves();
+            var canonical = new Canonical();
+            canonical.SetIndex(state.Tiles);
+
+            var canonicalState = canonical.Canonicalize(state);
+
+            double[] qValues = network.Forward(EncodeState(canonicalState));
+            List<int> validMoves = canonicalState.GetMoves();
 
             int bestMove = -1;
 
@@ -107,7 +112,9 @@ namespace Volcano.Engine
             status.Sort();
             Report(status);
 
-            return new SearchResult(bestMove);
+            var originalMove = canonical.CanonicalToBoard(bestMove);
+
+            return new SearchResult(originalMove);
         }
 
         public void Train()

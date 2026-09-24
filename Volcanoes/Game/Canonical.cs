@@ -198,6 +198,11 @@ namespace Volcano.Game
             }
         }
 
+        public void SetIndex(Board board)
+        {
+            SetIndex(board.Tiles);
+        }
+
         private void VerifyIndex()
         {
             if (_firstIndex == -1)
@@ -210,12 +215,22 @@ namespace Volcano.Game
         {
             VerifyIndex();
 
+            if (index < 0 || index >= 80)
+            {
+                return index;
+            }
+
             return _indexToCanonical[_firstIndex, index];
         }
 
         public int CanonicalToBoard(int index)
         {
             VerifyIndex();
+
+            if (index < 0 || index >= 80)
+            {
+                return index;
+            }
 
             return _canonicalToIndex[_firstIndex, index];
         }
