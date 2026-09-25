@@ -30,7 +30,7 @@ namespace Volcano.Engine
 
         private int episodeCounter = 0;
         private int targetUpdateFrequency = 5;
-        private bool currentGameExplore = false;
+        private bool explore = false;
         private const string NETWORK_FILE = "dqn.dat";
         private const string BEST_NETWORK_FILE = "dqn_best.dat";
 
@@ -79,9 +79,8 @@ namespace Volcano.Engine
             // Collect move evaluations
             EngineStatus status = new EngineStatus();
 
-            if (currentGameExplore)
+            if (explore)
             {
-                // Pure random exploration for this entire game
                 bestMove = validMoves[random.Next(validMoves.Count)];
             }
             else
@@ -226,7 +225,7 @@ namespace Volcano.Engine
                 if ((batch + 1) % (validationFrequency / 5) == 0 && replayBuffer.Count >= replayBufferMinCount)
                 {
                     Debug($"Running validation at batch {batch + 1}...");
-                    currentGameExplore = false;
+                    explore = false;
                     double validationWinRate = ValidateNetwork();
 
                     // Check if this is the best performance so far
@@ -298,7 +297,7 @@ namespace Volcano.Engine
             while (board.Winner == Player.Empty && board.Turn < 500)
             {
                 // Set exploration for this move
-                currentGameExplore = random.NextDouble() < epsilon;
+                explore = random.NextDouble() < epsilon;
 
                 // Determine current engine
                 IEngine currentEngine = board.Player == Player.One ? engineP1 : engineP2;
@@ -362,19 +361,19 @@ namespace Volcano.Engine
                     bool isDone = (i == gameTransitions.Count - 1); // Only final move is terminal
 
                     // For this move, use the backup reward
-                    double moveReward = isDone ? backupReward : 0.01;
+                    //double moveReward = isDone ? backupReward : 0.01;
 
                     gameTransitions[i] = new Transition(
                         transition.State,
                         transition.Action,
-                        moveReward,
+                        backupReward,
                         transition.NextState,
                         isDone,
                         transition.NextTurnIsOpponent
                     );
 
                     // For earlier moves, discount the future signal
-                    backupReward = 0.01 + gamma * backupReward;
+                    backupReward = 0.01 + 0.9 * gamma * backupReward;
                 }
             }
 
