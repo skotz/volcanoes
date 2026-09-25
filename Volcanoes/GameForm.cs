@@ -533,7 +533,7 @@ namespace Volcano
                     game.CurrentState.Tiles[i] = position[index];
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 MessageBox.Show("Failed to load game from CG string!");
             }

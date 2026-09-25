@@ -11,14 +11,12 @@ namespace Volcano.Engine
 {
     class PositionHash
     {
-        private RNGCryptoServiceProvider random;
         private Hashtable hashes;
 
         private int[][][] tilesMasks;
 
         public PositionHash()
         {
-            random = new RNGCryptoServiceProvider();
             hashes = new Hashtable();
 
             tilesMasks = new int[80][][];
@@ -70,7 +68,7 @@ namespace Volcano.Engine
         private int GetRandom()
         {
             byte[] buffer = new byte[sizeof(int)];
-            random.GetBytes(buffer);
+            RandomNumberGenerator.Fill(buffer);
             return BitConverter.ToInt32(buffer, 0);
         }
     }

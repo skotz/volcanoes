@@ -13,11 +13,6 @@ namespace Volcano.Engine
         private int simulationCount;
         private int visitedNodes;
         private bool _allowForcedWins;
-        private bool _allowHash;
-        private bool _allowFastWinSearch;
-
-        private bool _useOpeningBook;
-        private OpeningBook _book;
 
         private int bufferMilliseconds = 200;
         private EngineCancellationToken cancel;
@@ -41,22 +36,6 @@ namespace Volcano.Engine
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
-            if (_useOpeningBook)
-            {
-                if (maxSeconds <= _book.Seconds)
-                {
-                    var bookMove = _book.GetMove(state.Transcript);
-
-                    if (bookMove >= 0)
-                    {
-                        return new SearchResult
-                        {
-                            BestMove = bookMove
-                        };
-                    }
-                }
-            }
-
             timer = Stopwatch.StartNew();
             statusUpdate = Stopwatch.StartNew();
             visitedNodes = 0;
@@ -89,8 +68,6 @@ namespace Volcano.Engine
             {
                 var node = rootNode;
                 var state = new Board(rootState);
-
-                state.fastWinSearch = _allowFastWinSearch;
 
                 simulationCount++;
 
