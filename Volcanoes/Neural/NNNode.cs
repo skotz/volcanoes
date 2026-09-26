@@ -30,8 +30,8 @@ namespace Volcano.Neural
             {
                 if (state == null)
                 {
-                    Board next = game.GetNextState(parent!.State, ActionTaken, 1);
-                    state = game.ChangePerspective(next, -1);
+                    Board next = game.GetNextState(parent!.State, ActionTaken);
+                    state = game.ChangePerspective(next);
                 }
                 return state;
             }

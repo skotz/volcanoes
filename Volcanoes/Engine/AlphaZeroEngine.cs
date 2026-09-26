@@ -24,6 +24,8 @@ namespace Volcano.Engine
 
         public event EventHandler<LearnStatus> OnDebug;
 
+        public static Action<string> WriteLine;
+
         public AlphaZeroEngine()
         {
             _config = new AlphaZeroConfig();
@@ -34,6 +36,8 @@ namespace Volcano.Engine
             _scheduler = lr_scheduler.ExponentialLR(_optimizer, _config.LearningRateDecay);
             _encoder = new Volcano.Neural.Encoder();
             _game = new Volcano.Neural.Game();
+
+            WriteLine = Debug;
         }
 
         private Tensor GetGraphTopology()

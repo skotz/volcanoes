@@ -10,7 +10,7 @@ namespace Volcano.Neural
 
         public Board GetInitialState() => new Board();
 
-        public Board GetNextState(Board state, int action, int player)
+        public Board GetNextState(Board state, int action)
         {
             var next = new Board(state);
             next.MakeMove(action);
@@ -62,7 +62,7 @@ namespace Volcano.Neural
             return false;
         }
 
-        public int GetOpponent(int player) => -player;
+        public Player GetOpponent(Player player) => player == Player.One ? Player.Two : Player.One;
 
         public int GetOpponentValue(int value) => -value;
 
@@ -70,14 +70,22 @@ namespace Volcano.Neural
         /// Returns the position as seen by <paramref name="player"/>, i.e. with that player's
         /// stones as +1. Search always works in the "side to move is +1" frame.
         /// </summary>
-        public Board ChangePerspective(Board state, int player)
+        public Board ChangePerspective(Board state, Player player)
         {
             var next = new Board(state);
             for (int i = 0; i < Cells; i++)
             {
-                next.Tiles[i] *= -1;
+                if ((next.Flipped && player == Player.One) || (!next.Flipped && player == Player.Two))
+                {
+                    next.Tiles[i] *= -1;
+                }
             }
             return next;
+        }
+
+        public Board ChangePerspective(Board state)
+        {
+            return ChangePerspective(state, state.Player);
         }
     }
 }

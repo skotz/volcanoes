@@ -29,8 +29,8 @@ namespace Volcano.Neural
                 spgs[i] = new SPG(game);
             }
 
-            int player = 1;
-            int moveCount = 0;
+            var player = Player.One;
+            var moveCount = 0;
 
             while (true)
             {
@@ -51,7 +51,7 @@ namespace Volcano.Neural
                     double[] temperatureProbs = ApplyTemperature(actionProbs, temperature);
                     int action = Sampling.SampleFromWeights(Random.Shared, temperatureProbs);
 
-                    spg.State = game.GetNextState(spg.State, action, player);
+                    spg.State = game.GetNextState(spg.State, action);
 
                     if (game.GetTerminated(spg.State, action, out int outcome))
                     {
@@ -59,7 +59,7 @@ namespace Volcano.Neural
 
                         IReadOnlyList<Board> gameStates = spg.GetStates();
                         IReadOnlyList<double[]> gameProbs = spg.GetProbs();
-                        IReadOnlyList<int> gamePlayers = spg.GetPlayers();
+                        IReadOnlyList<Player> gamePlayers = spg.GetPlayers();
 
                         for (int j = 0; j < gamePlayers.Count; j++)
                         {

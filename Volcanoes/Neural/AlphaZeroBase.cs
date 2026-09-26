@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using TorchSharp;
 using TorchSharp.Modules;
+using Volcano.Engine;
 using Volcano.Game;
 
 namespace Volcano.Neural
@@ -140,9 +141,9 @@ namespace Volcano.Neural
                 lastLoss = loss.item<float>();
             }
 
-            Console.WriteLine("Loss policy: {0}", lastPolicyLoss);
-            Console.WriteLine("Loss value: {0}", lastValueLoss);
-            Console.WriteLine("Loss: {0}", lastLoss);
+            AlphaZeroEngine.WriteLine($"Loss policy: {lastPolicyLoss}");
+            AlphaZeroEngine.WriteLine($"Loss value: {lastValueLoss}");
+            AlphaZeroEngine.WriteLine($"Loss: {lastLoss}");
         }
 
         /// <summary>The AlphaZero loop: self-play, train on the result, checkpoint, repeat.</summary>
@@ -160,13 +161,13 @@ namespace Volcano.Neural
 
             for (int iteration = 0; iteration < config.NumIterations; iteration++)
             {
-                Console.WriteLine("iteration {0}", iteration);
+                AlphaZeroEngine.WriteLine($"iteration {iteration}");
 
                 TrainingData fresh = new TrainingData();
                 model.eval();
                 for (int j = 0; j < SelfPlayCallsPerIteration; j++)
                 {
-                    Console.WriteLine("Self-play {0}", j + 1);
+                    AlphaZeroEngine.WriteLine($"Self-play {j + 1}");
                     fresh.Add(SelfPlay());
                 }
 
@@ -181,18 +182,17 @@ namespace Volcano.Neural
                 {
                     data.Add(batch);
                 }
-                Console.WriteLine("training on {0} positions ({1} fresh) from {2} iteration(s)",
-                                  data.Count, fresh.Count, replayBuffer.Count);
+                AlphaZeroEngine.WriteLine($"training on {data.Count} positions ({fresh.Count} fresh) from {replayBuffer.Count} iteration(s)");
 
                 model.train();
                 for (int epoch = 0; epoch < config.NumEpochs; epoch++)
                 {
-                    Console.WriteLine("epoch {0}", epoch);
+                    AlphaZeroEngine.WriteLine($"epoch {epoch}");
                     Train(data);
                 }
 
                 scheduler.step();
-                Console.WriteLine("Current LR: {0}", string.Join(",", scheduler.get_last_lr()));
+                AlphaZeroEngine.WriteLine($"Current LR: {string.Join(",", scheduler.get_last_lr())}");
 
                 string path = Path.Combine(savePath, $"model_{config.NumSelfPlayIterations * (iteration + 1)}.dat");
                 model.save(path);

@@ -26,6 +26,9 @@ namespace Volcano.Game
         public bool allowHash;
         public bool fastWinSearch;
 
+        // whether the board tiles have been inverted for perspective
+        public bool Flipped;
+
         public ConcurrentDictionary<long, Player> winHashes;
 
         public GameState State
@@ -45,6 +48,7 @@ namespace Volcano.Game
             Winner = Player.Empty;
             WinningPathPlayerOne = new List<int>();
             WinningPathPlayerTwo = new List<int>();
+            Flipped = false;
         }
 
         public Board(Board copy)
@@ -58,6 +62,7 @@ namespace Volcano.Game
             Winner = copy.Winner;
             WinningPathPlayerOne = copy.WinningPathPlayerOne;
             WinningPathPlayerTwo = copy.WinningPathPlayerTwo;
+            Flipped = copy.Flipped;
         }
 
         /// <summary>

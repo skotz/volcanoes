@@ -12,7 +12,7 @@ namespace Volcano.Neural
 
         private readonly List<Board> statesMemory = new();
         private readonly List<double[]> probsMemory = new();
-        private readonly List<int> playersMemory = new();
+        private readonly List<Player> playersMemory = new();
 
         public SPG(Game game)
         {
@@ -22,7 +22,7 @@ namespace Volcano.Neural
             Terminated = false;
         }
 
-        public void AddEntry(Board state, double[] probs, int player)
+        public void AddEntry(Board state, double[] probs, Player player)
         {
             statesMemory.Add(state);
             probsMemory.Add(probs);
@@ -33,6 +33,6 @@ namespace Volcano.Neural
 
         public IReadOnlyList<double[]> GetProbs() => probsMemory;
 
-        public IReadOnlyList<int> GetPlayers() => playersMemory;
+        public IReadOnlyList<Player> GetPlayers() => playersMemory;
     }
 }
