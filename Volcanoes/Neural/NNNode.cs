@@ -6,7 +6,7 @@ namespace Volcano.Neural
 {
     internal class NNNode
     {
-        private readonly Game game;
+        private readonly GameRule game;
         private readonly AlphaZeroConfig config;
         private readonly NNNode? parent;
         private readonly double prior;
@@ -38,7 +38,7 @@ namespace Volcano.Neural
         }
 
         /// <summary>Creates a search root from a known position.</summary>
-        public NNNode(Game game, AlphaZeroConfig config, Board state, int visitCount = 0)
+        public NNNode(GameRule game, AlphaZeroConfig config, Board state, int visitCount = 0)
         {
             this.game = game;
             this.config = config;
@@ -50,7 +50,7 @@ namespace Volcano.Neural
         }
 
         /// <summary>Creates a child; its position is computed lazily from <paramref name="parent"/>.</summary>
-        private NNNode(Game game, AlphaZeroConfig config, NNNode parent, int actionTaken, double prior)
+        private NNNode(GameRule game, AlphaZeroConfig config, NNNode parent, int actionTaken, double prior)
         {
             this.game = game;
             this.config = config;

@@ -11,7 +11,7 @@ namespace Volcano.Neural
     {
         private readonly NNMCTSParallel nnmcts;
 
-        public AlphaZeroParallel(ResNet model, Adam optimizer, torch.optim.lr_scheduler.LRScheduler scheduler, Encoder encoder, Game game, AlphaZeroConfig config)
+        public AlphaZeroParallel(ResNet model, Adam optimizer, torch.optim.lr_scheduler.LRScheduler scheduler, Encoder encoder, GameRule game, AlphaZeroConfig config)
             : base(model, optimizer, scheduler, encoder, game, config)
         {
             this.nnmcts = new NNMCTSParallel(game, config, model, encoder);
@@ -68,8 +68,8 @@ namespace Volcano.Neural
                         }
                     }
                 }
-                player = game.GetOpponent(player);
                 moveCount++;
+                player = moveCount % 4 == 0 || moveCount % 4 == 3 ? Player.One : Player.Two; // game.GetOpponent(player);
             }
             return data;
         }

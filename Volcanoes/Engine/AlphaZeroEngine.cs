@@ -18,7 +18,7 @@ namespace Volcano.Engine
         private Adam _optimizer;
         private LRScheduler _scheduler;
         private Encoder _encoder;
-        private Volcano.Neural.Game _game;
+        private Volcano.Neural.GameRule _game;
 
         public event EventHandler<EngineStatus> OnStatus;
 
@@ -35,7 +35,7 @@ namespace Volcano.Engine
             _optimizer = new Adam(_model.parameters(), lr: _config.InitialLearningRate);
             _scheduler = lr_scheduler.ExponentialLR(_optimizer, _config.LearningRateDecay);
             _encoder = new Volcano.Neural.Encoder();
-            _game = new Volcano.Neural.Game();
+            _game = new Volcano.Neural.GameRule();
 
             WriteLine = Debug;
         }

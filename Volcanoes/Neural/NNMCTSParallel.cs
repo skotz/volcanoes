@@ -8,11 +8,11 @@ namespace Volcano.Neural
     internal class NNMCTSParallel
     {
         private readonly ResNet model;
-        private readonly Game game;
+        private readonly GameRule game;
         private readonly AlphaZeroConfig config;
         private readonly Encoder encoder;
 
-        public NNMCTSParallel(Game game, AlphaZeroConfig config, ResNet model, Encoder encoder)
+        public NNMCTSParallel(GameRule game, AlphaZeroConfig config, ResNet model, Encoder encoder)
         {
             this.game = game;
             this.config = config;

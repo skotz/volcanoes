@@ -14,7 +14,7 @@ namespace Volcano.Neural
         private readonly List<double[]> probsMemory = new();
         private readonly List<Player> playersMemory = new();
 
-        public SPG(Game game)
+        public SPG(GameRule game)
         {
             State = game.GetInitialState();
             Root = null;

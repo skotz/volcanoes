@@ -2,7 +2,7 @@
 
 namespace Volcano.Neural
 {
-    internal class Game
+    internal class GameRule
     {
         public const int Cells = 80;
 
@@ -35,11 +35,9 @@ namespace Volcano.Neural
             return state.GetMoves().Count;
         }
 
-        public bool CheckWinner(Board state, int action)
+        public bool CheckWinner(Board state)
         {
-            var next = new Board(state);
-            next.MakeMove(action);
-            return next.Winner != Player.Empty;
+            return state.Winner != Player.Empty;
         }
 
         /// <summary>
@@ -48,7 +46,7 @@ namespace Volcano.Neural
         /// </summary>
         public bool GetTerminated(Board state, int action, out int value)
         {
-            if (CheckWinner(state, action))
+            if (CheckWinner(state))
             {
                 value = 1;
                 return true;
@@ -73,19 +71,28 @@ namespace Volcano.Neural
         public Board ChangePerspective(Board state, Player player)
         {
             var next = new Board(state);
-            for (int i = 0; i < Cells; i++)
+
+            if (next.Player != player)
             {
-                if ((next.Flipped && player == Player.One) || (!next.Flipped && player == Player.Two))
+                next.Turn += 3;
+                next.Player = player;
+                next.Flipped = !next.Flipped;
+                for (int i = 0; i < Cells; i++)
                 {
                     next.Tiles[i] *= -1;
                 }
             }
+            //else if (next.Flipped)
+            //{
+            //    // second move
+            //}
+
             return next;
         }
 
         public Board ChangePerspective(Board state)
         {
-            return ChangePerspective(state, state.Player);
+            return ChangePerspective(state, Player.One);
         }
     }
 }

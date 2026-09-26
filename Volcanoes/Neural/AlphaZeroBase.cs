@@ -14,11 +14,11 @@ namespace Volcano.Neural
         protected readonly ResNet model;
         protected readonly Adam optimizer;
         protected readonly torch.optim.lr_scheduler.LRScheduler scheduler;
-        protected readonly Game game;
+        protected readonly GameRule game;
         protected readonly AlphaZeroConfig config;
         protected readonly Encoder encoder;
 
-        protected AlphaZeroBase(ResNet model, Adam optimizer, torch.optim.lr_scheduler.LRScheduler scheduler, Encoder encoder, Game game, AlphaZeroConfig config)
+        protected AlphaZeroBase(ResNet model, Adam optimizer, torch.optim.lr_scheduler.LRScheduler scheduler, Encoder encoder, GameRule game, AlphaZeroConfig config)
         {
             this.model = model;
             this.optimizer = optimizer;
