@@ -12,7 +12,7 @@ namespace Volcano.Neural
         /// 4 for my pieces 1 through 4
         /// 1 for having two moves
         /// </summary>
-        public const int Planes = 10;
+        public const int channels = 10;
 
         /// <summary>
         /// shape [batch, cell, channel]
@@ -21,33 +21,33 @@ namespace Volcano.Neural
         {
             var batchSize = states.Count;
             var cells = 80;
-            var data = new float[batchSize * Planes * cells];
+            var data = new float[batchSize * channels * cells];
 
             for (var b = 0; b < batchSize; b++)
             {
                 var state = states[b];
                 var board = state.Tiles;
-                var baseIndex = b * Planes * cells;
+                var baseIndex = b * channels * cells;
 
                 for (var i = 0; i < cells; i++)
                 {
                     // adjust [-4, +4] to [0, 8]
                     var channel = board[i] + 4;
-                    data[baseIndex + i * Planes + channel] = 1f;
+                    data[baseIndex + channel * 80 + i] = 1f;
                 }
 
                 // if this is the first of two moves
                 if (state.GetMoveTypeForTurn(state.Turn + 1) == MoveType.AllGrow)
                 {
+                    var channel = channels - 1;
                     for (var i = 0; i < cells; i++)
                     {
-                        var channel = Planes - 1;
-                        data[baseIndex + i * Planes + channel] = 1f;
+                        data[baseIndex + channel * 80 + i] = 1f;
                     }
                 }
             }
 
-            return torch.tensor(data, new long[] { batchSize, cells, Planes }).to(device);
+            return torch.tensor(data, new long[] { batchSize, channels, cells }).to(device);
         }
 
         /// <summary>

@@ -9,39 +9,38 @@ namespace Volcano.Neural
         private readonly Tensor adjacencyMatrix;
 
         public GraphConvLayer(long inFeatures, long outFeatures, Tensor boardTopology)
-            : base("SequentialGraphConvLayer")
+            : base("SwappedGraphConvLayer")
         {
-            linear = Linear(inFeatures, outFeatures, hasBias: true);
-            // Retain the matrix across operations
+            // We use a 1D Convolution with kernel size 1 as our "Linear" transformation layer.
+            // Why? Because nn.Linear changes the LAST dimension. Since our last dimension is
+            // now Tiles, nn.Conv1d(kernelSize: 1) is the correct way to transform CHANNELS.
+            linear = Conv1d(inFeatures, outFeatures, kernel_size: 1, bias: false);
             adjacencyMatrix = boardTopology.alias();
             RegisterComponents();
         }
 
+        /// <param name="nodeFeatures">Expected shape: [BatchSize, InChannels, Tiles]</param>
         public override Tensor forward(Tensor nodeFeatures)
         {
             using (var scope = NewDisposeScope())
             {
                 long numNodes = adjacencyMatrix.shape[0];
 
-                // Create identity matrix matching graph size
+                // 1. Create Normalized Adjacency (A + I) / 4
                 var identity = eye(numNodes, numNodes, adjacencyMatrix.dtype, adjacencyMatrix.device);
-
-                // Add self-loops (A + I)
                 var A_hat = adjacencyMatrix.add(identity);
-
-                // Normalization step (3 neighbors + 1 self-loop = regular degree of 4)
                 var A_norm = A_hat.div(4.0f);
 
-                // Aggregate neighbor attributes (Message Passing)
-                var aggregatedFeatures = matmul(A_norm, nodeFeatures);
+                // 2. Aggregate features along the Tiles dimension using RIGHT multiplication
+                // [Batch, Channels, Tiles] x [Tiles, Tiles] -> Keeps shape as [Batch, Channels, Tiles]
+                var aggregatedFeatures = matmul(nodeFeatures, A_norm);
 
-                // Trainable weight matrix mapping transformation
+                // 3. Apply the channel transformation using the Conv1d layer
                 var transformed = linear.forward(aggregatedFeatures);
 
-                // Apply correct TorchSharp functional ReLU activation
+                // 4. Apply activation function
                 var activated = functional.relu(transformed);
 
-                // Safely bubbles the target tensor out of the disposal scope
                 return activated.MoveToOuterDisposeScope();
             }
         }

@@ -25,8 +25,8 @@ namespace Volcano.Neural
         public ResNet(int numResBlocks, int numHidden, Device device, Tensor boardTopology) : base("ResNet")
         {
             this.device = device;
-            startBlock = torch.nn.Sequential(skotz.nn.ConvGraph(Encoder.Planes, numHidden, boardTopology),
-                                             torch.nn.BatchNorm2d(numHidden),
+            startBlock = torch.nn.Sequential(skotz.nn.ConvGraph(Encoder.channels, numHidden, boardTopology),
+                                             torch.nn.BatchNorm1d(numHidden),
                                              torch.nn.ReLU());
             backBone = torch.nn.ModuleList<ResBlock>();
 
@@ -38,12 +38,12 @@ namespace Volcano.Neural
             }
 
             policyHead = torch.nn.Sequential(skotz.nn.ConvGraph(numHidden, 256, boardTopology),
-                                             torch.nn.BatchNorm2d(256),
+                                             torch.nn.BatchNorm1d(256),
                                              torch.nn.ReLU(),
                                              torch.nn.Flatten(),
                                              torch.nn.Linear(256 * 80, 80));
             valueHead = torch.nn.Sequential(skotz.nn.ConvGraph(numHidden, 36, boardTopology),
-                                            torch.nn.BatchNorm2d(36),
+                                            torch.nn.BatchNorm1d(36),
                                             torch.nn.ReLU(),
                                             torch.nn.Flatten(),
                                             torch.nn.Linear(36 * 80, 1),
