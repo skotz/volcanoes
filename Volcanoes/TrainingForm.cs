@@ -14,7 +14,7 @@ namespace Volcano
         {
             InitializeComponent();
 
-            _engine = new DeepQNetworkEngine();
+            _engine = new AlphaZeroEngine();
             _engine.OnDebug += engineToTrain_OnDebug;
 
             _worker = new BackgroundWorker();

@@ -478,7 +478,7 @@ namespace Volcano.Game
         /// </summary>
         /// <param name="turn"></param>
         /// <returns></returns>
-        private Player GetPlayerForTurn(int turn)
+        public Player GetPlayerForTurn(int turn)
         {
             switch ((turn - 1) % 6)
             {
@@ -512,7 +512,7 @@ namespace Volcano.Game
         /// </summary>
         /// <param name="turn"></param>
         /// <returns></returns>
-        private MoveType GetMoveTypeForTurn(int turn)
+        public MoveType GetMoveTypeForTurn(int turn)
         {
             switch ((turn - 1) % 6)
             {

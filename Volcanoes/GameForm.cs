@@ -66,6 +66,7 @@ namespace Volcano
             engines.Add("MCTS Trio", () => new MonteCarloTreeSearchEngine(true, true, true, openingBook));
 
             engines.Add<DeepQNetworkEngine>("Deep Q-Network");
+            engines.Add<AlphaZeroEngine>("AlphaZero");
 
             //engines.Add<MonteCarloPlayoutEngine>("MCTS Playout");
             //engines.Add<MonteCarloBeelineParallelEngine>("Parallel MCTS Beeline Full");
@@ -542,7 +543,7 @@ namespace Volcano
         private void trainQLearningToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var trainingForm = new TrainingForm();
-            trainingForm.ShowDialog();
+            trainingForm.ShowAsync();
         }
 
         private void canonicalizeBoardToolStripMenuItem_Click(object sender, EventArgs e)
