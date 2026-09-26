@@ -92,7 +92,7 @@ namespace Volcano.Neural
                     foreach (var child in root.Children)
                     {
                         double eval = child.VisitCount;
-                        string pv = "";
+                        string pv = $"[{rootPolicy[child.ActionTaken].ToString("0.000000")}]   ";
                         var c = child;
                         while (c != null && c.ActionTaken >= 0 && c.ActionTaken <= 80)
                         {

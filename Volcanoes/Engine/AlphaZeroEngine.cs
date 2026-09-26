@@ -28,6 +28,11 @@ namespace Volcano.Engine
         public static Action<string> WriteLine;
 
         public AlphaZeroEngine()
+            : this(false)
+        {
+        }
+
+        public AlphaZeroEngine(bool forTraining)
         {
             _config = new AlphaZeroConfig();
             _device = cuda.is_available() ? new Device("cuda") : new Device("cpu");
@@ -38,8 +43,11 @@ namespace Volcano.Engine
             _encoder = new Volcano.Neural.Encoder();
             _game = new Volcano.Neural.GameRule();
 
-            _alphaZero = new AlphaZero(_model, _optimizer, _scheduler, _encoder, _game, _config);
-            _alphaZero.OnStatus += alphaZero_OnStatus;
+            if (!forTraining)
+            {
+                _alphaZero = new AlphaZero(_model, _optimizer, _scheduler, _encoder, _game, _config);
+                _alphaZero.OnStatus += alphaZero_OnStatus;
+            }
         }
 
         private void alphaZero_OnStatus(object sender, EngineStatus e)
