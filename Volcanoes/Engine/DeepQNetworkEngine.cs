@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Volcano.Engine.Neural;
+using TorchSharp;
+using TorchSharp.Modules;
 using Volcano.Game;
+using static TorchSharp.torch;
 
 namespace Volcano.Engine
 {
@@ -14,9 +16,9 @@ namespace Volcano.Engine
 
         public event EventHandler<EngineStatus> OnStatus;
 
-        private NeuralNetwork network;
-        private NeuralNetwork targetNetwork; // Target network for stable Q-value estimation
-        private ReplayBuffer replayBuffer;
+        private TorchSharpDQNModel network;
+        private TorchSharpDQNModel targetNetwork;
+        private TorchSharpReplayBuffer replayBuffer;
         private Random random;
 
         private double epsilon;
@@ -31,8 +33,13 @@ namespace Volcano.Engine
         private int episodeCounter = 0;
         private int targetUpdateFrequency = 5;
         private bool explore = false;
-        private const string NETWORK_FILE = "dqn.dat";
-        private const string BEST_NETWORK_FILE = "dqn_best.dat";
+        private const string NETWORK_FILE = "dqn.pt";
+        private const string BEST_NETWORK_FILE = "dqn_best.pt";
+
+        private torch.optim.Optimizer _optimizer;
+        private Random _rng;
+        private torch.Device _device;
+        private Canonical _canonical;
 
         // Validation-based early stopping
         private int validationFrequency = 100;
@@ -49,18 +56,23 @@ namespace Volcano.Engine
 
         public DeepQNetworkEngine()
         {
-            random = new Random();
-            network = new NeuralNetwork(learningRate);
-            targetNetwork = new NeuralNetwork(learningRate);
-            replayBuffer = new ReplayBuffer(replayBufferSize);
+            _rng = new Random();
+            _device = cuda.is_available() ? CUDA : CPU;
+
+            network = new TorchSharpDQNModel(device: _device);
+            targetNetwork = new TorchSharpDQNModel(device: _device);
+            replayBuffer = new TorchSharpReplayBuffer(100000);
 
             // Initialize target network with same weights
             targetNetwork.CopyWeightsFrom(network);
 
+            // Create optimizer
+            _optimizer = optim.Adam(network.parameters(), learningRate: 0.001, weight_decay: 1e-5);
+
             // Try to load existing network
             if (File.Exists(NETWORK_FILE))
             {
-                network.Load(NETWORK_FILE);
+                load(network, NETWORK_FILE);
                 targetNetwork.CopyWeightsFrom(network);
             }
         }
@@ -71,48 +83,55 @@ namespace Volcano.Engine
             _canonical = new Canonical();
             _canonical.SetIndex(state);
 
-            double[] qValues = network.Forward(EncodeState(state));
-            List<int> validMoves = state.GetMoves();
-
-            int bestMove = -1;
-
-            // Collect move evaluations
-            EngineStatus status = new EngineStatus();
-
-            if (explore)
+            using (no_grad())
             {
-                bestMove = validMoves[random.Next(validMoves.Count)];
-            }
-            else
-            {
-                // Greedy: pick move with highest Q-value
-                double bestQValue = double.MinValue;
-                foreach (int move in validMoves)
+                var stateEncoded = EncodeState(state);
+                var stateArrayFloat = Array.ConvertAll(stateEncoded, x => (float)x);
+                var stateTensor = tensor(stateArrayFloat).unsqueeze(0).to(_device);
+
+                var qValues = network.forward(stateTensor).squeeze(0).cpu();
+                var qValuesArray = qValues.data<float>().ToArray();
+
+                List<int> validMoves = state.GetMoves();
+
+                int bestMove = -1;
+                EngineStatus status = new EngineStatus();
+
+                if (explore)
                 {
-                    double qValue = qValues[move];
-                    if (qValue > bestQValue)
+                    bestMove = validMoves[_rng.Next(validMoves.Count)];
+                }
+                else
+                {
+                    // Greedy: pick move with highest Q-value
+                    double bestQValue = double.MinValue;
+                    foreach (int move in validMoves)
                     {
-                        bestQValue = qValue;
-                        bestMove = move;
+                        double qValue = qValuesArray[move];
+                        if (qValue > bestQValue)
+                        {
+                            bestQValue = qValue;
+                            bestMove = move;
+                        }
                     }
                 }
+
+                if (bestMove == -1 && validMoves.Count > 0)
+                {
+                    bestMove = validMoves[_rng.Next(validMoves.Count)];
+                }
+
+                // Report Q-values for all moves
+                foreach (int move in validMoves)
+                {
+                    status.Add(move, qValuesArray[move], "", qValuesArray[move]);
+                }
+
+                status.Sort();
+                Report(status);
+
+                return new SearchResult(bestMove);
             }
-
-            if (bestMove == -1 && validMoves.Count > 0)
-            {
-                bestMove = validMoves[random.Next(validMoves.Count)];
-            }
-
-            // Report Q-values for all moves
-            foreach (int move in validMoves)
-            {
-                status.Add(move, qValues[move], "", qValues[move]);
-            }
-
-            status.Sort();
-            Report(status);
-
-            return new SearchResult(bestMove);
         }
 
         public void Train()
@@ -149,7 +168,7 @@ namespace Volcano.Engine
             // Load best network if it exists
             if (File.Exists(BEST_NETWORK_FILE))
             {
-                network.Load(BEST_NETWORK_FILE);
+                load(network, BEST_NETWORK_FILE);
                 targetNetwork.CopyWeightsFrom(network);
                 Debug("Loaded best network from checkpoint");
             }
@@ -235,7 +254,7 @@ namespace Volcano.Engine
                         patienceCounter = 0; // Reset patience
 
                         // Save best network
-                        network.Save(BEST_NETWORK_FILE);
+                        save(network.state_dict(), BEST_NETWORK_FILE);
                         Debug($"Validation win rate improved to {validationWinRate:F3}! Saving best network.");
                     }
                     else
@@ -262,7 +281,7 @@ namespace Volcano.Engine
                     if (bestValidationWinRate > 0.0 && patienceCounter >= patienceLimit)
                     {
                         Debug($"Early stopping triggered! No improvement for {patienceLimit} games. Training complete.");
-                        network.Load(BEST_NETWORK_FILE); // Load best weights before ending
+                        network.load(BEST_NETWORK_FILE); // Load best weights before ending
                         network.Save(NETWORK_FILE);
                         break;
                     }
@@ -277,8 +296,8 @@ namespace Volcano.Engine
             }
 
             // Save network at end
-            network.Save(NETWORK_FILE);
-            Debug($"Training complete. Best validation win rate: {bestValidationWinRate:F3}. Networks saved to dqn.dat and dqn_best.dat");
+            save(network.state_dict(), NETWORK_FILE);
+            Debug($"Training complete. Best validation win rate: {bestValidationWinRate:F3}. Networks saved to dqn.pt and dqn_best.pt");
         }
 
         private Player PlayGame(Board board, bool learnerIsPlayerOne, bool playAgainstOpponent)
@@ -394,104 +413,48 @@ namespace Volcano.Engine
 
         private double TrainOnMiniBatch()
         {
-            List<Transition> batch = replayBuffer.SampleMiniBatch(miniBatchSize);
-            double totalLoss = 0.0;
+            var transitions = replayBuffer.SampleMiniBatch(miniBatchSize);
+            var (states, actions, rewards, nextStates, dones) = replayBuffer.GetBatch(transitions, _device);
 
-            // Set training mode for batch normalization
             network.SetTrainingMode(true);
 
-            // Create batch-wide accumulator arrays for gradients (new dimensions)
-            double[,] totalConvWGrad = new double[52, 32];
-            double[,] totalW1Grad = new double[2560, 128];
-            double[] totalB1Grad = new double[128];
-            double[,] totalW2Grad = new double[128, 80];
-            double[] totalB2Grad = new double[80];
-
-            const double GRAD_CLIP = 0.1;
-
-            foreach (Transition transition in batch)
+            // Compute target Q values using target network
+            Tensor targetQValues;
+            using (torch.no_grad())
             {
-                // 1. Calculate Target using Target Network
-                targetNetwork.SetTrainingMode(false);
-                double[] nextQValues = targetNetwork.Forward(transition.NextState);
-                double maxNextQ = nextQValues.Max();
-                if (transition.NextTurnIsOpponent)
+                var nextQValues = targetNetwork.forward(nextStates);
+                var maxNextQ = nextQValues.max(1).values;
+
+                // Adjust for opponent turns
+                for (int i = 0; i < transitions.Count; i++)
                 {
-                    maxNextQ = -maxNextQ;
+                    if (transitions[i].NextTurnIsOpponent)
+                    {
+                        maxNextQ[i] = -maxNextQ[i];
+                    }
                 }
-                double targetQ = transition.Done ? transition.Reward : transition.Reward + gamma * maxNextQ;
 
-                // 2. Forward pass on Main Network to cache its internal states
-                double[] qValues = network.Forward(transition.State);
-                double currentQ = qValues[transition.Action];
-
-                // 3. Compute loss metrics
-                double bellmanError = currentQ - targetQ;
-                totalLoss += bellmanError * bellmanError;
-
-                // 4. Calculate local gradients for this individual transition
-                double[] lossGradient = new double[80];
-                lossGradient[transition.Action] = 2.0 * bellmanError;
-
-                // Clip the initial loss gradient to prevent explosion
-                lossGradient[transition.Action] = Math.Max(-GRAD_CLIP, Math.Min(GRAD_CLIP, lossGradient[transition.Action]));
-
-                // 5. Run a modified backprop pass that extracts gradients WITHOUT updating weights
-                network.ComputeGradients(lossGradient, out double[,] convWG, out double[,] w1G, out double[] b1G, out double[,] w2G, out double[] b2G);
-
-                // 6. Accumulate the gradients across the mini-batch with clipping
-                AccumulateGradientsWithClip(totalConvWGrad, convWG, GRAD_CLIP);
-                AccumulateGradientsWithClip(totalW1Grad, w1G, GRAD_CLIP);
-                AccumulateArraysWithClip(totalB1Grad, b1G, GRAD_CLIP);
-                AccumulateGradientsWithClip(totalW2Grad, w2G, GRAD_CLIP);
-                AccumulateArraysWithClip(totalB2Grad, b2G, GRAD_CLIP);
+                // Compute target: R + gamma * max(Q(s', a)) for non-terminal states
+                targetQValues = (rewards + (1 - dones) * (float)gamma * maxNextQ).detach();
             }
 
-            double avgLoss = totalLoss / miniBatchSize;
-            if (avgLoss > 1e6 || double.IsNaN(avgLoss) || double.IsInfinity(avgLoss))
-            {
-                Debug($"WARNING: Loss explosion! avgLoss={avgLoss}");
-            }
+            // Forward pass on current network
+            var qValues = network.forward(states);
+            var selectedQValues = qValues.gather(1, actions.unsqueeze(1)).squeeze(1);
 
-            // 7. Apply the accumulated mini-batch gradients to the weights exactly ONCE
-            network.ApplyMiniBatchUpdates(totalConvWGrad, totalW1Grad, totalB1Grad, totalW2Grad, totalB2Grad, 1.0 / miniBatchSize);
+            // Huber loss (SmoothL1Loss)
+            var loss = torch.nn.functional.smooth_l1_loss(selectedQValues, targetQValues, reduction: torch.nn.Reduction.Mean);
 
-            return avgLoss;
-        }
+            // Backward pass
+            _optimizer.zero_grad();
+            loss.backward();
 
-        private void AccumulateGradientsWithClip(double[,] target, double[,] source, double clip)
-        {
-            for (int i = 0; i < target.GetLength(0); i++)
-            {
-                for (int j = 0; j < target.GetLength(1); j++)
-                {
-                    double clipped = Math.Max(-clip, Math.Min(clip, source[i, j]));
-                    target[i, j] += clipped;
-                }
-            }
-        }
+            // Gradient clipping
+            torch.nn.utils.clip_grad_norm_(network.parameters(), max_norm: 1.0f);
 
-        private void AccumulateArraysWithClip(double[] target, double[] source, double clip)
-        {
-            for (int i = 0; i < target.Length; i++)
-            {
-                double clipped = Math.Max(-clip, Math.Min(clip, source[i]));
-                target[i] += clipped;
-            }
-        }
+            _optimizer.step();
 
-        // Simple helper methods to sum up your arrays
-        private void AccumulateGradients(double[,] target, double[,] source)
-        {
-            for (int i = 0; i < target.GetLength(0); i++)
-                for (int j = 0; j < target.GetLength(1); j++)
-                    target[i, j] += source[i, j];
-        }
-
-        private void AccumulateArrays(double[] target, double[] source)
-        {
-            for (int i = 0; i < target.Length; i++)
-                target[i] += source[i];
+            return loss.item<double>();
         }
 
         private double[] EncodeState(Board board)
