@@ -19,6 +19,7 @@ namespace Volcano.Engine
         private LRScheduler _scheduler;
         private Encoder _encoder;
         private Volcano.Neural.GameRule _game;
+        private AlphaZero _alphaZero;
 
         public event EventHandler<EngineStatus> OnStatus;
 
@@ -37,7 +38,13 @@ namespace Volcano.Engine
             _encoder = new Volcano.Neural.Encoder();
             _game = new Volcano.Neural.GameRule();
 
-            WriteLine = Debug;
+            _alphaZero = new AlphaZero(_model, _optimizer, _scheduler, _encoder, _game, _config);
+            _alphaZero.OnStatus += alphaZero_OnStatus;
+        }
+
+        private void alphaZero_OnStatus(object sender, EngineStatus e)
+        {
+            OnStatus?.Invoke(sender, e);
         }
 
         private Tensor GetGraphTopology()
@@ -55,11 +62,22 @@ namespace Volcano.Engine
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
-            throw new NotImplementedException();
+            var timer = Stopwatch.StartNew();
+            var move = _alphaZero.GetBestMove(state, maxSeconds);
+
+            return new SearchResult
+            {
+                BestMove = move.Item1,
+                Evaluations = move.Item2, // TODO
+                Simulations = move.Item2,
+                Milliseconds = timer.ElapsedMilliseconds,
+            };
         }
 
         public void Train()
         {
+            WriteLine = Debug;
+
             var alphaZero = new AlphaZeroParallel(_model, _optimizer, _scheduler, _encoder, _game, _config);
 
             var watch = Stopwatch.StartNew();
@@ -72,11 +90,6 @@ namespace Volcano.Engine
         private void Debug(string status)
         {
             OnDebug?.Invoke(this, new LearnStatus(status));
-        }
-
-        private void Report(EngineStatus status)
-        {
-            OnStatus?.Invoke(this, status);
         }
     }
 }

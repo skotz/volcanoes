@@ -31,7 +31,7 @@ namespace Volcano.Neural
                 if (state == null)
                 {
                     Board next = game.GetNextState(parent!.State, ActionTaken);
-                    state = game.ChangePerspective(next);
+                    state = game.ChangePerspective(next, Player.One);
                 }
                 return state;
             }

@@ -60,10 +60,6 @@ namespace Volcano.Neural
             return false;
         }
 
-        public Player GetOpponent(Player player) => player == Player.One ? Player.Two : Player.One;
-
-        public int GetOpponentValue(int value) => -value;
-
         /// <summary>
         /// Returns the position as seen by <paramref name="player"/>, i.e. with that player's
         /// stones as +1. Search always works in the "side to move is +1" frame.
@@ -88,11 +84,6 @@ namespace Volcano.Neural
             //}
 
             return next;
-        }
-
-        public Board ChangePerspective(Board state)
-        {
-            return ChangePerspective(state, Player.One);
         }
     }
 }
