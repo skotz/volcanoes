@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using Volcano.Engine;
 using Volcano.Game;
 using Volcano.Interface;
+using Volcano.Neural;
 using Volcano.Search;
 using static System.Environment;
 
@@ -549,8 +550,9 @@ namespace Volcano
         private void canonicalizeBoardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var canonical = new Canonical();
-            canonical.SetIndex(game.CurrentState);
-            game.CurrentState = canonical.Canonicalize(game.CurrentState);
+            var state = new GameRule().ChangePerspective(game.CurrentState, Player.One);
+            canonical.SetIndex(state);
+            game.CurrentState = canonical.Canonicalize(state);
         }
     }
 }

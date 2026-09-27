@@ -53,7 +53,7 @@ namespace Volcano.Neural
 
                     spg.State = game.GetNextState(spg.State, action);
 
-                    if (game.GetTerminated(spg.State, action, out int outcome))
+                    if (game.GetTerminated(spg.State, action, out var outcome))
                     {
                         spg.Terminated = true;
 
@@ -63,7 +63,7 @@ namespace Volcano.Neural
 
                         for (int j = 0; j < gamePlayers.Count; j++)
                         {
-                            float value = gamePlayers[j] == player ? outcome : -outcome;
+                            float value = gamePlayers[j] == outcome ? 1 : -1;
                             data.Add(gameStates[j], gameProbs[j], value);
                         }
                     }

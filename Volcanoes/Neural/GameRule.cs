@@ -44,19 +44,20 @@ namespace Volcano.Neural
         /// Whether the game has ended after <paramref name="action"/>.
         /// <paramref name="value"/> is 1 if that move won, 0 for a draw or an unfinished game.
         /// </summary>
-        public bool GetTerminated(Board state, int action, out int value)
+        public bool GetTerminated(Board state, int action, out Player value)
         {
-            if (CheckWinner(state))
+            if (state.Winner != Player.Empty)
             {
-                value = 1;
+                value = state.Flipped ? (state.Winner == Player.Two ? Player.One : Player.Two) : state.Winner;
                 return true;
             }
             if (CountValidMoves(state) == 0)
             {
-                value = 0; // draw
+                // should be handled in the previous case
+                value = Player.Draw;
                 return true;
             }
-            value = 0;
+            value = Player.Empty;
             return false;
         }
 
@@ -68,20 +69,16 @@ namespace Volcano.Neural
         {
             var next = new Board(state);
 
-            if (next.Player != player)
+            if (next.Player == Player.Two)
             {
                 next.Turn += 3;
-                next.Player = player;
+                next.Player = Player.One;
                 next.Flipped = !next.Flipped;
                 for (int i = 0; i < Cells; i++)
                 {
                     next.Tiles[i] *= -1;
                 }
             }
-            //else if (next.Flipped)
-            //{
-            //    // second move
-            //}
 
             return next;
         }

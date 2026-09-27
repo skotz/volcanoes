@@ -17,7 +17,7 @@ namespace Volcano.Neural
         {
             nnmcts = new NNMCTS(game, config, model, encoder);
 
-            model.load("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Debug\\net10.0-windows\\models\\model_40960.dat");
+            model.load("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Debug\\net10.0-windows\\models\\model_10240.dat");
             model.eval();
 
             nnmcts.OnStatus += Nnmcts_OnStatus;

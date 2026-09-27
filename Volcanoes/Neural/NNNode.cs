@@ -97,11 +97,23 @@ namespace Volcano.Neural
             }
         }
 
+        public void Backpropagate(Player winner)
+        {
+            var player = state.Flipped ? (state.Player == Player.One ? Player.Two : Player.One) : state.Player;
+            var value = player == winner ? 1 : -1;
+            valueSum += value;
+            VisitCount++;
+            parent?.Backpropagate(winner);
+        }
+
         public void Backpropagate(double value)
         {
             valueSum += value;
             VisitCount++;
-            parent?.Backpropagate(-value);
+            var parentPlayer = parent?.state?.Flipped == true ? (parent?.state?.Player == Player.Two ? Player.One : Player.Two) : parent?.state?.Player;
+            var currentPlayer = state?.Flipped == true ? (state?.Player == Player.Two ? Player.One : Player.Two) : state?.Player;
+            var negate = parentPlayer != currentPlayer ? -1 : 1;
+            parent?.Backpropagate(value * negate);
         }
     }
 }

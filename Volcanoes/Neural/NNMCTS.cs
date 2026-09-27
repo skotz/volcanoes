@@ -73,8 +73,8 @@ namespace Volcano.Neural
                     node = node.Select();
                 }
 
-                bool terminated = game.GetTerminated(node.State, node.ActionTaken, out int outcome);
-                double value = -outcome;
+                bool terminated = game.GetTerminated(node.State, node.ActionTaken, out var winner);
+                double value = 0;
 
                 if (!terminated)
                 {
@@ -83,7 +83,7 @@ namespace Volcano.Neural
                     value = leafValue;
                     node.Expand(policy);
                 }
-                node.Backpropagate(value);
+                node.Backpropagate(winner);
 
                 // Update Status
                 if (statusUpdate.ElapsedMilliseconds > millisecondsBetweenUpdates && OnStatus != null)
