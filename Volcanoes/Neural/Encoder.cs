@@ -51,7 +51,7 @@ namespace Volcano.Neural
         }
 
         /// <summary>
-        /// [1, 80, 10]
+        /// [1, 10, 80]
         /// </summary>
         public torch.Tensor Encode(Board state, torch.Device device) => Encode(new[] { state }, device);
     }

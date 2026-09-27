@@ -46,14 +46,19 @@ namespace Volcano.Neural
         /// </summary>
         public bool GetTerminated(Board state, int action, out Player value)
         {
-            if (state.Winner != Player.Empty)
+            if (state.Winner == Player.Draw)
+            {
+                value = Player.Draw;
+                return true;
+            }
+            else if (state.Winner != Player.Empty)
             {
                 value = state.Flipped ? (state.Winner == Player.Two ? Player.One : Player.Two) : state.Winner;
                 return true;
             }
-            if (CountValidMoves(state) == 0)
+            else if (CountValidMoves(state) == 0)
             {
-                // should be handled in the previous case
+                // should be handled in the previous cases
                 value = Player.Draw;
                 return true;
             }

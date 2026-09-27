@@ -35,6 +35,8 @@ namespace Volcano.Neural
                 var output = model.forward(encoder.Encode(state, model.Device));
                 float[] policy = torch.softmax(output.Item1, 1).cpu().data<float>().ToArray();
                 float value = output.Item2.cpu().data<float>()[0];
+                //policy = new float[80]; // TEMP: TEST
+                //value = 0; // TEMP: TEST
                 return (policy, value);
             }
         }
@@ -82,8 +84,13 @@ namespace Volcano.Neural
                     PolicyMath.MaskAndNormalize(policy, game.GetValidMoves(node.State));
                     value = leafValue;
                     node.Expand(policy);
+
+                    node.Backpropagate(value);
                 }
-                node.Backpropagate(winner);
+                else
+                {
+                    node.Backpropagate(winner);
+                }
 
                 // Update Status
                 if (statusUpdate.ElapsedMilliseconds > millisecondsBetweenUpdates && OnStatus != null)
@@ -91,7 +98,9 @@ namespace Volcano.Neural
                     EngineStatus status = new EngineStatus();
                     foreach (var child in root.Children)
                     {
-                        double eval = child.VisitCount;
+                        //double eval = child.VisitCount;
+                        // TODO: why negated?
+                        double eval = Math.Round(child.VisitCount > 0 ? -child.valueSum / child.VisitCount : 0, 2);
                         string pv = $"[{rootPolicy[child.ActionTaken].ToString("0.000000")}]   ";
                         var c = child;
                         while (c != null && c.ActionTaken >= 0 && c.ActionTaken <= 80)

@@ -10,7 +10,7 @@ namespace Volcano.Neural
         private readonly AlphaZeroConfig config;
         private readonly NNNode parent;
         private readonly double prior;
-        private double valueSum;
+        public double valueSum;
         private Board state;
 
         public int ActionTaken { get; }
@@ -99,20 +99,25 @@ namespace Volcano.Neural
 
         public void Backpropagate(Player winner)
         {
-            var player = state.Flipped ? (state.Player == Player.One ? Player.Two : Player.One) : state.Player;
-            var value = player == winner ? 1 : -1;
-            valueSum += value;
-            VisitCount++;
-            parent?.Backpropagate(winner);
+            var player = State.GetPlayerForPreviousTurn();
+            var lastToMove = State.Flipped ? (player == Player.One ? Player.Two : Player.One) : player;
+            var value = winner == Player.Draw ? 0 : (lastToMove == winner ? 1 : -1);
+            //valueSum += value;
+            //VisitCount++;
+            //parent?.Backpropagate(winner);
+            Backpropagate(-value);
         }
 
         public void Backpropagate(double value)
         {
+            var cPlayer = State.GetPlayerForPreviousTurn();
+            var pPlayer = parent?.State.GetPlayerForPreviousTurn();
+            var parentPlayer = parent?.State?.Flipped == true ? (pPlayer == Player.Two ? Player.One : Player.Two) : pPlayer;
+            var currentPlayer = State.Flipped ? (cPlayer == Player.Two ? Player.One : Player.Two) : cPlayer;
+            var negate = parentPlayer != currentPlayer ? -1 : 1;
+
             valueSum += value;
             VisitCount++;
-            var parentPlayer = parent?.state?.Flipped == true ? (parent?.state?.Player == Player.Two ? Player.One : Player.Two) : parent?.state?.Player;
-            var currentPlayer = state?.Flipped == true ? (state?.Player == Player.Two ? Player.One : Player.Two) : state?.Player;
-            var negate = parentPlayer != currentPlayer ? -1 : 1;
             parent?.Backpropagate(value * negate);
         }
     }
