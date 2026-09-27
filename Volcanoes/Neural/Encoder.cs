@@ -15,7 +15,7 @@ namespace Volcano.Neural
         public const int channels = 10;
 
         /// <summary>
-        /// shape [batch, cell, channel]
+        /// shape [batch, channel, cell]
         /// </summary>
         public torch.Tensor Encode(IReadOnlyList<Board> states, torch.Device device)
         {

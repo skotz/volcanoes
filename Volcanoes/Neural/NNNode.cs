@@ -8,7 +8,7 @@ namespace Volcano.Neural
     {
         private readonly GameRule game;
         private readonly AlphaZeroConfig config;
-        private readonly NNNode? parent;
+        private readonly NNNode parent;
         private readonly double prior;
         private double valueSum;
         private Board state;
@@ -73,7 +73,7 @@ namespace Volcano.Neural
 
         public NNNode Select()
         {
-            NNNode? best = null;
+            NNNode best = null;
             double bestUcb = double.MinValue;
             foreach (NNNode child in Children)
             {

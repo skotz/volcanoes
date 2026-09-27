@@ -47,11 +47,11 @@ namespace Volcano.Neural
             NNNode root = new NNNode(game, config, state, visitCount: 1);
 
             (float[] rootPolicy, _) = Evaluate(state);
-            if (config.DirichletEpsilon > 0)
-            {
-                float[] noise = Sampling.Dirichlet(Random.Shared, game.ActionSize, config.DirichletAlpha);
-                PolicyMath.AddDirichletNoise(rootPolicy, noise, config.DirichletEpsilon);
-            }
+            //if (config.DirichletEpsilon > 0)
+            //{
+            //    float[] noise = Sampling.Dirichlet(Random.Shared, game.ActionSize, config.DirichletAlpha);
+            //    PolicyMath.AddDirichletNoise(rootPolicy, noise, config.DirichletEpsilon);
+            //}
             PolicyMath.MaskAndNormalize(rootPolicy, game.GetValidMoves(state));
             root.Expand(rootPolicy);
 

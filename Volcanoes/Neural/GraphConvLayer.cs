@@ -56,6 +56,8 @@ namespace Volcano.Neural
         }
     }
 
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
+
     public static class skotz
     {
         public static class nn
@@ -66,4 +68,6 @@ namespace Volcano.Neural
             }
         }
     }
+
+#pragma warning restore CS8981
 }

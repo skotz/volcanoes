@@ -86,10 +86,10 @@ namespace Volcano.Neural
         }
 
         /// <summary>One pass over the data: shuffle, then fit policy (cross-entropy) and value (MSE).</summary>
-        public void Train(TrainingData data)
+        public (double, double, double) Train(TrainingData data)
         {
             int n = data.Count;
-            if (n == 0) return;
+            if (n == 0) return (0, 0, 0);
 
             int[] order = Enumerable.Range(0, n).ToArray();
             for (int i = n - 1; i > 0; i--)      // Fisher-Yates shuffle
@@ -144,6 +144,8 @@ namespace Volcano.Neural
             AlphaZeroEngine.WriteLine($"Loss policy: {lastPolicyLoss}");
             AlphaZeroEngine.WriteLine($"Loss value: {lastValueLoss}");
             AlphaZeroEngine.WriteLine($"Loss: {lastLoss}");
+
+            return (lastPolicyLoss, lastValueLoss, lastLoss);
         }
 
         /// <summary>The AlphaZero loop: self-play, train on the result, checkpoint, repeat.</summary>
@@ -185,17 +187,32 @@ namespace Volcano.Neural
                 AlphaZeroEngine.WriteLine($"training on {data.Count} positions ({fresh.Count} fresh) from {replayBuffer.Count} iteration(s)");
 
                 model.train();
+                var lastLoss = (0.0, 0.0, 0.0);
                 for (int epoch = 0; epoch < config.NumEpochs; epoch++)
                 {
                     AlphaZeroEngine.WriteLine($"epoch {epoch}");
-                    Train(data);
+                    lastLoss = Train(data);
                 }
 
                 scheduler.step();
-                AlphaZeroEngine.WriteLine($"Current LR: {string.Join(",", scheduler.get_last_lr())}");
+                var lr = scheduler.get_last_lr();
+                AlphaZeroEngine.WriteLine($"Current LR: {string.Join(",", lr)}");
 
-                string path = Path.Combine(savePath, $"model_{config.NumSelfPlayIterations * (iteration + 1)}.dat");
-                model.save(path);
+                string format = "0.##################################################";
+
+                string status = Path.Combine(savePath, "status.csv");
+                if (!File.Exists(status))
+                {
+                    File.AppendAllLines(status, ["iteration,timestamp,games,policy loss,value loss,loss,lr"]);
+                }
+                File.AppendAllLines(status, [$"{iteration + 1},{DateTime.Now.ToString("yyyyMMddHHmmss")},{config.NumSelfPlayIterations * (iteration + 1)},{lastLoss.Item1.ToString(format)},{lastLoss.Item2.ToString(format)},{lastLoss.Item3.ToString(format)},{lr.First().ToString(format)}"]);
+                string path1 = Path.Combine(savePath, $"model-{config.NumSelfPlayIterations * (iteration + 1)}-{DateTime.Now.ToString("yyyyMMddHHmmss")}.dat");
+                model.save(path1);
+
+                string path2 = Path.Combine(savePath, "training-model.dat");
+                string path3 = Path.Combine(savePath, "training-optimizer.dat");
+                model.save(path2);
+                optimizer.save_state_dict(path3);
             }
         }
     }

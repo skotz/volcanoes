@@ -60,7 +60,7 @@
         public int TemperatureMoves { get; init; } = 12;
 
         /// <summary>Weight of Dirichlet exploration noise at the root. Set to 0 for a deterministic demo.</summary>
-        public double DirichletEpsilon { get; init; } = 0.0; // 0.25 for training
+        public double DirichletEpsilon { get; init; } = 0.25; // 0.25 for training
 
         /// <summary>
         /// Concentration of the Dirichlet noise. Below 1 the samples are spiky, which is what
@@ -68,7 +68,7 @@
         /// uniform and add almost no exploration. AlphaZero's rule of thumb is
         /// alpha ~ 10 / (typical legal moves), so ~0.15 for a 65-action space.
         /// </summary>
-        public double DirichletAlpha { get; init; } = 0.15;
+        public double DirichletAlpha { get; init; } = 0.125; // 10/80
 
         /// <summary>Initial learning rate for the Adam optimizer.</summary>
         public double InitialLearningRate { get; init; } = 0.001;

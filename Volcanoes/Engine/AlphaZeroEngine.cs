@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using TorchSharp.Modules;
 using Volcano.Game;
 using Volcano.Neural;
@@ -25,7 +27,11 @@ namespace Volcano.Engine
 
         public event EventHandler<LearnStatus> OnDebug;
 
+        private List<string> _debug = new List<string>();
+
         public static Action<string> WriteLine;
+
+        private string _savePath = "models/";
 
         public AlphaZeroEngine()
             : this(false)
@@ -38,7 +44,31 @@ namespace Volcano.Engine
             _device = cuda.is_available() ? new Device("cuda") : new Device("cpu");
             _topology = GetGraphTopology();
             _model = new ResNet(_config.NumResBlocks, _config.NumHidden, _device, _topology);
+
+            string modelPath = Path.Combine(_savePath, "training-model.dat");
+            string optimizerPath = Path.Combine(_savePath, "training-optimizer.dat");
+
+            if (forTraining)
+            {
+                Directory.CreateDirectory(_savePath);
+                if (File.Exists(modelPath))
+                {
+                    _model.load(modelPath);
+                    Debug($"loaded checkpoint model {modelPath}");
+                }
+            }
+
             _optimizer = new Adam(_model.parameters(), lr: _config.InitialLearningRate);
+
+            if (forTraining)
+            {
+                if (File.Exists(optimizerPath))
+                {
+                    _optimizer.load_state_dict(optimizerPath);
+                    Debug($"loaded checkpoint optimizer {optimizerPath}");
+                }
+            }
+
             _scheduler = lr_scheduler.ExponentialLR(_optimizer, _config.LearningRateDecay);
             _encoder = new Volcano.Neural.Encoder();
             _game = new Volcano.Neural.GameRule();
@@ -89,7 +119,7 @@ namespace Volcano.Engine
             var alphaZero = new AlphaZeroParallel(_model, _optimizer, _scheduler, _encoder, _game, _config);
 
             var watch = Stopwatch.StartNew();
-            alphaZero.Learn("models/");
+            alphaZero.Learn(_savePath);
             watch.Stop();
 
             Debug($"Training time: {watch.ElapsedMilliseconds / 1000.0}s");
@@ -97,7 +127,23 @@ namespace Volcano.Engine
 
         private void Debug(string status)
         {
-            OnDebug?.Invoke(this, new LearnStatus(status));
+            if (OnDebug == null)
+            {
+                _debug.Add(status);
+            }
+            else
+            {
+                if (_debug.Count > 0)
+                {
+                    foreach (var s in _debug)
+                    {
+                        OnDebug.Invoke(this, new LearnStatus(s));
+                    }
+                    _debug.Clear();
+                }
+
+                OnDebug.Invoke(this, new LearnStatus(status));
+            }
         }
     }
 }
