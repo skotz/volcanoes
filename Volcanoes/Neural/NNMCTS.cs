@@ -41,7 +41,7 @@ namespace Volcano.Neural
             }
         }
 
-        public double[] Search(Board state, int seconds)
+        public double[] Search(Board state, int seconds, EngineCancellationToken token)
         {
             // visitCount starts at 1 so the sqrt(parent visits) term in PUCT is non-zero on the
             // first simulation; with 0 every child scores exactly 0 and the priors are ignored.
@@ -66,7 +66,7 @@ namespace Volcano.Neural
             simulations = 0;
 
             //for (int i = 0; i < config.NumSearches; i++)
-            while (stopwatch.ElapsedMilliseconds <= seconds * 1000 - buffer)
+            while (stopwatch.ElapsedMilliseconds <= seconds * 1000 - buffer && !token.Cancelled)
             {
                 simulations++;
                 NNNode node = root;
@@ -75,7 +75,7 @@ namespace Volcano.Neural
                     node = node.Select();
                 }
 
-                bool terminated = game.GetTerminated(node.State, node.ActionTaken, out var winner);
+                bool terminated = game.GetTerminated(node.State, node.ActionTaken, out var absoluteWinner);
                 double value = 0;
 
                 if (!terminated)
@@ -89,7 +89,7 @@ namespace Volcano.Neural
                 }
                 else
                 {
-                    node.Backpropagate(winner);
+                    node.Backpropagate(absoluteWinner);
                 }
 
                 // Update Status
@@ -100,7 +100,7 @@ namespace Volcano.Neural
                     {
                         //double eval = child.VisitCount;
                         // TODO: why negated?
-                        double eval = Math.Round(child.VisitCount > 0 ? -child.valueSum / child.VisitCount : 0, 2);
+                        double eval = Math.Round(-100 * (child.VisitCount > 0 ? child.valueSum / child.VisitCount : 0), 2);
                         string pv = $"[{rootPolicy[child.ActionTaken].ToString("0.000000")}]   ";
                         var c = child;
                         while (c != null && c.ActionTaken >= 0 && c.ActionTaken <= 80)

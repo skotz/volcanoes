@@ -17,7 +17,7 @@ namespace Volcano.Neural
         {
             nnmcts = new NNMCTS(game, config, model, encoder);
 
-            model.load("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Debug\\net10.0-windows\\!!!!!models\\model-102400-20260927045000.dat");
+            model.load("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Debug\\net10.0-windows\\models\\training-model.dat");
             model.eval();
 
             nnmcts.OnStatus += Nnmcts_OnStatus;
@@ -35,10 +35,10 @@ namespace Volcano.Neural
             return null;
         }
 
-        internal (int, int) GetBestMove(Board state, int maxSeconds)
+        internal (int, int) GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
             var neutral = game.ChangePerspective(state, Player.One);
-            var probs = nnmcts.Search(neutral, maxSeconds);
+            var probs = nnmcts.Search(neutral, maxSeconds, token);
 
             var action = 0;
             for (var i = 1; i < probs.Length; i++)

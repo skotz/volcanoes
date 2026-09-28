@@ -97,14 +97,12 @@ namespace Volcano.Neural
             }
         }
 
-        public void Backpropagate(Player winner)
+        public void Backpropagate(Player absoluteWinner)
         {
             var player = State.GetPlayerForPreviousTurn();
-            var lastToMove = State.Flipped ? (player == Player.One ? Player.Two : Player.One) : player;
-            var value = winner == Player.Draw ? 0 : (lastToMove == winner ? 1 : -1);
-            //valueSum += value;
-            //VisitCount++;
-            //parent?.Backpropagate(winner);
+            var absolutePlayer = State.Flipped ? (player == Player.One ? Player.Two : Player.One) : player;
+            var value = absoluteWinner == Player.Draw ? 0 : (absolutePlayer == absoluteWinner ? 1 : -1);
+
             Backpropagate(-value);
         }
 

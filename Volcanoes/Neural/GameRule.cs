@@ -1,4 +1,5 @@
-﻿using Volcano.Game;
+﻿using System.Collections.Generic;
+using Volcano.Game;
 
 namespace Volcano.Neural
 {
@@ -22,6 +23,12 @@ namespace Volcano.Neural
             var valid = new bool[ActionSize];
             var moves = state.GetMoves();
 
+            if (state.Turn == 1)
+            {
+                // on the first move only return one of each type (one edge, one center) since the rest are technically translated duplicates
+                moves = new List<int> { 0, 1 };
+            }
+
             foreach (var m in moves)
             {
                 valid[m] = true;
@@ -30,39 +37,39 @@ namespace Volcano.Neural
             return valid;
         }
 
-        public int CountValidMoves(Board state)
-        {
-            return state.GetMoves().Count;
-        }
+        //public int CountValidMoves(Board state)
+        //{
+        //    return state.GetMoves().Count;
+        //}
 
-        public bool CheckWinner(Board state)
-        {
-            return state.Winner != Player.Empty;
-        }
+        //public bool CheckWinner(Board state)
+        //{
+        //    return state.Winner != Player.Empty;
+        //}
 
         /// <summary>
         /// Whether the game has ended after <paramref name="action"/>.
-        /// <paramref name="value"/> is 1 if that move won, 0 for a draw or an unfinished game.
+        /// <paramref name="absoluteWinner"/> is 1 if that move won, 0 for a draw or an unfinished game.
         /// </summary>
-        public bool GetTerminated(Board state, int action, out Player value)
+        public bool GetTerminated(Board state, int action, out Player absoluteWinner)
         {
             if (state.Winner == Player.Draw)
             {
-                value = Player.Draw;
+                absoluteWinner = Player.Draw;
                 return true;
             }
             else if (state.Winner != Player.Empty)
             {
-                value = state.Flipped ? (state.Winner == Player.Two ? Player.One : Player.Two) : state.Winner;
+                absoluteWinner = state.Flipped ? (state.Winner == Player.Two ? Player.One : Player.Two) : state.Winner;
                 return true;
             }
-            else if (CountValidMoves(state) == 0)
-            {
-                // should be handled in the previous cases
-                value = Player.Draw;
-                return true;
-            }
-            value = Player.Empty;
+            //else if (CountValidMoves(state) == 0)
+            //{
+            //    // should be handled in the previous cases
+            //    absoluteWinner = Player.Draw;
+            //    return true;
+            //}
+            absoluteWinner = Player.Empty;
             return false;
         }
 

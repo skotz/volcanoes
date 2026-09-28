@@ -101,11 +101,16 @@ namespace Volcano.Engine
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
             var timer = Stopwatch.StartNew();
-            var move = _alphaZero.GetBestMove(state, maxSeconds);
+
+            var canonical = new Canonical();
+            canonical.SetIndex(state);
+            var canonicalized = canonical.Canonicalize(state);
+
+            var move = _alphaZero.GetBestMove(canonicalized, maxSeconds, token);
 
             return new SearchResult
             {
-                BestMove = move.Item1,
+                BestMove = canonical.CanonicalToBoard(move.Item1),
                 Evaluations = move.Item2, // TODO
                 Simulations = move.Item2,
                 Milliseconds = timer.ElapsedMilliseconds,

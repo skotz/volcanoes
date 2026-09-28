@@ -83,10 +83,10 @@ namespace Volcano.Neural
                         node = node.Select();
                     }
 
-                    bool terminated = game.GetTerminated(node.State, node.ActionTaken, out var winner);
+                    bool terminated = game.GetTerminated(node.State, node.ActionTaken, out var absoluteWinner);
                     if (terminated)
                     {
-                        node.Backpropagate(winner);
+                        node.Backpropagate(absoluteWinner);
                     }
                     else
                     {
