@@ -103,7 +103,7 @@ namespace Volcano.Neural
             var absolutePlayer = State.Flipped ? (player == Player.One ? Player.Two : Player.One) : player;
             var value = absoluteWinner == Player.Draw ? 0 : (absolutePlayer == absoluteWinner ? 1 : -1);
 
-            Backpropagate(-value);
+            Backpropagate(value);
         }
 
         public void Backpropagate(double value)
