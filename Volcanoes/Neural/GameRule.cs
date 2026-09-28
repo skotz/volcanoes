@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Volcano.Game;
+﻿using Volcano.Game;
 
 namespace Volcano.Neural
 {
@@ -23,11 +22,11 @@ namespace Volcano.Neural
             var valid = new bool[ActionSize];
             var moves = state.GetMoves();
 
-            if (state.Turn == 1)
-            {
-                // on the first move only return one of each type (one edge, one center) since the rest are technically translated duplicates
-                moves = new List<int> { 0, 1 };
-            }
+            //if (state.Turn == 1)
+            //{
+            //    // on the first move only return one of each type (one edge, one center) since the rest are technically translated duplicates
+            //    moves = new List<int> { 0, 1 };
+            //}
 
             foreach (var m in moves)
             {

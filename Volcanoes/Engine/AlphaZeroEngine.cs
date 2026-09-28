@@ -102,15 +102,15 @@ namespace Volcano.Engine
         {
             var timer = Stopwatch.StartNew();
 
-            var canonical = new Canonical();
-            canonical.SetIndex(state);
-            var canonicalized = canonical.Canonicalize(state);
+            //var canonical = new Canonical();
+            //canonical.SetIndex(state);
+            //var canonicalized = canonical.Canonicalize(state);
 
-            var move = _alphaZero.GetBestMove(canonicalized, maxSeconds, token);
+            var move = _alphaZero.GetBestMove(state, maxSeconds, token);
 
             return new SearchResult
             {
-                BestMove = canonical.CanonicalToBoard(move.Item1),
+                BestMove = move.Item1, // canonical.CanonicalToBoard(move.Item1),
                 Evaluations = move.Item2, // TODO
                 Simulations = move.Item2,
                 Milliseconds = timer.ElapsedMilliseconds,

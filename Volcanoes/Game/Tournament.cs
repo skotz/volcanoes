@@ -197,18 +197,12 @@ namespace Volcano.Game
                 decimal total = results.Where(x => x.PlayerOne == engine1 || x.PlayerTwo == engine1).Count();
                 line.TotalScore = score;
                 line.TotalPercentage = score * 100m / total;
-                line.Score = score;
                 lines.Add(line);
             }
-
-            lines.Sort((c, n) => n.Sort.CompareTo(c.Sort));
 
             List<string> names = new List<string>();
             for (int i = 0; i < lines.Count; i++)
             {
-                lines[i].CrossTableName = (i + 1) + ". " + lines[i].Name;
-                names.Add((i + 1).ToString());
-
                 lines[i].NeustadtlScore = 0m;
                 foreach (var opponent in lines)
                 {
@@ -217,6 +211,17 @@ namespace Volcano.Game
                         lines[i].NeustadtlScore += opponent.TotalScore * lines[i].Data[opponent.Name];
                     }
                 }
+            }
+
+            lines = lines
+                .OrderByDescending(x => x.TotalScore)
+                .ThenByDescending(x => x.NeustadtlScore)
+                .ToList();
+
+            for (int i = 0; i < lines.Count; i++)
+            {
+                lines[i].CrossTableName = (i + 1) + ". " + lines[i].Name;
+                names.Add((i + 1).ToString());
             }
 
             // It doesn't make sense to save a cross table when there's only one person competing
@@ -485,18 +490,9 @@ namespace Volcano.Game
         public string Name { get; set; }
         public string CrossTableName { get; set; }
         public Dictionary<string, decimal> Data { get; set; }
-        public decimal Score { get; set; }
         public decimal TotalScore { get; set; }
         public decimal TotalPercentage { get; set; }
         public decimal NeustadtlScore { get; set; }
-
-        public decimal Sort
-        {
-            get
-            {
-                return Score * 100000 + NeustadtlScore;
-            }
-        }
 
         public TournamentResultLine()
         {
