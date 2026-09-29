@@ -553,6 +553,8 @@ namespace Volcano
             var state = new GameRule().ChangePerspective(game.CurrentState, Player.One);
             canonical.SetIndex(state);
             game.CurrentState = canonical.Canonicalize(state);
+
+            //game.CurrentState = JsonConvert.DeserializeObject<Board>("{\"Tiles\":[0,4,-4,4,-3,4,-4,-4,4,4,4,0,4,4,4,4,4,4,4,4,-4,-4,0,-4,-4,-4,-4,-4,-4,-4,-4,0,4,4,4,4,4,4,4,4,-4,-4,-4,-4,-4,-4,-4,-4,4,4,4,0,4,4,4,4,0,4,-4,4,-4,-4,-4,-4,-4,-4,-4,-4,-3,-4,-4,4,0,-4,4,4,0,-4,4,-4],\"Dormant\":[false,true,true,true,false,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,false,true,true,true,false,true,true,true,false,true,true,true],\"Player\":0,\"Turn\":299,\"Winner\":2,\"WinningPathPlayerOne\":[],\"WinningPathPlayerTwo\":[],\"LastMoveIncreasedTile\":true,\"Transcript\":null,\"allowHash\":false,\"fastWinSearch\":false,\"Flipped\":false,\"winHashes\":null,\"State\":0}");
         }
     }
 }

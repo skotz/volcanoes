@@ -132,22 +132,29 @@ namespace Volcano.Engine
 
         private void Debug(string status)
         {
-            if (OnDebug == null)
+            try
             {
-                _debug.Add(status);
-            }
-            else
-            {
-                if (_debug.Count > 0)
+                if (OnDebug == null)
                 {
-                    foreach (var s in _debug)
-                    {
-                        OnDebug.Invoke(this, new LearnStatus(s));
-                    }
-                    _debug.Clear();
+                    _debug.Add(status);
                 }
+                else
+                {
+                    if (_debug.Count > 0)
+                    {
+                        foreach (var s in _debug)
+                        {
+                            OnDebug.Invoke(this, new LearnStatus(s));
+                        }
+                        _debug.Clear();
+                    }
 
-                OnDebug.Invoke(this, new LearnStatus(status));
+                    OnDebug.Invoke(this, new LearnStatus(status));
+                }
+            }
+            catch
+            {
+                Console.WriteLine(status);
             }
         }
     }

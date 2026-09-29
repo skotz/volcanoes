@@ -27,9 +27,17 @@ namespace Volcano
         private void worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             var status = e.UserState as LearnStatus;
-            rtbStatus.AppendText("\r\n" + status?.Summary);
-            rtbStatus.SelectionStart = rtbStatus.Text.Length;
-            rtbStatus.ScrollToCaret();
+
+            try
+            {
+                rtbStatus.AppendText("\r\n" + status?.Summary);
+                rtbStatus.SelectionStart = rtbStatus.Text.Length;
+                rtbStatus.ScrollToCaret();
+            }
+            catch
+            {
+                Console.WriteLine(status?.Summary);
+            }
         }
 
         private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)

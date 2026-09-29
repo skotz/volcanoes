@@ -1,8 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using TorchSharp;
 using TorchSharp.Modules;
+using Volcano.Engine;
 using Volcano.Game;
 
 namespace Volcano.Neural
@@ -43,6 +46,15 @@ namespace Volcano.Neural
 
                 double temperature = TemperatureForMove(moveCount);
 
+                AlphaZeroEngine.WriteLine($"SPG move {moveCount + 1} for {active.Length} games");
+
+                if (moveCount + 1 >= 200)
+                {
+                    AlphaZeroEngine.WriteLine($"weird infinite game bug");
+                    File.WriteAllLines($"infinite-{DateTime.Now.ToString("yyyyMMddHHmmss")}.txt", active.Select(x => JsonConvert.SerializeObject(x.State)));
+                    break;
+                }
+
                 foreach (SPG spg in active)
                 {
                     double[] actionProbs = GetActionProbs(spg.Root!);
@@ -63,7 +75,7 @@ namespace Volcano.Neural
 
                         for (int j = 0; j < gamePlayers.Count; j++)
                         {
-                            float value = gamePlayers[j] == winner ? 1 : -1;
+                            float value = gamePlayers[j] == winner ? 1 : (winner == Player.Draw ? 0 : -1);
                             data.Add(gameStates[j], gameProbs[j], value);
                         }
                     }
@@ -71,6 +83,7 @@ namespace Volcano.Neural
                 moveCount++;
                 player = moveCount % 4 == 0 || moveCount % 4 == 3 ? Player.One : Player.Two; // game.GetOpponent(player);
             }
+
             return data;
         }
 
