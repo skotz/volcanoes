@@ -534,6 +534,23 @@ namespace Volcano.Game
             }
         }
 
+        /// <summary>
+        /// Whether it's the first or second move for a given player (since you get two in a row)
+        /// </summary>
+        /// <param name="turn"></param>
+        /// <returns></returns>
+        public int GetMoveNumber()
+        {
+            if (GetMoveTypeForTurn(Turn + 1) == MoveType.AllGrow)
+            {
+                return 1;
+            }
+            else
+            {
+                return 2;
+            }
+        }
+
         public long GetHash()
         {
             long hash = 0;

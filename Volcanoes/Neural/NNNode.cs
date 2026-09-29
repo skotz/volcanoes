@@ -97,26 +97,13 @@ namespace Volcano.Neural
             }
         }
 
-        public void Backpropagate(Player absoluteWinner)
+        public void Backpropagate(double value, int perspective)
         {
-            var player = State.GetPlayerForPreviousTurn();
-            var absolutePlayer = State.Flipped ? (player == Player.One ? Player.Two : Player.One) : player;
-            var value = absoluteWinner == Player.Draw ? 0 : (absolutePlayer == absoluteWinner ? 1 : -1);
-
-            Backpropagate(value);
-        }
-
-        public void Backpropagate(double value)
-        {
-            var cPlayer = State.GetPlayerForPreviousTurn();
-            var pPlayer = parent?.State.GetPlayerForPreviousTurn();
-            var parentPlayer = parent?.State?.Flipped == true ? (pPlayer == Player.Two ? Player.One : Player.Two) : pPlayer;
-            var currentPlayer = State.Flipped ? (cPlayer == Player.Two ? Player.One : Player.Two) : cPlayer;
-            var negate = parentPlayer != currentPlayer ? -1 : 1;
+            var negate = perspective == 1 ? -1 : 1;
 
             valueSum += value;
             VisitCount++;
-            parent?.Backpropagate(value * negate);
+            parent?.Backpropagate(value * negate, perspective == 1 ? 2 : 1);
         }
     }
 }

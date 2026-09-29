@@ -83,10 +83,12 @@ namespace Volcano.Neural
                         node = node.Select();
                     }
 
-                    bool terminated = game.GetTerminated(node.State, node.ActionTaken, out var absoluteWinner);
+                    bool terminated = game.GetTerminated(node.State, node.ActionTaken, out var winner);
                     if (terminated)
                     {
-                        node.Backpropagate(absoluteWinner);
+                        // we're always moving in player one's perspective, so player two is always the opponent
+                        var value = winner == Player.One ? 1 : (winner == Player.Draw ? 0 : -1);
+                        node.Backpropagate(value, node.State.GetMoveNumber() == 1 ? 2 : 1);
                     }
                     else
                     {
@@ -113,7 +115,7 @@ namespace Volcano.Neural
                     float[] policy = policies[k];
                     PolicyMath.MaskAndNormalize(policy, game.GetValidMoves(node.State));
                     node.Expand(policy);
-                    node.Backpropagate(values[k]);
+                    node.Backpropagate(values[k], node.State.GetMoveNumber() == 1 ? 2 : 1);
                 }
             }
         }

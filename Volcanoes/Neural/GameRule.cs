@@ -48,18 +48,19 @@ namespace Volcano.Neural
 
         /// <summary>
         /// Whether the game has ended after <paramref name="action"/>.
-        /// <paramref name="absoluteWinner"/> is 1 if that move won, 0 for a draw or an unfinished game.
+        /// <paramref name="winner"/> is 1 if that move won, 0 for a draw or an unfinished game.
         /// </summary>
-        public bool GetTerminated(Board state, int action, out Player absoluteWinner)
+        public bool GetTerminated(Board state, int action, out Player winner)
         {
-            if (state.Winner == Player.Draw)
+            //if (state.Winner == Player.Draw)
+            //{
+            //    winner = Player.Draw;
+            //    return true;
+            //}
+            //else
+            if (state.Winner != Player.Empty)
             {
-                absoluteWinner = Player.Draw;
-                return true;
-            }
-            else if (state.Winner != Player.Empty)
-            {
-                absoluteWinner = state.Flipped ? (state.Winner == Player.Two ? Player.One : Player.Two) : state.Winner;
+                winner = state.Winner; // state.Flipped ? (state.Winner == Player.Two ? Player.One : Player.Two) : state.Winner;
                 return true;
             }
             //else if (CountValidMoves(state) == 0)
@@ -68,7 +69,7 @@ namespace Volcano.Neural
             //    absoluteWinner = Player.Draw;
             //    return true;
             //}
-            absoluteWinner = Player.Empty;
+            winner = Player.Empty;
             return false;
         }
 
