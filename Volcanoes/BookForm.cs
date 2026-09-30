@@ -22,8 +22,8 @@ namespace Volcano
             if (!backgroundWorker1.IsBusy)
             {
                 button1.Enabled = false;
-                numSeconds.Enabled = false;
-                backgroundWorker1.RunWorkerAsync((int)numSeconds.Value);
+                numIterations.Enabled = false;
+                backgroundWorker1.RunWorkerAsync((int)numIterations.Value);
             }
         }
 
@@ -55,7 +55,7 @@ namespace Volcano
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             button1.Enabled = true;
-            numSeconds.Enabled = true;
+            numIterations.Enabled = true;
             MessageBox.Show("Done");
         }
 

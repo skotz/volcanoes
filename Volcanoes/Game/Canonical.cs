@@ -186,11 +186,11 @@ namespace Volcano.Game
 
         public void SetIndex(int[] board)
         {
-            // find the index of the first tile on the board
+            // find the index of the first blue tile on the board
             _firstIndex = 0;
             for (var i = 0; i < board.Length; i++)
             {
-                if (board[i] != 0)
+                if (board[i] > 0)
                 {
                     _firstIndex = i;
                     break;

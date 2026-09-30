@@ -32,6 +32,8 @@ namespace Volcano.Engine
         public ConcurrentDictionary<long, Player> winHashes = new ConcurrentDictionary<long, Player>();
 
         private double _ucbFactor = 2.0;
+        public bool simplifyFirstMove;
+        public int forcedIterations = -1;
 
         public MonteCarloTreeSearchEngine(double ucbFactor)
         {
@@ -105,10 +107,10 @@ namespace Volcano.Engine
 
         protected virtual List<int> GetMoves(Board state)
         {
-            //if (state.Turn == 1)
-            //{
-            //    return new List<int>() { 0, 1 };
-            //}
+            if (simplifyFirstMove && state.Turn == 1)
+            {
+                return new List<int>() { 0, 1 };
+            }
 
             return state.GetMoves();
         }
@@ -117,9 +119,12 @@ namespace Volcano.Engine
         {
             var rootNode = new MonteCarloTreeSearchNode(rootState, GetMoves, _fixedLastPlayer);
             var forceWin = false;
+            var iterations = 0;
 
-            while (!cancel.Cancelled && !forceWin)
+            while (forcedIterations == -1 ? (!cancel.Cancelled && !forceWin) : (iterations < forcedIterations))
             {
+                iterations++;
+
                 var node = rootNode;
                 var state = new Board(rootState);
 
