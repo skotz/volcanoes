@@ -38,10 +38,7 @@ namespace Volcano.Neural
                 // 3. Apply the channel transformation using the Conv1d layer
                 var transformed = linear.forward(aggregatedFeatures);
 
-                // 4. Apply activation function
-                var activated = functional.relu(transformed);
-
-                return activated.MoveToOuterDisposeScope();
+                return transformed.MoveToOuterDisposeScope();
             }
         }
 
