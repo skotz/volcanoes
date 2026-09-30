@@ -277,16 +277,16 @@ namespace Volcano.Game
                 }
             }
 
-            if (Tiles[42] > 0)
-            {
-                Winner = Player.One;
-                return;
-            }
-            else if (Tiles[42] < 0)
-            {
-                Winner = Player.Two;
-                return;
-            }
+            //if (Tiles[42] > 0)
+            //{
+            //    Winner = Player.One;
+            //    return;
+            //}
+            //else if (Tiles[42] < 0)
+            //{
+            //    Winner = Player.Two;
+            //    return;
+            //}
 
             // We only need to cover the first 40 tiles since their antipodes cover the last 40
             for (int i = 0; i < 40; i++)
