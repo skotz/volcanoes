@@ -87,7 +87,7 @@ namespace Volcano.Neural
                     var absolutePlayer = node.State.GetAbsolutePlayer();
                     var value = absolutePlayer == node.AbsolutePlayer ? leafValue : -leafValue;
 
-                    node.Backpropagate(value, node.State.GetMoveNumber() == 1 ? 2 : 1);
+                    node.Backpropagate(value);
                 }
                 else
                 {
@@ -95,7 +95,7 @@ namespace Volcano.Neural
                     var discount = node.State.GetAbsoluteTurn() * 0.001f;
                     var value = absoluteWinner == node.AbsolutePlayer ? 1 - discount : (absoluteWinner == Player.Draw ? 0 : -1 + discount);
 
-                    node.Backpropagate(value, node.State.GetMoveNumber() == 1 ? 2 : 1);
+                    node.Backpropagate(value);
                 }
 
                 // Update Status

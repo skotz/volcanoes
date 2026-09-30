@@ -18,7 +18,7 @@ namespace Volcano.Neural
         public int VisitCount { get; private set; }
 
         // the absolute player of the state before making the desired move
-        public Player AbsolutePlayer { get; private set; } = Player.Empty;
+        public Player AbsolutePlayer { get; }
 
         /// <summary>
         /// The position at this node, derived from the parent on first access and then cached.
@@ -33,7 +33,6 @@ namespace Volcano.Neural
             {
                 if (state == null)
                 {
-                    AbsolutePlayer = parent!.State.GetAbsolutePlayer();
                     var next = game.GetNextState(parent!.State, ActionTaken);
                     state = game.ChangePerspective(next, Player.One);
                 }
@@ -51,6 +50,7 @@ namespace Volcano.Neural
             this.ActionTaken = -1;
             this.prior = 0;
             this.VisitCount = visitCount;
+            this.AbsolutePlayer = state.GetAbsolutePlayer(); // current state since it's not pulled from parent
         }
 
         /// <summary>Creates a child; its position is computed lazily from <paramref name="parent"/>.</summary>
@@ -63,6 +63,7 @@ namespace Volcano.Neural
             this.ActionTaken = actionTaken;
             this.prior = prior;
             this.VisitCount = 0;
+            this.AbsolutePlayer = parent.State.GetAbsolutePlayer(); // parent state since it's after parent move (i.e., it's current state)
         }
 
         public bool IsFullyExpanded() => Children.Count > 0;
@@ -75,7 +76,6 @@ namespace Volcano.Neural
 
             return q + config.C * child.prior * (Math.Sqrt(VisitCount) / (child.VisitCount + 1));
         }
-
 
         public NNNode Select()
         {
@@ -103,13 +103,13 @@ namespace Volcano.Neural
             }
         }
 
-        public void Backpropagate(double value, int perspective)
+        public void Backpropagate(double value)
         {
-            var negate = perspective == 1 ? -1 : 1;
+            var negate = parent?.AbsolutePlayer != AbsolutePlayer ? -1 : 1;
 
             valueSum += value;
             VisitCount++;
-            parent?.Backpropagate(value * negate, perspective == 1 ? 2 : 1);
+            parent?.Backpropagate(value * negate);
         }
     }
 }
