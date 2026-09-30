@@ -49,11 +49,11 @@ namespace Volcano.Neural
             NNNode root = new NNNode(game, config, state, visitCount: 1);
 
             (float[] rootPolicy, _) = Evaluate(state);
-            if (config.DirichletEpsilon > 0)
-            {
-                float[] noise = Sampling.Dirichlet(Random.Shared, game.ActionSize, config.DirichletAlpha);
-                PolicyMath.AddDirichletNoise(rootPolicy, noise, config.DirichletEpsilon);
-            }
+            //if (config.DirichletEpsilon > 0)
+            //{
+            //    float[] noise = Sampling.Dirichlet(Random.Shared, game.ActionSize, config.DirichletAlpha);
+            //    PolicyMath.AddDirichletNoise(rootPolicy, noise, config.DirichletEpsilon);
+            //}
             PolicyMath.MaskAndNormalize(rootPolicy, game.GetValidMoves(state));
             root.Expand(rootPolicy);
 
@@ -92,7 +92,8 @@ namespace Volcano.Neural
                 else
                 {
                     var absoluteWinner = node.State.GetAbsoluteWinner();
-                    var value = absoluteWinner == node.AbsolutePlayer ? 1 : (absoluteWinner == Player.Draw ? 0 : -1);
+                    var discount = node.State.GetAbsoluteTurn() * 0.001f;
+                    var value = absoluteWinner == node.AbsolutePlayer ? 1 - discount : (absoluteWinner == Player.Draw ? 0 : -1 + discount);
 
                     node.Backpropagate(value, node.State.GetMoveNumber() == 1 ? 2 : 1);
                 }

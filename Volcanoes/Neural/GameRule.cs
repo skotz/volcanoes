@@ -83,7 +83,7 @@ namespace Volcano.Neural
 
             if (next.Player == Player.Two)
             {
-                next.Turn += 3;
+                next.Turn += next.Flipped ? -3 : 3;
                 next.Player = Player.One;
                 next.Flipped = !next.Flipped;
                 for (int i = 0; i < Cells; i++)

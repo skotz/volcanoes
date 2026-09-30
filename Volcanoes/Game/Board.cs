@@ -531,6 +531,11 @@ namespace Volcano.Game
             return Winner;
         }
 
+        public int GetAbsoluteTurn()
+        {
+            return Turn - (Flipped ? 3 : 0);
+        }
+
         /// <summary>
         /// Which player should move on a given turn number.
         /// </summary>
