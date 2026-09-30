@@ -17,6 +17,9 @@ namespace Volcano.Neural
         public List<NNNode> Children { get; } = new();
         public int VisitCount { get; private set; }
 
+        // the absolute player of the state before making the desired move
+        public Player AbsolutePlayer { get; private set; } = Player.Empty;
+
         /// <summary>
         /// The position at this node, derived from the parent on first access and then cached.
         /// Expansion creates a child per legal action — 65 of them here — but a search only ever
@@ -30,7 +33,8 @@ namespace Volcano.Neural
             {
                 if (state == null)
                 {
-                    Board next = game.GetNextState(parent!.State, ActionTaken);
+                    AbsolutePlayer = parent!.State.GetAbsolutePlayer();
+                    var next = game.GetNextState(parent!.State, ActionTaken);
                     state = game.ChangePerspective(next, Player.One);
                 }
                 return state;
@@ -67,9 +71,11 @@ namespace Volcano.Neural
         {
             double q = child.VisitCount == 0
                 ? 0
-                : 1 - ((child.valueSum / child.VisitCount) + 1) / 2;
+                : ((child.valueSum / child.VisitCount) + 1) / 2;
+
             return q + config.C * child.prior * (Math.Sqrt(VisitCount) / (child.VisitCount + 1));
         }
+
 
         public NNNode Select()
         {

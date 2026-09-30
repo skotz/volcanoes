@@ -15,7 +15,7 @@ namespace Volcano.Engine
         private bool _allowForcedWins;
         private bool _allowHash;
         private bool _allowFastWinSearch;
-
+        private bool _fixedLastPlayer;
         private bool _useOpeningBook;
         private OpeningBook _book;
 
@@ -45,12 +45,13 @@ namespace Volcano.Engine
             _allowForcedWins = allowForcedWins;
         }
 
-        public MonteCarloTreeSearchEngine(bool allowForcedWins, bool allowHash, bool allowFastWinSearch, string openingBook)
+        public MonteCarloTreeSearchEngine(bool allowForcedWins, bool allowHash, bool allowFastWinSearch, bool fixedLastPlayer, string openingBook)
         {
             random = new Random();
             _allowForcedWins = allowForcedWins;
             _allowHash = allowHash;
             _allowFastWinSearch = allowFastWinSearch;
+            _fixedLastPlayer = fixedLastPlayer;
             _useOpeningBook = !string.IsNullOrEmpty(openingBook);
 
             if (_useOpeningBook)
@@ -114,7 +115,7 @@ namespace Volcano.Engine
 
         protected virtual int MonteCarloTreeSearch(Board rootState)
         {
-            var rootNode = new MonteCarloTreeSearchNode(rootState, GetMoves);
+            var rootNode = new MonteCarloTreeSearchNode(rootState, GetMoves, _fixedLastPlayer);
             var forceWin = false;
 
             while (!cancel.Cancelled && !forceWin)
@@ -144,8 +145,9 @@ namespace Volcano.Engine
                 if (node.Untried.Count > 0)
                 {
                     var move = node.Untried[random.Next(node.Untried.Count)];
+                    var player = state.Player;
                     state.MakeMove(move);
-                    node = node.AddChild(state, move);
+                    node = node.AddChild(state, move, player);
                     visitedNodes++;
                 }
 
@@ -210,7 +212,7 @@ namespace Volcano.Engine
         private class MonteCarloTreeSearchNode
         {
             private Func<Board, List<int>> _getMoves;
-
+            private bool _fixedLastPlayer;
             public double Wins;
             public double Visits;
             public MonteCarloTreeSearchNode Parent;
@@ -219,14 +221,16 @@ namespace Volcano.Engine
             public List<MonteCarloTreeSearchNode> Children;
             public List<int> Untried;
 
-            public MonteCarloTreeSearchNode(Board state, Func<Board, List<int>> getMoves)
-                : this(state, -2, null, getMoves)
+            public MonteCarloTreeSearchNode(Board state, Func<Board, List<int>> getMoves, bool fixedLastPlayer)
+                : this(state, -2, null, getMoves, fixedLastPlayer, Player.Empty)
             {
             }
 
-            public MonteCarloTreeSearchNode(Board state, int move, MonteCarloTreeSearchNode parent, Func<Board, List<int>> getMoves)
+            public MonteCarloTreeSearchNode(Board state, int move, MonteCarloTreeSearchNode parent, Func<Board, List<int>> getMoves, bool fixedLastPlayer, Player player)
             {
                 _getMoves = getMoves;
+
+                _fixedLastPlayer = fixedLastPlayer;
 
                 Move = move;
                 Parent = parent;
@@ -238,7 +242,23 @@ namespace Volcano.Engine
                 if (state != null)
                 {
                     Untried = _getMoves(state);
-                    LastToMove = state.GetPlayerForPreviousTurn();
+
+                    if (_fixedLastPlayer)
+                    {
+                        if (move == -2)
+                        {
+                            // this is the state before making any moves
+                            LastToMove = state.Player;
+                        }
+                        else
+                        {
+                            LastToMove = player;
+                        }
+                    }
+                    else
+                    {
+                        LastToMove = state.GetPlayerForPreviousTurn();
+                    }
                 }
                 else
                 {
@@ -251,9 +271,9 @@ namespace Volcano.Engine
                 return Children.OrderBy(x => UpperConfidenceBound(ucbFactor, x)).LastOrDefault();
             }
 
-            public MonteCarloTreeSearchNode AddChild(Board state, int move)
+            public MonteCarloTreeSearchNode AddChild(Board state, int move, Player player)
             {
-                var newNode = new MonteCarloTreeSearchNode(state, move, this, _getMoves);
+                var newNode = new MonteCarloTreeSearchNode(state, move, this, _getMoves, _fixedLastPlayer, player);
                 Untried.Remove(move);
                 Children.Add(newNode);
                 return newNode;

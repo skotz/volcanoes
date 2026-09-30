@@ -49,11 +49,11 @@ namespace Volcano.Neural
             NNNode root = new NNNode(game, config, state, visitCount: 1);
 
             (float[] rootPolicy, _) = Evaluate(state);
-            //if (config.DirichletEpsilon > 0)
-            //{
-            //    float[] noise = Sampling.Dirichlet(Random.Shared, game.ActionSize, config.DirichletAlpha);
-            //    PolicyMath.AddDirichletNoise(rootPolicy, noise, config.DirichletEpsilon);
-            //}
+            if (config.DirichletEpsilon > 0)
+            {
+                float[] noise = Sampling.Dirichlet(Random.Shared, game.ActionSize, config.DirichletAlpha);
+                PolicyMath.AddDirichletNoise(rootPolicy, noise, config.DirichletEpsilon);
+            }
             PolicyMath.MaskAndNormalize(rootPolicy, game.GetValidMoves(state));
             root.Expand(rootPolicy);
 
@@ -75,22 +75,25 @@ namespace Volcano.Neural
                     node = node.Select();
                 }
 
-                bool terminated = game.GetTerminated(node.State, node.ActionTaken, out var winner);
-                double value = 0;
+                // this is calculated AFTER the move is made on the state
+                bool terminated = game.GetTerminated(node.State, node.ActionTaken, out _);
 
                 if (!terminated)
                 {
                     (float[] policy, float leafValue) = Evaluate(node.State);
                     PolicyMath.MaskAndNormalize(policy, game.GetValidMoves(node.State));
-                    value = leafValue;
                     node.Expand(policy);
+
+                    var absolutePlayer = node.State.GetAbsolutePlayer();
+                    var value = absolutePlayer == node.AbsolutePlayer ? leafValue : -leafValue;
 
                     node.Backpropagate(value, node.State.GetMoveNumber() == 1 ? 2 : 1);
                 }
                 else
                 {
-                    // we're always moving in player one's perspective, so player two is always the opponent
-                    value = winner == Player.One ? 1 : (winner == Player.Draw ? 0 : -1);
+                    var absoluteWinner = node.State.GetAbsoluteWinner();
+                    var value = absoluteWinner == node.AbsolutePlayer ? 1 : (absoluteWinner == Player.Draw ? 0 : -1);
+
                     node.Backpropagate(value, node.State.GetMoveNumber() == 1 ? 2 : 1);
                 }
 

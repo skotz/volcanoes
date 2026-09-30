@@ -277,6 +277,17 @@ namespace Volcano.Game
                 }
             }
 
+            if (Tiles[42] > 0)
+            {
+                Winner = Player.One;
+                return;
+            }
+            else if (Tiles[42] < 0)
+            {
+                Winner = Player.Two;
+                return;
+            }
+
             // We only need to cover the first 40 tiles since their antipodes cover the last 40
             for (int i = 0; i < 40; i++)
             {
@@ -479,13 +490,55 @@ namespace Volcano.Game
         }
 
         /// <summary>
+        /// Get the current player adjusted for flipped states
+        /// </summary>
+        /// <returns></returns>
+        public Player GetAbsolutePlayer()
+        {
+            if (Flipped)
+            {
+                if (Player == Player.One)
+                {
+                    return Player.Two;
+                }
+                else if (Player == Player.Two)
+                {
+                    return Player.One;
+                }
+            }
+
+            return Player;
+        }
+
+        /// <summary>
+        /// Get the winning player adjusted for flipped states
+        /// </summary>
+        /// <returns></returns>
+        public Player GetAbsoluteWinner()
+        {
+            if (Flipped)
+            {
+                if (Winner == Player.One)
+                {
+                    return Player.Two;
+                }
+                else if (Winner == Player.Two)
+                {
+                    return Player.One;
+                }
+            }
+
+            return Winner;
+        }
+
+        /// <summary>
         /// Which player should move on a given turn number.
         /// </summary>
         /// <param name="turn"></param>
         /// <returns></returns>
         public Player GetPlayerForTurn(int turn)
         {
-            switch ((turn - 1) % 6)
+            switch ((turn - 1 + 6) % 6)
             {
                 case 0:
                 case 4:

@@ -61,10 +61,11 @@ namespace Volcano
             engines.Add<MonteCarloCanonicalEngine>("Monte Carlo Canonical");
             //engines.Add<MonteCarloTreeSearchFixedEngine>("MCTS Alt");
 
-            engines.Add("MCTS Opening Book", () => new MonteCarloTreeSearchEngine(true, false, false, openingBook));
-            engines.Add("MCTS Victory Hash", () => new MonteCarloTreeSearchEngine(true, true, false, ""));
-            engines.Add("MCTS Fast Win Check", () => new MonteCarloTreeSearchEngine(true, false, true, ""));
-            engines.Add("MCTS Trio", () => new MonteCarloTreeSearchEngine(true, true, true, openingBook));
+            engines.Add("MCTS Opening Book", () => new MonteCarloTreeSearchEngine(true, false, false, false, openingBook));
+            engines.Add("MCTS Victory Hash", () => new MonteCarloTreeSearchEngine(true, true, false, false, ""));
+            engines.Add("MCTS Fast Win Check", () => new MonteCarloTreeSearchEngine(true, false, true, false, ""));
+            engines.Add("MCTS Trio", () => new MonteCarloTreeSearchEngine(true, true, true, false, openingBook));
+            engines.Add("MCTS Last Player Fix", () => new MonteCarloTreeSearchEngine(true, false, false, true, ""));
 
             engines.Add<DeepQNetworkEngine>("Deep Q-Network");
             engines.Add<AlphaZeroEngine>("AlphaZero");
