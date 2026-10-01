@@ -67,6 +67,8 @@ namespace Volcano.Neural
 
                     if (game.GetTerminated(spg.State, action, out var winner))
                     {
+                        winner = spg.State.GetAbsoluteWinner();
+
                         spg.Terminated = true;
 
                         IReadOnlyList<Board> gameStates = spg.GetStates();

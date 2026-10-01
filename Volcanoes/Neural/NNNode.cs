@@ -50,7 +50,27 @@ namespace Volcano.Neural
             this.ActionTaken = -1;
             this.prior = 0;
             this.VisitCount = visitCount;
-            this.AbsolutePlayer = state.GetAbsolutePlayer(); // current state since it's not pulled from parent
+
+            // root node state isn't pulled from parent, and hasn't had a move applied
+            if (state.Turn == 1)
+            {
+                AbsolutePlayer = Player.One;
+            }
+            else
+            {
+                AbsolutePlayer = state.GetPlayerForPreviousTurn();
+                if (state.Flipped)
+                {
+                    if (AbsolutePlayer == Player.One)
+                    {
+                        AbsolutePlayer = Player.Two;
+                    }
+                    else if (AbsolutePlayer == Player.Two)
+                    {
+                        AbsolutePlayer = Player.One;
+                    }
+                }
+            }
         }
 
         /// <summary>Creates a child; its position is computed lazily from <paramref name="parent"/>.</summary>
@@ -63,7 +83,28 @@ namespace Volcano.Neural
             this.ActionTaken = actionTaken;
             this.prior = prior;
             this.VisitCount = 0;
-            this.AbsolutePlayer = parent.State.GetAbsolutePlayer(); // parent state since it's after parent move (i.e., it's current state)
+
+            if (parent.ActionTaken == -1)
+            {
+                // immediate children of the root node have a parent which hasn't applied an action
+                AbsolutePlayer = parent.State.GetPlayerForNextTurn();
+                if (parent.State.Flipped)
+                {
+                    if (AbsolutePlayer == Player.One)
+                    {
+                        AbsolutePlayer = Player.Two;
+                    }
+                    else if (AbsolutePlayer == Player.Two)
+                    {
+                        AbsolutePlayer = Player.One;
+                    }
+                }
+            }
+            else
+            {
+                // parent state since it's after parent move (i.e., it's current state)
+                AbsolutePlayer = parent.State.GetAbsolutePlayer();
+            }
         }
 
         public bool IsFullyExpanded() => Children.Count > 0;

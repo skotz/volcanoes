@@ -514,6 +514,8 @@ namespace Volcano
 
         private void generateOpeningBooksToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            DisableGraphics();
+
             var bookForm = new BookForm(openingBook);
             bookForm.ShowDialog();
         }
@@ -544,8 +546,19 @@ namespace Volcano
 
         private void trainQLearningToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            DisableGraphics();
+
             var trainingForm = new TrainingForm();
             trainingForm.ShowAsync();
+        }
+
+        private void DisableGraphics()
+        {
+            gameTimer.Stop();
+            using (var g3 = gamePanel.CreateGraphics())
+            {
+                g3.Clear(Color.Black);
+            }
         }
 
         private void canonicalizeBoardToolStripMenuItem_Click(object sender, EventArgs e)

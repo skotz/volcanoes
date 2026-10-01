@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Concurrent;
 using Volcano.Game;
 
 namespace Volcano.Search
@@ -14,5 +11,10 @@ namespace Volcano.Search
         public static bool Enabled = false;
 
         public static ConcurrentDictionary<long, Player> Winners = new ConcurrentDictionary<long, Player>();
+    }
+
+    internal class StaticWinSearch
+    {
+        public static bool Enabled = false;
     }
 }

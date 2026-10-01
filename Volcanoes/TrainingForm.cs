@@ -43,10 +43,10 @@ namespace Volcano
 
         private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            btnTrain.Enabled = true;
             rtbStatus.AppendText("\r\n[DONE]");
 
-            StaticWinCache.Enabled = false;
+            //StaticWinCache.Enabled = false;
+            StaticWinSearch.Enabled = false;
         }
 
         private void worker_DoWork(object sender, DoWorkEventArgs e)
@@ -59,14 +59,19 @@ namespace Volcano
             _worker.ReportProgress(0, e);
         }
 
-        private void btnTrain_Click(object sender, EventArgs e)
+        private void TrainingForm_Load(object sender, EventArgs e)
+        {
+            StartTraining();
+        }
+
+        private void StartTraining()
         {
             if (!_worker.IsBusy)
             {
-                StaticWinCache.Enabled = true;
+                //StaticWinCache.Enabled = true;
+                StaticWinSearch.Enabled = true;
 
                 rtbStatus.Text = "[START]";
-                btnTrain.Enabled = false;
                 _worker.RunWorkerAsync();
             }
         }

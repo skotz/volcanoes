@@ -15,7 +15,7 @@
         /// MCTS simulations per move. This sets the quality of the policy targets the network
         /// learns to imitate, so it matters more than network size.
         /// </summary>
-        public int NumSearches { get; init; } = 2000; // 500
+        public int NumSearches { get; init; } = 500; // 500
 
         /// <summary>Residual blocks in the network.</summary>
         public int NumResBlocks { get; init; } = 6;
@@ -33,7 +33,7 @@
         /// Games searched simultaneously. Every network call evaluates this many positions, so
         /// raising it is nearly free on a latency-bound GPU. Lower it if CUDA runs out of memory.
         /// </summary>
-        public int NumParallelGames { get; init; } = 2048;
+        public int NumParallelGames { get; init; } = 1024;
 
         /// <summary>
         /// How many recent self-play iterations to train on. With 1 the network overfits each

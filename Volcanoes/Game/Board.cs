@@ -310,7 +310,7 @@ namespace Volcano.Game
                     // Only search until we find a winner or detect a draw
                     if (Winner == Player.Empty || (Winner == Player.One && Tiles[i] < 0) || (Winner == Player.Two && Tiles[i] > 0))
                     {
-                        if (fastWinSearch)
+                        if (fastWinSearch || StaticWinSearch.Enabled)
                         {
                             var winner = FastWinSearch(i, Constants.Antipodes[i]);
                             if (winner != Player.Empty)
@@ -370,28 +370,33 @@ namespace Volcano.Game
         private Player FastWinSearch(int start, int end)
         {
             var visited = new bool[80];
-            var queue = new Queue<int>();
+            var queue = new int[80];
+            var qi = 0;
+            var qh = 0;
 
-            queue.Enqueue(start);
+            queue[qh++] = start;
+            visited[start] = true;
 
-            while (queue.Count > 0)
+            while (qi < qh)
             {
-                var next = queue.Dequeue();
+                var next = queue[qi++];
 
-                if (!visited[next])
+                if (next == end)
                 {
-                    visited[next] = true;
+                    return Tiles[next] > 0 ? Player.One : Player.Two;
+                }
 
-                    if ((Tiles[next] > 0 && Tiles[start] > 0) || (Tiles[next] < 0 && Tiles[start] < 0))
+                // Check if tile belongs to the same player as the start tile
+                if ((Tiles[next] > 0 && Tiles[start] > 0) || (Tiles[next] < 0 && Tiles[start] < 0))
+                {
+                    var adjacent = Constants.AdjacentIndexes[next];
+                    for (int i = 0; i < adjacent.Length; i++)
                     {
-                        if (next == end)
+                        int neighbor = adjacent[i];
+                        if (!visited[neighbor])
                         {
-                            return Tiles[next] > 0 ? Player.One : Player.Two;
-                        }
-
-                        for (int i = 0; i < Constants.AdjacentIndexes[next].Length; i++)
-                        {
-                            queue.Enqueue(Constants.AdjacentIndexes[next][i]);
+                            visited[neighbor] = true;
+                            queue[qh++] = neighbor;
                         }
                     }
                 }
