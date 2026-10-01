@@ -277,6 +277,17 @@ namespace Volcano.Game
                 }
             }
 
+            // Training only
+            if (StaticWinCache.Enabled)
+            {
+                hash = GetHash();
+                if (StaticWinCache.Winners.TryGetValue(hash, out var winner))
+                {
+                    Winner = winner;
+                    return;
+                }
+            }
+
             //if (Tiles[42] > 0)
             //{
             //    Winner = Player.One;
@@ -348,6 +359,11 @@ namespace Volcano.Game
             if (allowHash)
             {
                 winHashes[hash] = Winner;
+            }
+
+            if (StaticWinCache.Enabled)
+            {
+                StaticWinCache.Winners.TryAdd(hash, Winner);
             }
         }
 
@@ -615,6 +631,7 @@ namespace Volcano.Game
 
             for (int i = 0; i < 80; i++)
             {
+                // this only hashes for win detection, not unique board states
                 hash ^= Constants.ZobristKeys[i, Tiles[i] == 0 ? 0 : (Tiles[i] > 0 ? 1 : 2)];
             }
 

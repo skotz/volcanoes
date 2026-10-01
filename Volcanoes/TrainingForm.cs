@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Windows.Forms;
 using Volcano.Engine;
+using Volcano.Search;
 
 namespace Volcano
 {
@@ -44,6 +45,8 @@ namespace Volcano
         {
             btnTrain.Enabled = true;
             rtbStatus.AppendText("\r\n[DONE]");
+
+            StaticWinCache.Enabled = false;
         }
 
         private void worker_DoWork(object sender, DoWorkEventArgs e)
@@ -60,6 +63,8 @@ namespace Volcano
         {
             if (!_worker.IsBusy)
             {
+                StaticWinCache.Enabled = true;
+
                 rtbStatus.Text = "[START]";
                 btnTrain.Enabled = false;
                 _worker.RunWorkerAsync();

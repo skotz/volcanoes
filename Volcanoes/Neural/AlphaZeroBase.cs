@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -161,6 +162,18 @@ namespace Volcano.Neural
             // policy distributions are slightly stale, which is the intended trade.
             Queue<TrainingData> replayBuffer = new();
 
+            string replayBufferPath = Path.Combine(savePath, "training-buffer.dat");
+            if (File.Exists(replayBufferPath))
+            {
+                var replays = File.ReadAllLines(replayBufferPath);
+                foreach (var replay in replays)
+                {
+                    replayBuffer.Enqueue(JsonConvert.DeserializeObject<TrainingData>(replay));
+                }
+                var count = replayBuffer.Sum(x => x.Count);
+                AlphaZeroEngine.WriteLine($"loaded {count} positions into replay buffer from {replays.Length} iteration(s)");
+            }
+
             for (int iteration = 0; iteration < config.NumIterations; iteration++)
             {
                 AlphaZeroEngine.WriteLine($"iteration {iteration}");
@@ -213,6 +226,7 @@ namespace Volcano.Neural
                 string path3 = Path.Combine(savePath, "training-optimizer.dat");
                 model.save(path2);
                 optimizer.save_state_dict(path3);
+                File.WriteAllLines(replayBufferPath, replayBuffer.Select(x => JsonConvert.SerializeObject(x)));
             }
         }
     }

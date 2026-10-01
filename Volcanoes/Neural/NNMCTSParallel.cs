@@ -140,7 +140,7 @@ namespace Volcano.Neural
                 var moves = state.GetMoves();
                 if (moves.Count == 0)
                 {
-                    break;
+                    return Player.Draw;
                 }
                 state.MakeMove(moves[Random.Shared.Next(moves.Count)]);
             }

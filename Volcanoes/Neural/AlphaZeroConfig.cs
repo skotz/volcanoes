@@ -6,7 +6,7 @@
         /// Roll out leaf nodes instead of relying entirely on network value.
         /// ONLY USE THIS EARLY IN THE TRAINING CYCLE
         /// </summary>
-        public bool Rollout { get; init; } = true;
+        public bool Rollout { get; init; } = false;
 
         /// <summary>Exploration constant in the PUCT formula.</summary>
         public double C { get; init; } = 1.2;
@@ -15,7 +15,7 @@
         /// MCTS simulations per move. This sets the quality of the policy targets the network
         /// learns to imitate, so it matters more than network size.
         /// </summary>
-        public int NumSearches { get; init; } = 500; // 500
+        public int NumSearches { get; init; } = 2000; // 500
 
         /// <summary>Residual blocks in the network.</summary>
         public int NumResBlocks { get; init; } = 6;
