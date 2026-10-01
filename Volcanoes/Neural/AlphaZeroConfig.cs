@@ -2,6 +2,12 @@
 {
     public class AlphaZeroConfig
     {
+        /// <summary>
+        /// Roll out leaf nodes instead of relying entirely on network value.
+        /// ONLY USE THIS EARLY IN THE TRAINING CYCLE
+        /// </summary>
+        public bool Rollout { get; init; } = true;
+
         /// <summary>Exploration constant in the PUCT formula.</summary>
         public double C { get; init; } = 1.2;
 
@@ -57,7 +63,7 @@
         /// randomness in the opening diversifies the games; keeping it in the endgame would throw
         /// away won positions and corrupt the value targets.
         /// </summary>
-        public int TemperatureMoves { get; init; } = 12;
+        public int TemperatureMoves { get; init; } = 4;
 
         /// <summary>Weight of Dirichlet exploration noise at the root. Set to 0 for a deterministic demo.</summary>
         public double DirichletEpsilon { get; init; } = 0.25; // 0.25 for training

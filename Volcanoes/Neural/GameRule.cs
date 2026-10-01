@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using Volcano.Game;
+﻿using Volcano.Game;
 
 namespace Volcano.Neural
 {
@@ -11,20 +10,20 @@ namespace Volcano.Neural
 
         public Board GetInitialState() => new Board();
 
-        private static ConcurrentDictionary<long, Board> NextStateCache = new ConcurrentDictionary<long, Board>();
+        //private static ConcurrentDictionary<long, Board> NextStateCache = new ConcurrentDictionary<long, Board>();
 
         public Board GetNextState(Board state, int action)
         {
-            var hash = GetBoardHash(state, action);
-            if (NextStateCache.TryGetValue(hash, out var cached))
-            {
-                return cached;
-            }
+            //var hash = GetBoardHash(state, action);
+            //if (NextStateCache.TryGetValue(hash, out var cached))
+            //{
+            //    return new Board(cached);
+            //}
 
             var next = new Board(state);
             next.MakeMove(action);
 
-            NextStateCache.TryAdd(hash, next);
+            //NextStateCache.TryAdd(hash, next);
 
             return next;
         }

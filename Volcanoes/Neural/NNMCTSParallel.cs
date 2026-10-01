@@ -121,9 +121,30 @@ namespace Volcano.Neural
                     var absolutePlayer = node.State.GetAbsolutePlayer();
                     var value = absolutePlayer == node.AbsolutePlayer ? values[k] : -values[k];
 
+                    if (config.Rollout)
+                    {
+                        var rollout = GetRolloutWinner(node.State);
+                        value = rollout == node.AbsolutePlayer ? 1 : (rollout == Player.Draw ? 0 : -1);
+                    }
+
                     node.Backpropagate(value);
                 }
             }
+        }
+
+        private Player GetRolloutWinner(Board board)
+        {
+            var state = new Board(board);
+            while (state.Winner == Player.Empty && state.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns)
+            {
+                var moves = state.GetMoves();
+                if (moves.Count == 0)
+                {
+                    break;
+                }
+                state.MakeMove(moves[Random.Shared.Next(moves.Count)]);
+            }
+            return state.GetAbsoluteWinner();
         }
     }
 }

@@ -68,28 +68,37 @@ namespace Volcano.Neural
 
         public bool IsFullyExpanded() => Children.Count > 0;
 
-        public double GetUcb(NNNode child)
-        {
-            double q = child.VisitCount == 0
-                ? 0
-                : ((child.valueSum / child.VisitCount) + 1) / 2;
+        //public double GetUcb(NNNode child)
+        //{
+        //    double q = child.VisitCount == 0
+        //        ? 0
+        //        : ((child.valueSum / child.VisitCount) + 1) / 2;
 
-            return q + config.C * child.prior * (Math.Sqrt(VisitCount) / (child.VisitCount + 1));
-        }
+        //    return q + config.C * child.prior * (Math.Sqrt(VisitCount) / (child.VisitCount + 1));
+        //}
 
         public NNNode Select()
         {
             NNNode best = null;
             double bestUcb = double.MinValue;
-            foreach (NNNode child in Children)
+
+            double ucbScalar = config.C * Math.Sqrt(VisitCount);
+
+            for (int i = 0; i < Children.Count; i++)
             {
-                double ucb = GetUcb(child);
+                double q = Children[i].VisitCount == 0
+                    ? 0.5 // draw in [0,1] space
+                    : ((Children[i].valueSum / Children[i].VisitCount) + 1.0) / 2.0;
+                double u = ucbScalar * Children[i].prior / (Children[i].VisitCount + 1);
+                double ucb = q + u;
+
                 if (ucb > bestUcb)
                 {
-                    best = child;
+                    best = Children[i];
                     bestUcb = ucb;
                 }
             }
+
             return best!;
         }
 
