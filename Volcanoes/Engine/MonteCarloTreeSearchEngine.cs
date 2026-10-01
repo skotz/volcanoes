@@ -34,6 +34,7 @@ namespace Volcano.Engine
         private double _ucbFactor = 2.0;
         public bool simplifyFirstMove;
         public int forcedIterations = -1;
+        public int forcedGap = -1;
 
         public MonteCarloTreeSearchEngine(double ucbFactor)
         {
@@ -208,6 +209,21 @@ namespace Volcano.Engine
                     status.Sort();
                     OnStatus?.Invoke(this, status);
                     statusUpdate = Stopwatch.StartNew();
+                }
+
+                // Cut Short (for book gen)
+                if (forcedGap > 0)
+                {
+                    var nodes = rootNode.Children.OrderByDescending(x => x.Visits).ToList();
+                    if (nodes.Count >= 2 && nodes[0].Visits >= forcedGap && nodes[1].Visits >= forcedGap && nodes.All(x => x.Visits > 0))
+                    {
+                        var gap = nodes[0].Visits - nodes[1].Visits;
+                        var score = nodes[0].Wins / nodes[0].Visits - nodes[1].Wins / nodes[1].Visits;
+                        if (gap >= forcedGap && score > 0)
+                        {
+                            break;
+                        }
+                    }
                 }
             }
 

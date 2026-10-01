@@ -86,14 +86,14 @@ namespace Volcano.Engine
             }
         }
 
-        public void Generate(int depth, int iterations)
+        public void Generate(int depth, int iterations, int gap)
         {
             var done = 0;
             var total = 1;
             OnStatusUpdate?.Invoke(done, 1);
 
             // Blue's first move
-            var blueStart = GenerateBookForPosition(depth, iterations, "", true);
+            var blueStart = GenerateBookForPosition(depth, iterations, "", true, gap);
 
             // Blue's second and third move (after all possible moves from orange)
             var allGamesBlue = GetAllTranscriptsAfterPosition(blueStart, false);
@@ -107,14 +107,14 @@ namespace Volcano.Engine
 
             Parallel.ForEach(allGamesBlue, transcript =>
             {
-                GenerateBookForPosition(depth, iterations, transcript, false);
+                GenerateBookForPosition(depth, iterations, transcript, false, gap);
 
                 OnStatusUpdate?.Invoke(++done, total);
             });
 
             Parallel.ForEach(allGamesOrange, transcript =>
             {
-                GenerateBookForPosition(depth, iterations, transcript, false);
+                GenerateBookForPosition(depth, iterations, transcript, false, gap);
 
                 OnStatusUpdate?.Invoke(++done, total);
             });
@@ -122,7 +122,7 @@ namespace Volcano.Engine
             OnStatusUpdate?.Invoke(done, total);
         }
 
-        private string GenerateBookForPosition(int depth, int iterations, string transcript, bool singleOnly)
+        private string GenerateBookForPosition(int depth, int iterations, string transcript, bool singleOnly, int gap)
         {
             var bestTranscript = "";
 
@@ -143,9 +143,12 @@ namespace Volcano.Engine
 
             if (!_book.ContainsKey(t))
             {
+                // use iterations instead of time so we can run in parallel without starving a thread and getting bad results
+                // on my machine a 120 second search resulted in 1,260,000 nodes, so roughly 10,000 per second
                 var engine = new MonteCarloTreeSearchEngine(false, false, false, true, "");
                 engine.simplifyFirstMove = true;
                 engine.forcedIterations = iterations;
+                engine.forcedGap = gap;
 
                 var best = engine.GetBestMove(game.CurrentState, iterations, new EngineCancellationToken(() => false));
 
@@ -180,7 +183,7 @@ namespace Volcano.Engine
             return bestTranscript;
         }
 
-        private void UpdateBook(int depth, int seconds)
+        private void UpdateBook(int depth, int iterations)
         {
             _lock.Wait();
 
@@ -188,7 +191,7 @@ namespace Volcano.Engine
             {
                 r.WriteLine(depth);
                 r.WriteLine(_book.Count);
-                r.WriteLine(seconds);
+                r.WriteLine(iterations);
 
                 lock (_book)
                 {

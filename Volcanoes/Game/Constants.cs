@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -61,6 +60,8 @@ namespace Volcano.Game
         /// Random numbers to use for zobrist style hashes
         /// </summary>
         public static long[,] ZobristKeys = GetZobristKeys();
+
+        public static long[,] AdditionalZobristKeys = GetAdditionalZobristKeys();
 
         private static int[][] GetConnectingTiles()
         {
@@ -433,6 +434,24 @@ namespace Volcano.Game
             for (int i = 0; i < 80; i++)
             {
                 for (int x = 0; x < 100; x++)
+                {
+                    var buffer = new byte[sizeof(long)];
+                    rand.NextBytes(buffer);
+                    tiles[i, x] = BitConverter.ToInt64(buffer, 0);
+                }
+            }
+
+            return tiles;
+        }
+
+        private static long[,] GetAdditionalZobristKeys()
+        {
+            var rand = new Random();
+            var tiles = new long[5, 1000];
+
+            for (int i = 0; i < 5; i++)
+            {
+                for (int x = 0; x < 1000; x++)
                 {
                     var buffer = new byte[sizeof(long)];
                     rand.NextBytes(buffer);

@@ -23,7 +23,8 @@ namespace Volcano
             {
                 button1.Enabled = false;
                 numIterations.Enabled = false;
-                backgroundWorker1.RunWorkerAsync((int)numIterations.Value);
+                numGap.Enabled = false;
+                backgroundWorker1.RunWorkerAsync(new int[] { (int)numIterations.Value, (int)numGap.Value });
             }
         }
 
@@ -36,7 +37,8 @@ namespace Volcano
 
             var bookGenerator = new OpeningBook(BookLocation);
             bookGenerator.OnStatusUpdate += BookGenerator_OnStatusUpdate;
-            bookGenerator.Generate(7, (int)e.Argument);
+            var args = e.Argument as int[];
+            bookGenerator.Generate(7, args[0], args[1]);
         }
 
         private void BookGenerator_OnStatusUpdate(int completed, int total)
@@ -56,6 +58,7 @@ namespace Volcano
         {
             button1.Enabled = true;
             numIterations.Enabled = true;
+            numGap.Enabled = true;
             MessageBox.Show("Done");
         }
 

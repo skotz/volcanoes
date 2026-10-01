@@ -1,4 +1,5 @@
-﻿using Volcano.Game;
+﻿using System.Collections.Concurrent;
+using Volcano.Game;
 
 namespace Volcano.Neural
 {
@@ -10,11 +11,40 @@ namespace Volcano.Neural
 
         public Board GetInitialState() => new Board();
 
+        private static ConcurrentDictionary<long, Board> NextStateCache = new ConcurrentDictionary<long, Board>();
+
         public Board GetNextState(Board state, int action)
         {
+            var hash = GetBoardHash(state, action);
+            if (NextStateCache.TryGetValue(hash, out var cached))
+            {
+                return cached;
+            }
+
             var next = new Board(state);
             next.MakeMove(action);
+
+            NextStateCache.TryAdd(hash, next);
+
             return next;
+        }
+
+        private long GetBoardHash(Board board, int action)
+        {
+            var hash = 0L;
+
+            hash ^= Constants.AdditionalZobristKeys[0, board.Turn];
+            hash ^= Constants.AdditionalZobristKeys[1, (int)board.Player];
+            hash ^= Constants.AdditionalZobristKeys[2, board.Flipped ? 1 : 0];
+            hash ^= Constants.AdditionalZobristKeys[3, (int)board.Winner];
+            hash ^= Constants.AdditionalZobristKeys[4, action];
+
+            for (int i = 0; i < 80; i++)
+            {
+                hash ^= Constants.ZobristKeys[i, board.Tiles[i] + 4];
+            }
+
+            return hash;
         }
 
         public bool[] GetValidMoves(Board state)
