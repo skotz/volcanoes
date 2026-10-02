@@ -66,6 +66,7 @@ namespace Volcano
             engines.Add("MCTS Fast Win Check", () => new MonteCarloTreeSearchEngine(true, false, true, false, ""));
             engines.Add("MCTS Trio", () => new MonteCarloTreeSearchEngine(true, true, true, false, openingBook));
             engines.Add("MCTS Last Player Fix", () => new MonteCarloTreeSearchEngine(true, false, false, true, ""));
+            engines.Add("MCTS Count Draws", () => new MonteCarloTreeSearchEngine() { _countDraws = true });
 
             engines.Add<DeepQNetworkEngine>("Deep Q-Network");
             engines.Add<AlphaZeroEngine>("AlphaZero");
@@ -567,6 +568,8 @@ namespace Volcano
             var state = new GameRule().ChangePerspective(game.CurrentState, Player.One);
             canonical.SetIndex(state);
             game.CurrentState = canonical.Canonicalize(state);
+
+            //game.CurrentState.MakeMove(Constants.AllGrowMove, false, false);
 
             //game.CurrentState = JsonConvert.DeserializeObject<Board>("{\"Tiles\":[0,4,-4,4,-3,4,-4,-4,4,4,4,0,4,4,4,4,4,4,4,4,-4,-4,0,-4,-4,-4,-4,-4,-4,-4,-4,0,4,4,4,4,4,4,4,4,-4,-4,-4,-4,-4,-4,-4,-4,4,4,4,0,4,4,4,4,0,4,-4,4,-4,-4,-4,-4,-4,-4,-4,-4,-3,-4,-4,4,0,-4,4,4,0,-4,4,-4],\"Dormant\":[false,true,true,true,false,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,false,true,true,true,false,true,true,true,false,true,true,true],\"Player\":0,\"Turn\":299,\"Winner\":2,\"WinningPathPlayerOne\":[],\"WinningPathPlayerTwo\":[],\"LastMoveIncreasedTile\":true,\"Transcript\":null,\"allowHash\":false,\"fastWinSearch\":false,\"Flipped\":false,\"winHashes\":null,\"State\":0}");
         }

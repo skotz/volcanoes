@@ -16,6 +16,7 @@ namespace Volcano.Engine
         private bool _allowHash;
         private bool _allowFastWinSearch;
         private bool _fixedLastPlayer;
+        public bool _countDraws;
         private bool _useOpeningBook;
         private OpeningBook _book;
 
@@ -172,7 +173,14 @@ namespace Volcano.Engine
                 // Backpropagate
                 while (node != null)
                 {
-                    node.Update(state.Winner == node.LastToMove ? 1.0 : 0.0);
+                    if (_countDraws)
+                    {
+                        node.Update(state.Winner == Player.Draw ? 0.5 : (state.Winner == node.LastToMove ? 1.0 : 0.0));
+                    }
+                    else
+                    {
+                        node.Update(state.Winner == node.LastToMove ? 1.0 : 0.0);
+                    }
                     node = node.Parent;
                     visitedNodes++;
                 }

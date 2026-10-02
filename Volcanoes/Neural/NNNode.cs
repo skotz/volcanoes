@@ -51,26 +51,29 @@ namespace Volcano.Neural
             this.prior = 0;
             this.VisitCount = visitCount;
 
-            // root node state isn't pulled from parent, and hasn't had a move applied
-            if (state.Turn == 1)
-            {
-                AbsolutePlayer = Player.One;
-            }
-            else
-            {
-                AbsolutePlayer = state.GetPlayerForPreviousTurn();
-                if (state.Flipped)
-                {
-                    if (AbsolutePlayer == Player.One)
-                    {
-                        AbsolutePlayer = Player.Two;
-                    }
-                    else if (AbsolutePlayer == Player.Two)
-                    {
-                        AbsolutePlayer = Player.One;
-                    }
-                }
-            }
+            // the root node contains a state which hasn't performed an action
+            AbsolutePlayer = Player.Empty;
+
+            //// root node state isn't pulled from parent, and hasn't had a move applied
+            //if (state.Turn == 1)
+            //{
+            //    AbsolutePlayer = Player.One;
+            //}
+            //else
+            //{
+            //    AbsolutePlayer = state.GetPlayerForPreviousTurn();
+            //    if (state.Flipped)
+            //    {
+            //        if (AbsolutePlayer == Player.One)
+            //        {
+            //            AbsolutePlayer = Player.Two;
+            //        }
+            //        else if (AbsolutePlayer == Player.Two)
+            //        {
+            //            AbsolutePlayer = Player.One;
+            //        }
+            //    }
+            //}
         }
 
         /// <summary>Creates a child; its position is computed lazily from <paramref name="parent"/>.</summary>
@@ -84,27 +87,25 @@ namespace Volcano.Neural
             this.prior = prior;
             this.VisitCount = 0;
 
-            if (parent.ActionTaken == -1)
-            {
-                // immediate children of the root node have a parent which hasn't applied an action
-                AbsolutePlayer = parent.State.GetPlayerForNextTurn();
-                if (parent.State.Flipped)
-                {
-                    if (AbsolutePlayer == Player.One)
-                    {
-                        AbsolutePlayer = Player.Two;
-                    }
-                    else if (AbsolutePlayer == Player.Two)
-                    {
-                        AbsolutePlayer = Player.One;
-                    }
-                }
-            }
-            else
-            {
-                // parent state since it's after parent move (i.e., it's current state)
-                AbsolutePlayer = parent.State.GetAbsolutePlayer();
-            }
+            //if (parent.ActionTaken == -1)
+            //{
+            //    // when the parent is the root (which hasn't executed an action) we need
+            //    AbsolutePlayer = parent.State.GetPlayerForNextTurn();
+            //    if (parent.State.Flipped)
+            //    {
+            //        if (AbsolutePlayer == Player.One)
+            //        {
+            //            AbsolutePlayer = Player.Two;
+            //        }
+            //        else if (AbsolutePlayer == Player.Two)
+            //        {
+            //            AbsolutePlayer = Player.One;
+            //        }
+            //    }
+            //}
+
+            // the player who made the move leading to this state (since the state in this node has already made a move and advanced the turn clock)
+            AbsolutePlayer = parent.State.GetAbsolutePlayer();
         }
 
         public bool IsFullyExpanded() => Children.Count > 0;
