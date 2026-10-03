@@ -90,10 +90,13 @@ namespace Volcano.Engine
         {
             var done = 0;
             var total = 1;
-            OnStatusUpdate?.Invoke(done, 1);
 
-            // Blue's first move
-            var blueStart = GenerateBookForPosition(depth, iterations, "", true, gap);
+            // Blue's first move (hardcode to one of the 20 identical equilateral triangles since plenty of computational power says that's slightly better than one of the 60 identical isosceles triangles)
+            // var blueStart = GenerateBookForPosition(depth, iterations, "", true, gap);
+            var blueStart = "N26";
+            _book[""] = Constants.TileIndexes[blueStart];
+            OnStatusUpdate?.Invoke(done, 1);
+            UpdateBook(depth, iterations);
 
             // Blue's second and third move (after all possible moves from orange)
             var allGamesBlue = GetAllTranscriptsAfterPosition(blueStart, false);
@@ -144,8 +147,8 @@ namespace Volcano.Engine
             if (!_book.ContainsKey(t))
             {
                 // use iterations instead of time so we can run in parallel without starving a thread and getting bad results
-                // on my machine a 120 second search resulted in 1,260,000 nodes, so roughly 10,000 per second
-                var engine = new MonteCarloTreeSearchEngine(false, false, false, true, "");
+                // on my machine a 120 second search resulted in 1,260,000 mcts playouts, so roughly 10,000 per second
+                var engine = new MonteCarloTreeSearchEngine(MCTSVersion.V2);
                 engine.simplifyFirstMove = true;
                 engine.forcedIterations = iterations;
                 engine.forcedGap = gap;
