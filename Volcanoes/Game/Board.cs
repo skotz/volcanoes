@@ -46,8 +46,11 @@ namespace Volcano.Game
             Tiles = new int[80];
             Dormant = new bool[80];
             Winner = Player.Empty;
-            WinningPathPlayerOne = new List<int>();
-            WinningPathPlayerTwo = new List<int>();
+            if (!StaticBoardSlim.Enabled)
+            {
+                WinningPathPlayerOne = new List<int>();
+                WinningPathPlayerTwo = new List<int>();
+            }
             Flipped = false;
         }
 
@@ -60,8 +63,11 @@ namespace Volcano.Game
             Player = copy.Player;
             Turn = copy.Turn;
             Winner = copy.Winner;
-            WinningPathPlayerOne = copy.WinningPathPlayerOne;
-            WinningPathPlayerTwo = copy.WinningPathPlayerTwo;
+            if (!StaticBoardSlim.Enabled)
+            {
+                WinningPathPlayerOne = copy.WinningPathPlayerOne;
+                WinningPathPlayerTwo = copy.WinningPathPlayerTwo;
+            }
             Flipped = copy.Flipped;
 
             winHashes = copy.winHashes;
@@ -260,8 +266,12 @@ namespace Volcano.Game
             if (phases <= 0)
             {
                 Winner = Player.Draw;
-                WinningPathPlayerOne = new List<int>();
-                WinningPathPlayerTwo = new List<int>();
+
+                if (!StaticBoardSlim.Enabled)
+                {
+                    WinningPathPlayerOne = new List<int>();
+                    WinningPathPlayerTwo = new List<int>();
+                }
             }
         }
 
@@ -341,12 +351,20 @@ namespace Volcano.Game
                                 if (Tiles[i] > 0)
                                 {
                                     Winner = Winner != Player.Empty ? Player.Draw : Player.One;
-                                    WinningPathPlayerOne = path;
+
+                                    if (!StaticBoardSlim.Enabled)
+                                    {
+                                        WinningPathPlayerOne = path;
+                                    }
                                 }
                                 else
                                 {
                                     Winner = Winner != Player.Empty ? Player.Draw : Player.Two;
-                                    WinningPathPlayerTwo = path;
+
+                                    if (!StaticBoardSlim.Enabled)
+                                    {
+                                        WinningPathPlayerTwo = path;
+                                    }
                                 }
 
                                 if (Winner == Player.Draw)

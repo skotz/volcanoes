@@ -69,7 +69,7 @@ namespace Volcano
             engines.Add("MCTS Count Draws", () => new MonteCarloTreeSearchEngine() { _countDraws = true });
             engines.Add("MCTS v2", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2));
 
-            engines.Add<DeepQNetworkEngine>("Deep Q-Network");
+            //engines.Add<DeepQNetworkEngine>("Deep Q-Network");
             engines.Add<AlphaZeroEngine>("AlphaZero");
 
             //engines.Add<MonteCarloPlayoutEngine>("MCTS Playout");
@@ -569,6 +569,8 @@ namespace Volcano
             var state = new GameRule().ChangePerspective(game.CurrentState, Player.One);
             canonical.SetIndex(state);
             game.CurrentState = canonical.Canonicalize(state);
+
+            //game.CurrentState = new GameRule().ChangePerspective(game.CurrentState, Player.One);
 
             //game.CurrentState.MakeMove(Constants.AllGrowMove, false, false);
 

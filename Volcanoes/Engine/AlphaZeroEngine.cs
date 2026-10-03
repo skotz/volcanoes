@@ -42,7 +42,7 @@ namespace Volcano.Engine
         {
             _config = new AlphaZeroConfig();
             _device = cuda.is_available() ? new Device("cuda") : new Device("cpu");
-            _topology = GetGraphTopology();
+            _topology = GetAdjacencyMatrix();
             _model = new ResNet(_config.NumResBlocks, _config.NumHidden, _device, _topology);
 
             string modelPath = Path.Combine(_savePath, "training-model.dat");
@@ -85,14 +85,22 @@ namespace Volcano.Engine
             OnStatus?.Invoke(sender, e);
         }
 
-        private Tensor GetGraphTopology()
+        /// <summary>
+        /// Gets a normalized adjacency matrix of the board
+        /// </summary>
+        /// <returns></returns>
+        private Tensor GetAdjacencyMatrix()
         {
             var adjacent = new float[80, 80];
             for (var t = 0; t < 80; t++)
             {
+                // maps to itself
+                adjacent[t, t] = 0.5f;
+
                 foreach (var a in Constants.AdjacentIndexes[t])
                 {
-                    adjacent[t, a] = 1.0f;
+                    // connects to a neighbor
+                    adjacent[t, a] = 0.5f / 3.0f;
                 }
             }
             return tensor(adjacent);

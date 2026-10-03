@@ -1,55 +1,46 @@
-﻿using static TorchSharp.torch;
+﻿using System;
+using TorchSharp;
+using TorchSharp.Modules;
+using static TorchSharp.torch;
 using static TorchSharp.torch.nn;
 
 namespace Volcano.Neural
 {
     public class GraphConvLayer : Module<Tensor, Tensor>
     {
-        private readonly Module<Tensor, Tensor> linear;
-        private readonly Tensor adjacencyMatrix;
+        private readonly Tensor _adjacencyMatrix;
+        private readonly long _inFeatures;
+        private readonly long _outFeatures;
 
-        public GraphConvLayer(long inFeatures, long outFeatures, Tensor boardTopology)
-            : base("SwappedGraphConvLayer")
+        public Parameter Weight { get; private set; }
+
+        public Parameter Bias { get; private set; }
+
+        public GraphConvLayer(long inFeatures, long outFeatures, Tensor adjacencyMatrix)
+            : base("GraphConvLayer")
         {
-            // We use a 1D Convolution with kernel size 1 as our "Linear" transformation layer.
-            // Why? Because nn.Linear changes the LAST dimension. Since our last dimension is
-            // now Tiles, nn.Conv1d(kernelSize: 1) is the correct way to transform CHANNELS.
-            linear = Conv1d(inFeatures, outFeatures, kernel_size: 1, bias: false);
-            adjacencyMatrix = boardTopology.alias();
+            _inFeatures = inFeatures;
+            _outFeatures = outFeatures;
+            _adjacencyMatrix = adjacencyMatrix;
+
+            // 1. Initialize the tensors and wrap them as a Parameter
+            var wTensor = torch.randn([inFeatures, outFeatures]) * Math.Sqrt(2.0 / inFeatures);
+            Weight = nn.Parameter(wTensor);
+
+            // 2. Register using the exact v0.107 syntax (lowercase matching PyTorch)
+            register_parameter(nameof(Weight), Weight);
+
+            // 3. Crucial step: Tells TorchSharp to bind all fields and registered elements
             RegisterComponents();
         }
 
-        /// <param name="nodeFeatures">Expected shape: [BatchSize, InChannels, Tiles]</param>
-        public override Tensor forward(Tensor nodeFeatures)
+        public override Tensor forward(Tensor x)
         {
-            using (var scope = NewDisposeScope())
-            {
-                long numNodes = adjacencyMatrix.shape[0];
+            var support = torch.matmul(x, Weight);
+            var adjExpanded = normAdjacency.unsqueeze(0);
+            var output = torch.bmm(adjExpanded, support);
 
-                // 1. Create Normalized Adjacency (A + I) / 4
-                var identity = eye(numNodes, numNodes, adjacencyMatrix.dtype, adjacencyMatrix.device);
-                var A_hat = adjacencyMatrix.add(identity);
-                var A_norm = A_hat.div(4.0f);
-
-                // 2. Aggregate features along the Tiles dimension using RIGHT multiplication
-                // [Batch, Channels, Tiles] x [Tiles, Tiles] -> Keeps shape as [Batch, Channels, Tiles]
-                var aggregatedFeatures = matmul(nodeFeatures, A_norm);
-
-                // 3. Apply the channel transformation using the Conv1d layer
-                var transformed = linear.forward(aggregatedFeatures);
-
-                return transformed.MoveToOuterDisposeScope();
-            }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                adjacencyMatrix.Dispose();
-                linear.Dispose();
-            }
-            base.Dispose(disposing);
+            return output;
         }
     }
 

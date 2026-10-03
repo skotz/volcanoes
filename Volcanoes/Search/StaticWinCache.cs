@@ -17,4 +17,9 @@ namespace Volcano.Search
     {
         public static bool Enabled = false;
     }
+
+    internal class StaticBoardSlim
+    {
+        public static bool Enabled = false;
+    }
 }

@@ -70,6 +70,7 @@ namespace Volcano
             {
                 //StaticWinCache.Enabled = true;
                 StaticWinSearch.Enabled = true;
+                StaticBoardSlim.Enabled = true;
 
                 rtbStatus.Text = "[START]";
                 _worker.RunWorkerAsync();
