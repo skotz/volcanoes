@@ -197,6 +197,17 @@ namespace Volcano.Game
                 }
             }
         }
+        public void SetIndex(VolcanoGame game)
+        {
+            if (game.MoveHistory?.Count > 0)
+            {
+                SetIndex(game.MoveHistory[0]);
+            }
+            else
+            {
+                SetIndex(game.CurrentState);
+            }
+        }
 
         public void SetIndex(Board board)
         {

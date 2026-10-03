@@ -29,6 +29,8 @@ namespace Volcano.Engine
 
         public delegate void BookGenerationHandler(int completed, int total);
 
+        private const string _fileHeader = "volcanoes-opening-book";
+
         public OpeningBook(string file)
         {
             _file = file;
@@ -38,24 +40,74 @@ namespace Volcano.Engine
 
             if (File.Exists(_file))
             {
-                using (var r = new StreamReader(_file))
+                switch (DetectVersion(_file))
                 {
-                    Depth = int.Parse(r.ReadLine());
+                    case 1:
+                        // backwards compatible
+                        using (var r = new StreamReader(_file))
+                        {
+                            Depth = int.Parse(r.ReadLine());
 
-                    var count = int.Parse(r.ReadLine());
+                            var count = int.Parse(r.ReadLine());
 
-                    Seconds = int.Parse(r.ReadLine());
+                            Seconds = int.Parse(r.ReadLine());
 
-                    for (int i = 0; i < count; i++)
-                    {
-                        var transcript = r.ReadLine();
-                        var move = Constants.TileIndexes[r.ReadLine()];
+                            for (int i = 0; i < count; i++)
+                            {
+                                var transcript = r.ReadLine();
+                                var move = Constants.TileIndexes[r.ReadLine()];
 
-                        _book[transcript] = move;
-                    }
+                                _book[transcript] = move;
+                            }
+                        }
+                        break;
+
+                    case 2:
+                        using (var reader = new BinaryReader(File.Open(file, FileMode.Open)))
+                        {
+                            Seconds = -1;
+                            Depth = 0;
+                            _ = reader.ReadString(); // header
+                            _ = reader.ReadString(); // engine
+                            _ = reader.ReadInt32(); // iterations
+                            _ = reader.ReadInt32(); // gap
+                            var numLines = reader.ReadInt32();
+                            for (var i = 0; i < numLines; i++)
+                            {
+                                var numMoves = (int)reader.ReadByte();
+                                var transcript = "";
+                                for (var m = 0; m < numMoves; m++)
+                                {
+                                    var transcriptMove = (int)reader.ReadByte();
+                                    transcript += Constants.TileNames[transcriptMove] + " ";
+                                }
+                                transcript = transcript.Trim();
+
+                                Depth = Math.Max(Depth, numMoves + 1);
+
+                                var bestMove = (int)reader.ReadByte();
+                                _book[transcript] = bestMove;
+                            }
+                        }
+                        break;
                 }
 
                 Loaded = true;
+            }
+        }
+
+        private int DetectVersion(string file)
+        {
+            try
+            {
+                using (var reader = new BinaryReader(File.Open(file, FileMode.Open)))
+                {
+                    return reader.ReadString() == _fileHeader ? 2 : 1;
+                }
+            }
+            catch
+            {
+                return 1;
             }
         }
 
@@ -65,7 +117,7 @@ namespace Volcano.Engine
             game.LoadTranscript(transcript);
 
             var canonical = new Canonical();
-            canonical.SetIndex(game.CurrentState);
+            canonical.SetIndex(game);
 
             var canonicalTranscript = "";
             if (game.MoveHistory.Count > 0)
@@ -78,6 +130,12 @@ namespace Volcano.Engine
 
             if (_book.ContainsKey(canonicalTranscript))
             {
+                if (canonicalTranscript == "" && _book[canonicalTranscript] == 0)
+                {
+                    // future moves will also be canonicalized, so for aethetic purposes just pick a more centralized identical tile
+                    return Constants.TileIndexes["N26"];
+                }
+
                 return canonical.CanonicalToBoard(_book[canonicalTranscript]);
             }
             else
@@ -92,11 +150,10 @@ namespace Volcano.Engine
             var total = 1;
 
             // Blue's first move (hardcode to one of the 20 identical equilateral triangles since plenty of computational power says that's slightly better than one of the 60 identical isosceles triangles)
-            // var blueStart = GenerateBookForPosition(depth, iterations, "", true, gap);
-            var blueStart = "N26";
+            var blueStart = "N07";
             _book[""] = Constants.TileIndexes[blueStart];
             OnStatusUpdate?.Invoke(done, 1);
-            UpdateBook(depth, iterations);
+            UpdateBook(depth, iterations, gap);
 
             // Blue's second and third move (after all possible moves from orange)
             var allGamesBlue = GetAllTranscriptsAfterPosition(blueStart, false);
@@ -133,7 +190,7 @@ namespace Volcano.Engine
             game.LoadTranscript(transcript);
 
             var canonical = new Canonical();
-            canonical.SetIndex(game.CurrentState);
+            canonical.SetIndex(game);
 
             var t = "";
             if (game.MoveHistory.Count > 0)
@@ -163,15 +220,15 @@ namespace Volcano.Engine
                 }
 
                 game.MakeMove(b);
-                bestTranscript = game.GetTranscriptLine();
+                bestTranscript = game.GetTranscriptLine().Replace("+", "");
 
-                UpdateBook(depth, iterations);
+                UpdateBook(depth, iterations, gap);
 
                 if (!singleOnly)
                 {
                     best = engine.GetBestMove(game.CurrentState, iterations, new EngineCancellationToken(() => false));
 
-                    t = game.GetTranscriptLine();
+                    t = game.GetTranscriptLine().Replace("+", "");
                     b = best.BestMove;
 
                     lock (_book)
@@ -179,30 +236,49 @@ namespace Volcano.Engine
                         _book[t] = b;
                     }
 
-                    UpdateBook(depth, iterations);
+                    UpdateBook(depth, iterations, gap);
                 }
             }
 
             return bestTranscript;
         }
 
-        private void UpdateBook(int depth, int iterations)
+        private void UpdateBook(int depth, int iterations, int gap)
         {
             _lock.Wait();
 
-            using (var r = new StreamWriter(_file))
-            {
-                r.WriteLine(depth);
-                r.WriteLine(_book.Count);
-                r.WriteLine(iterations);
+            //using (var r = new StreamWriter(_file))
+            //{
+            //    r.WriteLine(depth);
+            //    r.WriteLine(_book.Count);
+            //    r.WriteLine(iterations);
+            //    lock (_book)
+            //    {
+            //        foreach (var entry in _book)
+            //        {
+            //            r.WriteLine(entry.Key);
+            //            r.WriteLine(Constants.TileNames[entry.Value]);
+            //        }
+            //    }
+            //}
 
-                lock (_book)
+            using (var writer = new BinaryWriter(File.Open(_file, FileMode.Create)))
+            {
+                writer.Write(_fileHeader); // header
+                writer.Write("mcts-v2"); // engine
+                writer.Write(iterations); // iterations
+                writer.Write(gap); // gap
+
+                writer.Write(_book.Count);
+                foreach (var entry in _book)
                 {
-                    foreach (var entry in _book)
+                    var transcriptMoves = entry.Key == "" ? [] : entry.Key.Split(' ').Select(x => Constants.TileIndexes[x.Replace("+", "")]).ToList();
+                    writer.Write((byte)transcriptMoves.Count);
+                    foreach (var move in transcriptMoves)
                     {
-                        r.WriteLine(entry.Key);
-                        r.WriteLine(Constants.TileNames[entry.Value]);
+                        writer.Write((byte)move);
                     }
+                    writer.Write((byte)entry.Value);
                 }
             }
 
