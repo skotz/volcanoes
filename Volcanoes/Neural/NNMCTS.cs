@@ -104,8 +104,6 @@ namespace Volcano.Neural
                     EngineStatus status = new EngineStatus();
                     foreach (var child in root.Children)
                     {
-                        //double eval = child.VisitCount;
-                        // TODO: why negated?
                         double eval = Math.Round(100 * (child.VisitCount > 0 ? child.valueSum / child.VisitCount : 0), 2);
                         string pv = $"[{rootPolicy[child.ActionTaken].ToString("0.000000")}]   ";
                         var c = child;

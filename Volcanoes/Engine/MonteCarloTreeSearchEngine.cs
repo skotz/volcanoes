@@ -7,12 +7,25 @@ using Volcano.Game;
 
 namespace Volcano.Engine
 {
+    internal enum MCTSVersion
+    {
+        /// <summary>
+        /// default mcts
+        /// </summary>
+        V1,
+
+        /// <summary>
+        /// mcts with fast win, draw count, and player fix
+        /// </summary>
+        V2,
+    }
+
     internal class MonteCarloTreeSearchEngine : IEngine, IStatus
     {
         private Random random;
         private int simulationCount;
         private int visitedNodes;
-        private bool _allowForcedWins;
+        public bool _allowForcedWins;
         private bool _allowHash;
         private bool _allowFastWinSearch;
         private bool _fixedLastPlayer;
@@ -69,6 +82,34 @@ namespace Volcano.Engine
         {
             random = new Random();
             _allowForcedWins = true;
+        }
+
+        public MonteCarloTreeSearchEngine(MCTSVersion version)
+            : this()
+        {
+            switch (version)
+            {
+                case MCTSVersion.V1:
+                    _allowForcedWins = true;
+                    _allowHash = false;
+                    _allowFastWinSearch = false;
+                    _fixedLastPlayer = false;
+                    _useOpeningBook = false;
+                    _countDraws = false;
+                    break;
+
+                case MCTSVersion.V2:
+                    _allowForcedWins = true;
+                    _allowHash = false;
+                    _allowFastWinSearch = true;
+                    _fixedLastPlayer = true;
+                    _useOpeningBook = false;
+                    _countDraws = true;
+                    break;
+
+                default:
+                    throw new ArgumentException("Invalid MCTS Version");
+            }
         }
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
