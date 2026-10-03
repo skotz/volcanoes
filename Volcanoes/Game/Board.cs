@@ -64,6 +64,7 @@ namespace Volcano.Game
             WinningPathPlayerTwo = copy.WinningPathPlayerTwo;
             Flipped = copy.Flipped;
 
+            winHashes = copy.winHashes;
             fastWinSearch = copy.fastWinSearch;
         }
 

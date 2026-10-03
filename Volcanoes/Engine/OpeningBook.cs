@@ -63,7 +63,8 @@ namespace Volcano.Engine
                         break;
 
                     case 2:
-                        using (var reader = new BinaryReader(File.Open(file, FileMode.Open)))
+                        using (var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        using (var reader = new BinaryReader(stream))
                         {
                             Seconds = -1;
                             Depth = 0;
@@ -100,7 +101,8 @@ namespace Volcano.Engine
         {
             try
             {
-                using (var reader = new BinaryReader(File.Open(file, FileMode.Open)))
+                using (var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (var reader = new BinaryReader(stream))
                 {
                     return reader.ReadString() == _fileHeader ? 2 : 1;
                 }
