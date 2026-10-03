@@ -17,6 +17,8 @@ namespace Volcano
 
         public bool SelfPlay { get; set; }
 
+        public bool Parallel { get; set; }
+
         public TournamentType TournamentType { get; set; }
 
         public TournamentForm(List<string> engines)
@@ -48,6 +50,8 @@ namespace Volcano
 
             SelfPlay = cbSelfPlay.Checked;
 
+            Parallel = cbParallel.Checked;
+
             TournamentType = comboType.SelectedIndex == 1 ? TournamentType.Swiss : TournamentType.RoundRobin;
 
             if (Engines.Count >= 2 || (SelfPlay && Engines.Count >= 1))
@@ -71,6 +75,14 @@ namespace Volcano
             else
             {
                 cbSelfPlay.Enabled = true;
+            }
+        }
+
+        private void cbParallel_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cbParallel.Checked && checkedListBox1.CheckedItems.Cast<string>().Any(x => x.ToLower().Contains("parallel")))
+            {
+                MessageBox.Show("Parallel engines do not run well in parallel tournaments and will time out! Please unselect the parallel engines or run the tournament sequentially.", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
     }

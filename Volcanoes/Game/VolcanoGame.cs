@@ -33,17 +33,24 @@ namespace Volcano.Game
 
         public List<int> MoveHistory { get; private set; }
 
-        public bool Thinking { get { return _worker.IsBusy; } }
+        public bool Thinking
+        {
+            get
+            {
+                return _worker.IsBusy;
+            }
+        }
 
         public Exception BackgroundError { get; private set; }
 
-        public int NodesPerSecond { get { return _lastSearch?.NodesPerSecond ?? 0; } }
+        public int NodesPerSecond
+        { get { return _lastSearch?.NodesPerSecond ?? 0; } }
 
         public int SecondsPerEngineMove { get; set; } = 10;
 
         public static GameSettings Settings = GameSettings.LoadOrDefault("volcano.json");
 
-        private int _graceTimeout = 250;
+        public int TimeoutGrace { get; set; } = 250;
 
         public VolcanoGame()
         {
@@ -270,7 +277,7 @@ namespace Volcano.Game
                     e.Result = _playerTwoEngine.GetBestMove(CurrentState, SecondsPerEngineMove, token);
                 }
 
-                if (timer.ElapsedMilliseconds > SecondsPerEngineMove * 1000 + _graceTimeout)
+                if (timer.ElapsedMilliseconds > SecondsPerEngineMove * 1000 + TimeoutGrace)
                 {
                     e.Result = new SearchResult { Timeout = true };
                 }

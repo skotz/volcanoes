@@ -18,6 +18,7 @@ namespace Volcano.Game
         private EngineHelper _engines;
         private List<string> _players;
         private bool _allowSelfPlay;
+        private bool _runParallel;
         private TournamentType _tournamentType;
 
         private List<Action> games;
@@ -37,7 +38,7 @@ namespace Volcano.Game
 
         public delegate void TournamentStatusHandler(TournamentStatus status);
 
-        public Tournament(int rounds, int secondsPerMove, string crossTableFile, string gameDataFile, EngineHelper engines, List<string> players, bool allowSelfPlay, TournamentType tournamentType)
+        public Tournament(int rounds, int secondsPerMove, string crossTableFile, string gameDataFile, EngineHelper engines, List<string> players, bool allowSelfPlay, TournamentType tournamentType, bool parallel)
         {
             _rounds = rounds;
             _secondsPerMove = secondsPerMove;
@@ -46,6 +47,7 @@ namespace Volcano.Game
             _engines = engines;
             _players = players;
             _allowSelfPlay = allowSelfPlay;
+            _runParallel = parallel;
             _tournamentType = tournamentType;
 
             worker = new BackgroundWorker();
@@ -96,7 +98,14 @@ namespace Volcano.Game
 
                 for (int r = 0; r < _rounds; r++)
                 {
-                    Parallel.ForEach(games, x => x());
+                    if (_runParallel)
+                    {
+                        Parallel.ForEach(games, x => x());
+                    }
+                    else
+                    {
+                        games.ForEach(x => x());
+                    }
                 }
             }
             else if (_tournamentType == TournamentType.Swiss)
@@ -123,7 +132,14 @@ namespace Volcano.Game
                         QueueGame(swissPlayers[i + 1].Engine, swissPlayers[i].Engine);
                     }
 
-                    Parallel.ForEach(games, x => x());
+                    if (_runParallel)
+                    {
+                        Parallel.ForEach(games, x => x());
+                    }
+                    else
+                    {
+                        games.ForEach(x => x());
+                    }
 
                     // Update scores for next round
                     for (int i = 0; i < ((swissPlayers.Count % 2 == 1) ? swissPlayers.Count - 1 : swissPlayers.Count); i++)
@@ -263,6 +279,7 @@ namespace Volcano.Game
                     game.RegisterEngine(Player.One, _engines.GetEngine(engine1), true);
                     game.RegisterEngine(Player.Two, _engines.GetEngine(engine2), true);
                     game.SecondsPerEngineMove = _secondsPerMove;
+                    game.TimeoutGrace = 1000;
                     game.StartNewGame();
                     game.ComputerPlay();
 
