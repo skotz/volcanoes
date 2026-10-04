@@ -137,6 +137,21 @@ namespace Volcano.Neural
                 loss.backward();
                 optimizer.step();
 
+                //// Print gradient magnitudes across your GCN layers
+                //foreach (var (pName, parameter) in model.named_parameters())
+                //{
+                //    if (parameter.grad?.IsInvalid != null)
+                //    {
+                //        double gradNorm = parameter.grad.norm().item<float>();
+                //        AlphaZeroEngine.WriteLine($"Layer: {pName} | Gradient Norm: {gradNorm:F6}");
+
+                //        if (gradNorm == 0.0)
+                //            AlphaZeroEngine.WriteLine($"[CRITICAL] Vanishing gradient detected at {pName}!");
+                //        if (double.IsNaN(gradNorm) || double.IsInfinity(gradNorm))
+                //            AlphaZeroEngine.WriteLine($"[CRITICAL] Exploding gradient / NaNs detected at {pName}!");
+                //    }
+                //}
+
                 lastPolicyLoss = policyLoss.item<float>();
                 lastValueLoss = valueLoss.item<float>();
                 lastLoss = loss.item<float>();
@@ -185,6 +200,13 @@ namespace Volcano.Neural
                     AlphaZeroEngine.WriteLine($"Self-play {j + 1}");
                     fresh.Add(SelfPlay());
                 }
+
+                //var test = new TrainingData();
+                //while (test.Count < 2048)
+                //{
+                //    test.Add(new Board(), [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 1.0f);
+                //}
+                //fresh.Add(test);
 
                 replayBuffer.Enqueue(fresh);
                 while (replayBuffer.Count > config.ReplayBufferIterations)

@@ -77,8 +77,8 @@ namespace Volcano.Neural
 
                         for (int j = 0; j < gamePlayers.Count; j++)
                         {
-                            float discount = (j + 1) * 0.001f;
-                            float value = gamePlayers[j] == winner ? 1 - discount : (winner == Player.Draw ? 0 : -1 + discount);
+                            float discount = (float)Math.Pow(0.95, gamePlayers.Count - (j + 1));
+                            float value = (gamePlayers[j] == winner ? 1 : (winner == Player.Draw ? 0 : -1)) * discount;
                             data.Add(gameStates[j], gameProbs[j], value);
                         }
                     }

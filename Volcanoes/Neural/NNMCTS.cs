@@ -92,8 +92,7 @@ namespace Volcano.Neural
                 else
                 {
                     var absoluteWinner = node.State.GetAbsoluteWinner();
-                    var discount = node.State.GetAbsoluteTurn() * 0.001f;
-                    var value = absoluteWinner == node.AbsolutePlayer ? 1 - discount : (absoluteWinner == Player.Draw ? 0 : -1 + discount);
+                    var value = absoluteWinner == node.AbsolutePlayer ? 1 : (absoluteWinner == Player.Draw ? 0 : -1);
 
                     node.Backpropagate(value);
                 }
