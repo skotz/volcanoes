@@ -12,7 +12,7 @@ namespace Volcano.Neural
         /// 1 channel for move type
         /// 1 channel for antipode dense encoding
         /// </summary>
-        public const int channels = 10;
+        public const int channels = 38;
 
         private string[][] tileMapping = [
             [ "N06", "N01", "N09", "N02", "N12", "N03", "N15", "N04", "N18", "N05", ],
@@ -38,34 +38,51 @@ namespace Volcano.Neural
         public torch.Tensor Encode(IReadOnlyList<Board> states, torch.Device device)
         {
             var batchSize = states.Count;
-            var cells = 80;
-            var data = new float[batchSize * channels * cells];
+            var height = 8;
+            var width = 10;
+            var data = new float[batchSize * channels * height * width];
 
             for (var b = 0; b < batchSize; b++)
             {
                 var state = states[b];
                 var board = state.Tiles;
-                var baseIndex = b * channels * cells;
+                var baseIndex = b * channels * height * width;
 
-                // encode every tile by normalizing [-4,4] to [-1,1]
-                for (var i = 0; i < cells; i++)
+                // Encode all 80 tiles
+                for (var tileIdx = 0; tileIdx < 80; tileIdx++)
                 {
-                    var channel = board[i] + 4;
-                    data[baseIndex + i * channels + channel] = 1.0f;
-                }
+                    var (x, y) = indexToMatrix[tileIdx];
+                    var linearIdx = y * width + x;
+                    var tileValue = board[tileIdx];
 
-                // if this is the first of two moves
-                if (state.GetMoveTypeForTurn(state.Turn + 1) == MoveType.AllGrow)
-                {
-                    var channel = channels - 1;
-                    for (var i = 0; i < cells; i++)
+                    // Channel 0-8: One-hot encoding for tile value [-4, 4]
+                    var valueChannel = tileValue + 4;
+                    data[baseIndex + valueChannel * height * width + linearIdx] = 1.0f;
+
+                    // Channels 9-35: Neighbor encoding (9 channels per neighbor * 3 neighbors)
+                    var neighbors = Constants.AdjacentIndexes[tileIdx];
+                    for (var neighborIdx = 0; neighborIdx < 3; neighborIdx++)
                     {
-                        data[baseIndex + i * channels + channel] = 1f;
+                        var neighborTileIdx = neighbors[neighborIdx];
+                        var neighborValue = board[neighborTileIdx];
+                        var neighborChannel = 9 + neighborIdx * 9 + (neighborValue + 4);
+                        data[baseIndex + neighborChannel * height * width + linearIdx] = 1.0f;
                     }
+
+                    // Channel 36: Move type channel (all 1s if next turn is AllGrow)
+                    if (state.GetMoveTypeForTurn(state.Turn + 1) == MoveType.AllGrow)
+                    {
+                        data[baseIndex + 36 * height * width + linearIdx] = 1.0f;
+                    }
+
+                    // Channel 37: Antipode dense encoding (value/4 scaled to [-1, 1])
+                    var antipodeTileIdx = Constants.Antipodes[tileIdx];
+                    var antipodeValue = board[antipodeTileIdx];
+                    data[baseIndex + 37 * height * width + linearIdx] = antipodeValue / 4.0f;
                 }
             }
 
-            return torch.tensor(data, new long[] { batchSize, cells, channels }).to(device);
+            return torch.tensor(data, [batchSize, channels, height, width]).to(device);
         }
 
         private void InitializeTileMap()
@@ -87,6 +104,6 @@ namespace Volcano.Neural
         /// <summary>
         /// [1, 10, 80]
         /// </summary>
-        public torch.Tensor Encode(Board state, torch.Device device) => Encode(new[] { state }, device);
+        public torch.Tensor Encode(Board state, torch.Device device) => Encode([state], device);
     }
 }

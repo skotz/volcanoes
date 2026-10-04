@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using static TorchSharp.torch;
+﻿using static TorchSharp.torch;
 
 namespace Volcano.Neural
 {
