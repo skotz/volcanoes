@@ -6,17 +6,17 @@ namespace Volcano.Neural
 {
     public class ResBlock : torch.nn.Module<Tensor, Tensor>
     {
-        private GraphConvLayer conv1;
-        private LayerNorm bn1;
-        private GraphConvLayer conv2;
-        private LayerNorm bn2;
+        private CylindricalConv2d conv1;
+        private BatchNorm2d bn1;
+        private CylindricalConv2d conv2;
+        private BatchNorm2d bn2;
 
-        public ResBlock(int numHidden, string name, Tensor boardTopology) : base(name)
+        public ResBlock(int numHidden, string name) : base(name)
         {
-            conv1 = skotz.nn.ConvGraph(numHidden, numHidden, boardTopology);
-            bn1 = torch.nn.LayerNorm([numHidden]);
-            conv2 = skotz.nn.ConvGraph(numHidden, numHidden, boardTopology);
-            bn2 = torch.nn.LayerNorm([numHidden]);
+            conv1 = skotz.nn.CylConv2d(numHidden, numHidden);
+            bn1 = torch.nn.BatchNorm2d(numHidden);
+            conv2 = skotz.nn.CylConv2d(numHidden, numHidden);
+            bn2 = torch.nn.BatchNorm2d(numHidden);
             RegisterComponents();
         }
 

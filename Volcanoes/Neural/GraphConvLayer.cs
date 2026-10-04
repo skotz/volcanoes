@@ -50,19 +50,4 @@ namespace Volcano.Neural
             return output;
         }
     }
-
-#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
-
-    public static class skotz
-    {
-        public static class nn
-        {
-            public static GraphConvLayer ConvGraph(long inFeatures, long outFeatures, Tensor boardTopology)
-            {
-                return new GraphConvLayer(inFeatures, outFeatures, boardTopology);
-            }
-        }
-    }
-
-#pragma warning restore CS8981
 }

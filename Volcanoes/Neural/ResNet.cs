@@ -22,11 +22,11 @@ namespace Volcano.Neural
             }
         }
 
-        public ResNet(int numResBlocks, int numHidden, Device device, Tensor boardTopology) : base("ResNet")
+        public ResNet(int numResBlocks, int numHidden, Device device) : base("ResNet")
         {
             this.device = device;
-            startBlock = torch.nn.Sequential(skotz.nn.ConvGraph(Encoder.channels, numHidden, boardTopology),
-                                             torch.nn.LayerNorm([numHidden]),
+            startBlock = torch.nn.Sequential(skotz.nn.CylConv2d(Encoder.channels, numHidden),
+                                             torch.nn.BatchNorm2d(numHidden),
                                              torch.nn.ReLU());
             backBone = torch.nn.ModuleList<ResBlock>();
 
@@ -34,16 +34,16 @@ namespace Volcano.Neural
             {
                 sb.Append("ResBlock_");
                 sb.Append(i.ToString());
-                backBone.add_module(sb.ToString(), new ResBlock(numHidden, sb.ToString(), boardTopology));
+                backBone.add_module(sb.ToString(), new ResBlock(numHidden, sb.ToString()));
             }
 
-            policyHead = torch.nn.Sequential(skotz.nn.ConvGraph(numHidden, 256, boardTopology),
-                                             torch.nn.LayerNorm([256]),
+            policyHead = torch.nn.Sequential(skotz.nn.CylConv2d(numHidden, 256),
+                                             torch.nn.BatchNorm2d(256),
                                              torch.nn.ReLU(),
                                              torch.nn.Flatten(),
                                              torch.nn.Linear(256 * 80, 80));
-            valueHead = torch.nn.Sequential(skotz.nn.ConvGraph(numHidden, 36, boardTopology),
-                                            torch.nn.LayerNorm([36]),
+            valueHead = torch.nn.Sequential(skotz.nn.CylConv2d(numHidden, 36),
+                                            torch.nn.BatchNorm2d(36),
                                             torch.nn.ReLU(),
                                             torch.nn.Flatten(),
                                             torch.nn.Linear(36 * 80, 1),

@@ -42,8 +42,7 @@ namespace Volcano.Engine
         {
             _config = new AlphaZeroConfig();
             _device = cuda.is_available() ? new Device("cuda") : new Device("cpu");
-            _topology = GetAdjacencyMatrix();
-            _model = new ResNet(_config.NumResBlocks, _config.NumHidden, _device, _topology);
+            _model = new ResNet(_config.NumResBlocks, _config.NumHidden, _device);
 
             string modelPath = Path.Combine(_savePath, "training-model.dat");
             string optimizerPath = Path.Combine(_savePath, "training-optimizer.dat");
