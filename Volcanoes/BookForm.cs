@@ -45,7 +45,7 @@ namespace Volcano
         {
             var percent = (int)(100.0 * completed / total);
 
-            backgroundWorker1.ReportProgress(percent, completed.ToString("N0") + "/" + total.ToString("N0"));
+            backgroundWorker1.ReportProgress(percent, completed == 0 ? "Initializing" : (completed.ToString("N0") + "/" + total.ToString("N0")));
         }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)

@@ -53,6 +53,7 @@ namespace Volcano.Engine
         public MonteCarloTreeSearchNode originalRootNode;
 
         public bool _persistable;
+        public bool _persistableFull;
 
         public MonteCarloTreeSearchEngine(double ucbFactor)
         {
@@ -169,17 +170,21 @@ namespace Volcano.Engine
                 return null;
             }
 
-            if (node.hash == targetHash)
-            {
-                return node;
-            }
+            var queue = new Queue<MonteCarloTreeSearchNode>();
+            queue.Enqueue(node);
 
-            foreach (var child in node.Children)
+            while (queue.Count > 0)
             {
-                var result = FindNodeByHash(child, targetHash);
-                if (result != null)
+                var current = queue.Dequeue();
+
+                if (current.hash == targetHash)
                 {
-                    return result;
+                    return current;
+                }
+
+                foreach (var child in current.Children)
+                {
+                    queue.Enqueue(child);
                 }
             }
 
@@ -195,6 +200,12 @@ namespace Volcano.Engine
 
                 if (matchingNode != null)
                 {
+                    if (!_persistableFull)
+                    {
+                        // for regular bot play we don't need to retain previous history
+                        originalRootNode = matchingNode;
+                    }
+
                     return MonteCarloTreeSearchInternal(rootState, matchingNode);
                 }
             }
@@ -305,7 +316,7 @@ namespace Volcano.Engine
                 }
 
                 // Update Status
-                if (statusUpdate.ElapsedMilliseconds > millisecondsBetweenUpdates && OnStatus != null)
+                if ((statusUpdate.ElapsedMilliseconds > millisecondsBetweenUpdates || forceWin) && OnStatus != null)
                 {
                     EngineStatus status = new EngineStatus();
                     foreach (var child in rootNode.Children)
