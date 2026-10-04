@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Volcano.Game;
 
 namespace Volcano.Engine
@@ -30,6 +29,8 @@ namespace Volcano.Engine
         public delegate void BookGenerationHandler(int completed, int total);
 
         private const string _fileHeader = "volcanoes-opening-book";
+
+        private MonteCarloTreeSearchEngine _engine;
 
         public OpeningBook(string file)
         {
@@ -151,11 +152,23 @@ namespace Volcano.Engine
             var done = 0;
             var total = 1;
 
+            // use iterations instead of time so we can run in parallel without starving a thread and getting bad results
+            // on my machine a 120 second search resulted in 1,260,000 mcts playouts, so roughly 10,000 per second
+            _engine = new MonteCarloTreeSearchEngine(MCTSVersion.V2);
+
             // Blue's first move (hardcode to one of the 20 identical equilateral triangles since plenty of computational power says that's slightly better than one of the 60 identical isosceles triangles)
             var blueStart = "N07";
             _book[""] = Constants.TileIndexes[blueStart];
             OnStatusUpdate?.Invoke(done, 1);
             UpdateBook(depth, iterations, gap);
+
+            // Prime the root node
+            _engine.forcedIterations = 80;
+            _engine._persistable = true;
+            var prime = new Board();
+            _engine.GetBestMove(prime, 1, new EngineCancellationToken(() => false));
+            prime.MakeMove(_book[""]);
+            _engine.GetBestMove(prime, 1, new EngineCancellationToken(() => false));
 
             // Blue's second and third move (after all possible moves from orange)
             var allGamesBlue = GetAllTranscriptsAfterPosition(blueStart, false);
@@ -167,14 +180,20 @@ namespace Volcano.Engine
 
             OnStatusUpdate?.Invoke(++done, total);
 
-            Parallel.ForEach(allGamesBlue, transcript =>
+            // Real settings
+            _engine.forcedIterations = iterations;
+            _engine.simplifyFirstMove = true;
+            _engine.forcedGap = gap;
+
+            // Run sequentially so we benefit from MCTS tree reuse
+            allGamesBlue.ForEach(transcript =>
             {
                 GenerateBookForPosition(depth, iterations, transcript, false, gap);
 
                 OnStatusUpdate?.Invoke(++done, total);
             });
 
-            Parallel.ForEach(allGamesOrange, transcript =>
+            allGamesOrange.ForEach(transcript =>
             {
                 GenerateBookForPosition(depth, iterations, transcript, false, gap);
 
@@ -205,14 +224,7 @@ namespace Volcano.Engine
 
             if (!_book.ContainsKey(t))
             {
-                // use iterations instead of time so we can run in parallel without starving a thread and getting bad results
-                // on my machine a 120 second search resulted in 1,260,000 mcts playouts, so roughly 10,000 per second
-                var engine = new MonteCarloTreeSearchEngine(MCTSVersion.V2);
-                engine.simplifyFirstMove = true;
-                engine.forcedIterations = iterations;
-                engine.forcedGap = gap;
-
-                var best = engine.GetBestMove(game.CurrentState, iterations, new EngineCancellationToken(() => false));
+                var best = _engine.GetBestMove(game.CurrentState, iterations, new EngineCancellationToken(() => false));
 
                 var b = best.BestMove;
 
@@ -228,7 +240,7 @@ namespace Volcano.Engine
 
                 if (!singleOnly)
                 {
-                    best = engine.GetBestMove(game.CurrentState, iterations, new EngineCancellationToken(() => false));
+                    best = _engine.GetBestMove(game.CurrentState, iterations, new EngineCancellationToken(() => false));
 
                     t = game.GetTranscriptLine().Replace("+", "");
                     b = best.BestMove;
@@ -304,6 +316,8 @@ namespace Volcano.Engine
 
                 firstCopy.MakeMove(firstMove);
 
+                _engine.GetBestMove(firstCopy.CurrentState, 1, new EngineCancellationToken(() => false));
+
                 if (singleOnly)
                 {
                     transcripts.Add(firstCopy.GetTranscriptLine());
@@ -316,6 +330,8 @@ namespace Volcano.Engine
                         secondCopy.LoadTranscript(firstCopy.GetTranscriptLine());
 
                         secondCopy.MakeMove(secondMove);
+
+                        _engine.GetBestMove(secondCopy.CurrentState, 1, new EngineCancellationToken(() => false));
 
                         transcripts.Add(secondCopy.GetTranscriptLine());
                     }

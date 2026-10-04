@@ -7,13 +7,13 @@ namespace Volcano.Neural
     internal class Encoder
     {
         /// <summary>
-        /// 1 for each tile value, normalized to [-1, 1]
-        /// 1 for having two moves
+        /// 9 one-hot channels for each value in [-4,4]
+        /// 1 channel for move type
         /// </summary>
-        public const int channels = 2;
+        public const int channels = 10;
 
         /// <summary>
-        /// shape [batch, channel, cell]
+        /// shape [batch, tile, channel]
         /// </summary>
         public torch.Tensor Encode(IReadOnlyList<Board> states, torch.Device device)
         {
@@ -30,8 +30,8 @@ namespace Volcano.Neural
                 // encode every tile by normalizing [-4,4] to [-1,1]
                 for (var i = 0; i < cells; i++)
                 {
-                    var channel = 0;
-                    data[baseIndex + channel * 80 + i] = board[i] / 4.0f;
+                    var channel = board[i] + 4;
+                    data[baseIndex + i * channels + channel] = 1.0f;
                 }
 
                 // if this is the first of two moves
@@ -40,12 +40,12 @@ namespace Volcano.Neural
                     var channel = channels - 1;
                     for (var i = 0; i < cells; i++)
                     {
-                        data[baseIndex + channel * 80 + i] = 1f;
+                        data[baseIndex + i * channels + channel] = 1f;
                     }
                 }
             }
 
-            return torch.tensor(data, new long[] { batchSize, channels, cells }).to(device);
+            return torch.tensor(data, new long[] { batchSize, cells, channels }).to(device);
         }
 
         /// <summary>

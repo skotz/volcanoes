@@ -282,7 +282,7 @@ namespace Volcano.Game
             var hash = 0L;
             if (allowHash)
             {
-                hash = GetHash();
+                hash = GetSimpleHash();
                 if (winHashes.ContainsKey(hash))
                 {
                     Winner = winHashes[hash];
@@ -293,7 +293,7 @@ namespace Volcano.Game
             // Training only
             if (StaticWinCache.Enabled)
             {
-                hash = GetHash();
+                hash = GetSimpleHash();
                 if (StaticWinCache.Winners.TryGetValue(hash, out var winner))
                 {
                     Winner = winner;
@@ -651,7 +651,7 @@ namespace Volcano.Game
             }
         }
 
-        public long GetHash()
+        public long GetSimpleHash()
         {
             long hash = 0;
 
@@ -659,6 +659,18 @@ namespace Volcano.Game
             {
                 // this only hashes for win detection, not unique board states
                 hash ^= Constants.ZobristKeys[i, Tiles[i] == 0 ? 0 : (Tiles[i] > 0 ? 1 : 2)];
+            }
+
+            return hash;
+        }
+
+        public long GetFullHash()
+        {
+            var hash = 0L;
+
+            for (int i = 0; i < 80; i++)
+            {
+                hash ^= Constants.ZobristKeys[i, Tiles[i] + 4];
             }
 
             return hash;

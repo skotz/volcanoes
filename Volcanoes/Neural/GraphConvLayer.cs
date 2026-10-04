@@ -21,7 +21,7 @@ namespace Volcano.Neural
         {
             _inFeatures = inFeatures;
             _outFeatures = outFeatures;
-            _adjacencyMatrix = adjacencyMatrix;
+            _adjacencyMatrix = adjacencyMatrix.clone();
 
             // 1. Initialize the tensors and wrap them as a Parameter
             var wTensor = torch.randn([inFeatures, outFeatures]) * Math.Sqrt(2.0 / inFeatures);
@@ -36,8 +36,19 @@ namespace Volcano.Neural
 
         public override Tensor forward(Tensor x)
         {
+            // x shape: [Batch, 80, 10]
+            long batchSize = x.shape[0];
+
+            // 1. Linear Transformation: Broadcasts perfectly across the batch
+            // [Batch, 80, 10] x [10, OutFeatures] -> [Batch, 80, OutFeatures]
             var support = torch.matmul(x, Weight);
-            var adjExpanded = normAdjacency.unsqueeze(0);
+
+            // 2. Expand the Adjacency Matrix to match the batch size exactly
+            // From: [80, 80] -> [1, 80, 80] -> [Batch, 80, 80]
+            var adjExpanded = _adjacencyMatrix.unsqueeze(0).expand(new long[] { batchSize, 80, 80 });
+
+            // 3. Batch Matrix Multiplication: Both tensors now have the same Batch dimension!
+            // [Batch, 80, 80] x [Batch, 80, OutFeatures] -> [Batch, 80, OutFeatures]
             var output = torch.bmm(adjExpanded, support);
 
             return output;
