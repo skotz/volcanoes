@@ -247,7 +247,14 @@ namespace Volcano.Neural
                 string path2 = Path.Combine(savePath, "training-model.dat");
                 string path3 = Path.Combine(savePath, "training-optimizer.dat");
                 model.save(path2);
-                optimizer.save_state_dict(path3);
+                try
+                {
+                    optimizer.save_state_dict(path3);
+                }
+                catch
+                {
+                    AlphaZeroEngine.WriteLine($"Failed to save optimizer state dictionary!");
+                }
                 File.WriteAllLines(replayBufferPath, replayBuffer.Select(x => JsonConvert.SerializeObject(x)));
             }
         }
