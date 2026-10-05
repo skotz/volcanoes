@@ -41,7 +41,7 @@ namespace Volcano.Neural
             }
         }
 
-        public double[] Search(Board state, int seconds, EngineCancellationToken token)
+        public double[] Search(Board state, int seconds, bool policyOnly, EngineCancellationToken token)
         {
             // visitCount starts at 1 so the sqrt(parent visits) term in PUCT is non-zero on the
             // first simulation; with 0 every child scores exactly 0 and the priors are ignored.
@@ -66,7 +66,7 @@ namespace Volcano.Neural
             simulations = 0;
 
             //for (int i = 0; i < config.NumSearches; i++)
-            while (stopwatch.ElapsedMilliseconds <= seconds * 1000 - buffer && !token.Cancelled)
+            while (stopwatch.ElapsedMilliseconds <= seconds * 1000 - buffer && !token.Cancelled && (!policyOnly || simulations == 0))
             {
                 simulations++;
                 NNNode node = root;
@@ -98,7 +98,7 @@ namespace Volcano.Neural
                 }
 
                 // Update Status
-                if (statusUpdate.ElapsedMilliseconds > millisecondsBetweenUpdates && OnStatus != null)
+                if ((statusUpdate.ElapsedMilliseconds > millisecondsBetweenUpdates || policyOnly) && OnStatus != null)
                 {
                     EngineStatus status = new EngineStatus();
                     foreach (var child in root.Children)
@@ -106,12 +106,14 @@ namespace Volcano.Neural
                         double eval = Math.Round(100 * (child.VisitCount > 0 ? child.valueSum / child.VisitCount : 0), 2);
                         string pv = $"[{rootPolicy[child.ActionTaken].ToString("0.000000")}]   ";
                         var c = child;
-                        while (c != null && c.ActionTaken >= 0 && c.ActionTaken <= 80)
+                        var first = true;
+                        while (c != null && c.ActionTaken >= 0 && c.ActionTaken <= 80 && (!policyOnly || first))
                         {
+                            first = false;
                             pv += Constants.TileNames[c.ActionTaken] + " (" + c.VisitCount + ")   ";
                             c = c.Children?.OrderBy(x => x.VisitCount)?.LastOrDefault();
                         }
-                        status.Add(child?.ActionTaken ?? 80, eval, pv, child.VisitCount);
+                        status.Add(child?.ActionTaken ?? 80, eval, pv, child.VisitCount + rootPolicy[child.ActionTaken]);
                     }
                     status.Sort();
                     OnStatus?.Invoke(this, status);

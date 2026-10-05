@@ -15,7 +15,7 @@
         /// MCTS simulations per move. This sets the quality of the policy targets the network
         /// learns to imitate, so it matters more than network size.
         /// </summary>
-        public int NumSearches { get; init; } = 800; // 500
+        public int NumSearches { get; init; } = 20; // 500
 
         /// <summary>Residual blocks in the network.</summary>
         public int NumResBlocks { get; init; } = 6;

@@ -279,6 +279,20 @@ namespace Volcano.Game
         {
             Winner = Player.Empty;
 
+            //if (Turn >= 10)
+            //{
+            //    if (Tiles[24] == 4)
+            //    {
+            //        Winner = Player.One;
+            //        return;
+            //    }
+            //    else if (Tiles[24] == -4)
+            //    {
+            //        Winner = Player.Two;
+            //        return;
+            //    }
+            //}
+
             var hash = 0L;
             if (allowHash)
             {

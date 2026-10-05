@@ -32,6 +32,7 @@ namespace Volcano.Engine
         public static Action<string> WriteLine;
 
         private string _savePath = "models/";
+        internal bool _policyOnly;
 
         public AlphaZeroEngine()
             : this(false)
@@ -113,7 +114,7 @@ namespace Volcano.Engine
             //canonical.SetIndex(state);
             //var canonicalized = canonical.Canonicalize(state);
 
-            var move = _alphaZero.GetBestMove(state, maxSeconds, token);
+            var move = _alphaZero.GetBestMove(state, maxSeconds, token, _policyOnly);
 
             return new SearchResult
             {

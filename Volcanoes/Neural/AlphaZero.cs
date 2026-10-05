@@ -35,12 +35,12 @@ namespace Volcano.Neural
             return null;
         }
 
-        internal (int, int) GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
+        internal (int, int) GetBestMove(Board state, int maxSeconds, EngineCancellationToken token, bool policyOnly)
         {
             var neutral = game.ChangePerspective(state, Player.One);
             neutral.fastWinSearch = true;
 
-            var probs = nnmcts.Search(neutral, maxSeconds, token);
+            var probs = nnmcts.Search(neutral, maxSeconds, policyOnly, token);
 
             var action = 0;
             for (var i = 1; i < probs.Length; i++)

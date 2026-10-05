@@ -9,7 +9,7 @@ namespace Volcano.Neural
         private readonly GameRule game;
         private readonly AlphaZeroConfig config;
         private readonly NNNode parent;
-        private readonly double prior;
+        public readonly double prior;
         public double valueSum;
         private Board state;
 

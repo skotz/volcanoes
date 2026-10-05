@@ -72,6 +72,7 @@ namespace Volcano
 
             //engines.Add<DeepQNetworkEngine>("Deep Q-Network");
             engines.Add<AlphaZeroEngine>("AlphaZero");
+            engines.Add("AlphaZero Policy", () => new AlphaZeroEngine() { _policyOnly = true });
 
             //engines.Add<MonteCarloPlayoutEngine>("MCTS Playout");
             //engines.Add<MonteCarloBeelineParallelEngine>("Parallel MCTS Beeline Full");
