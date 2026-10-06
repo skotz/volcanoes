@@ -89,7 +89,7 @@ namespace Volcano.Engine
             _allowForcedWins = true;
         }
 
-        public MonteCarloTreeSearchEngine(MCTSVersion version)
+        public MonteCarloTreeSearchEngine(MCTSVersion version, string book = "")
             : this()
         {
             switch (version)
@@ -114,6 +114,12 @@ namespace Volcano.Engine
 
                 default:
                     throw new ArgumentException("Invalid MCTS Version");
+            }
+
+            if (!string.IsNullOrEmpty(book))
+            {
+                _book = new OpeningBook(book);
+                _useOpeningBook = _book.Loaded;
             }
         }
 

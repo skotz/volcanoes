@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Volcanoes"
-#define MyAppVersion "v0.5.6"
+#define MyAppVersion "v0.6.1"
 #define MyAppPublisher "Simon Dorfman and Scott Clayton"
 #define MyAppURL "https://github.com/skotz/volcanoes"
 #define MyAppExeName "Volcanoes.exe"
@@ -34,9 +34,15 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "..\Volcanoes\bin\Release\Volcanoes.exe"; DestDir: "{app}"; Flags: ignoreversion    
-Source: "..\Volcanoes\bin\Release\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\Volcanoes\bin\Release\openings.dat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Volcanoes\bin\Release\net10.0-windows\Volcanoes.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Volcanoes\bin\Release\net10.0-windows\Volcanoes.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Volcanoes\bin\Release\net10.0-windows\TorchSharp.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Volcanoes\bin\Release\net10.0-windows\SkiaSharp.dll"; DestDir: "{app}"; Flags: ignoreversion    
+Source: "..\Volcanoes\bin\Release\net10.0-windows\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Volcanoes\bin\Release\net10.0-windows\ICSharpCode.SharpZipLib.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Volcanoes\bin\Release\net10.0-windows\Google.Protobuf.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Volcanoes\bin\Release\net10.0-windows\Models\volcanozero-v1-102400g.dat"; DestDir: "{app}\Models"; Flags: ignoreversion
+Source: "..\Volcanoes\bin\Release\net10.0-windows\Books\openings-v1-60s.dat"; DestDir: "{app}\Books"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

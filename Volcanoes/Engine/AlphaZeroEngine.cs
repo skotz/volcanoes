@@ -11,8 +11,26 @@ using static TorchSharp.torch.optim.lr_scheduler;
 
 namespace Volcano.Engine
 {
+    internal class VolcanoZeroConfig
+    {
+        public string ModelPath { get; private set; }
+
+        public VolcanoZeroConfig(string modelPath)
+        {
+            ModelPath = modelPath;
+        }
+
+        public static VolcanoZeroConfig FromFile(string modelPath)
+        {
+            return new VolcanoZeroConfig(modelPath);
+        }
+    }
+
     internal class AlphaZeroEngine : IEngine, IStatus, ILearn
     {
+        private const string _defaultModel = "Models\\volcanozero-v1-102400g.dat";
+
+        private VolcanoZeroConfig _settings;
         private AlphaZeroConfig _config;
         private Device _device;
         private Tensor _topology;
@@ -35,12 +53,23 @@ namespace Volcano.Engine
         internal bool _policyOnly;
 
         public AlphaZeroEngine()
-            : this(false)
+            : this(VolcanoZeroConfig.FromFile(_defaultModel))
+        {
+        }
+
+        public AlphaZeroEngine(VolcanoZeroConfig config)
+            : this(config, false)
         {
         }
 
         public AlphaZeroEngine(bool forTraining)
+            : this(null, forTraining)
         {
+        }
+
+        public AlphaZeroEngine(VolcanoZeroConfig config, bool forTraining)
+        {
+            _settings = config;
             _config = new AlphaZeroConfig();
             _device = cuda.is_available() ? new Device("cuda") : new Device("cpu");
             _model = new ResNet(_config.NumResBlocks, _config.NumHidden, _device);
@@ -75,7 +104,7 @@ namespace Volcano.Engine
 
             if (!forTraining)
             {
-                _alphaZero = new AlphaZero(_model, _optimizer, _scheduler, _encoder, _game, _config);
+                _alphaZero = new AlphaZero(_model, _optimizer, _scheduler, _encoder, _game, _config, _settings);
                 _alphaZero.OnStatus += alphaZero_OnStatus;
             }
         }

@@ -12,12 +12,13 @@ namespace Volcano.Neural
 
         public event EventHandler<EngineStatus> OnStatus;
 
-        public AlphaZero(ResNet model, Adam optimizer, torch.optim.lr_scheduler.LRScheduler scheduler, Encoder encoder, GameRule game, AlphaZeroConfig config)
+        public AlphaZero(ResNet model, Adam optimizer, torch.optim.lr_scheduler.LRScheduler scheduler, Encoder encoder, GameRule game, AlphaZeroConfig config, VolcanoZeroConfig settings)
             : base(model, optimizer, scheduler, encoder, game, config)
         {
             nnmcts = new NNMCTS(game, config, model, encoder);
 
-            model.load("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat");
+            // "C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat"
+            model.load(settings.ModelPath);
             model.eval();
 
             nnmcts.OnStatus += Nnmcts_OnStatus;
