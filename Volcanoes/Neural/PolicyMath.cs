@@ -28,9 +28,13 @@
         /// <summary>Blends Dirichlet exploration noise into a root policy.</summary>
         public static void AddDirichletNoise(float[] policy, float[] noise, double epsilon)
         {
+            var ni = 0;
             for (int i = 0; i < policy.Length; i++)
             {
-                policy[i] = (float)((1 - epsilon) * policy[i] + epsilon * noise[i]);
+                if (policy[i] != 0)
+                {
+                    policy[i] = (float)((1 - epsilon) * policy[i] + epsilon * noise[ni++]);
+                }
             }
         }
     }

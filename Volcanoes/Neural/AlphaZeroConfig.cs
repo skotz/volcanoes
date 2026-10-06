@@ -15,13 +15,13 @@
         /// MCTS simulations per move. This sets the quality of the policy targets the network
         /// learns to imitate, so it matters more than network size.
         /// </summary>
-        public int NumSearches { get; init; } = 800; // 500
+        public int NumSearches { get; init; } = 500; // 500
 
-        /// <summary>Residual blocks in the network.</summary>
-        public int NumResBlocks { get; init; } = 6;
+        ///// <summary>Residual blocks in the network.</summary>
+        //public int NumResBlocks { get; init; } = 6;
 
-        /// <summary>Channels (hidden width) in the network.</summary>
-        public int NumHidden { get; init; } = 128;
+        ///// <summary>Channels (hidden width) in the network.</summary>
+        //public int NumHidden { get; init; } = 128;
 
         /// <summary>Outer self-play -> train iterations.</summary>
         public int NumIterations { get; init; } = 50;
@@ -40,7 +40,7 @@
         /// fresh sample and forgets the last one; a window of a few iterations keeps the value
         /// targets stable. Memory cost is small — positions are stored as raw boards.
         /// </summary>
-        public int ReplayBufferIterations { get; init; } = 5;
+        public int ReplayBufferIterations { get; init; } = 20; // 5
 
         /// <summary>
         /// Training epochs over the replay buffer each iteration. Keep this low: with a window
@@ -63,10 +63,13 @@
         /// randomness in the opening diversifies the games; keeping it in the endgame would throw
         /// away won positions and corrupt the value targets.
         /// </summary>
-        public int TemperatureMoves { get; init; } = 4;
+        public int TemperatureMovesFull { get; init; } = 2;
+
+        public int TemperatureMovesPartial { get; init; } = 12;
+        public double TemperatureMovesDecay { get; init; } = 0.7;
 
         /// <summary>Weight of Dirichlet exploration noise at the root. Set to 0 for a deterministic demo.</summary>
-        public double DirichletEpsilon { get; init; } = 0.25; // 0.25 for training
+        public double DirichletEpsilon { get; init; } = 0.1; // 0.25 for training
 
         /// <summary>
         /// Concentration of the Dirichlet noise. Below 1 the samples are spiky, which is what

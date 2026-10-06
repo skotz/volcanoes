@@ -15,20 +15,28 @@ namespace Volcano.Engine
     {
         public string ModelPath { get; private set; }
 
-        public VolcanoZeroConfig(string modelPath)
+        public int ResidualBlocks { get; private set; }
+
+        public int ResidualFeatures { get; private set; }
+
+        public VolcanoZeroConfig(string modelPath, int residualBlocks, int residualFeatures)
         {
             ModelPath = modelPath;
+            ResidualBlocks = residualBlocks;
+            ResidualFeatures = residualFeatures;
         }
 
-        public static VolcanoZeroConfig FromFile(string modelPath)
+        public static VolcanoZeroConfig FromFile(string modelPath, int residualBlocks, int residualFeatures)
         {
-            return new VolcanoZeroConfig(modelPath);
+            return new VolcanoZeroConfig(modelPath, residualBlocks, residualFeatures);
         }
     }
 
     internal class AlphaZeroEngine : IEngine, IStatus, ILearn
     {
-        private const string _defaultModel = "Models\\volcanozero-v1-102400g.dat";
+        private const string _defaultModel = "Models\\volcanozero-v1-6r-128f-102400g.dat";
+        private const int _resBlocks = 10;
+        private const int _resFeatures = 192;
 
         private VolcanoZeroConfig _settings;
         private AlphaZeroConfig _config;
@@ -53,7 +61,7 @@ namespace Volcano.Engine
         internal bool _policyOnly;
 
         public AlphaZeroEngine()
-            : this(VolcanoZeroConfig.FromFile(_defaultModel))
+            : this(VolcanoZeroConfig.FromFile(_defaultModel, _resBlocks, _resFeatures))
         {
         }
 
@@ -63,7 +71,7 @@ namespace Volcano.Engine
         }
 
         public AlphaZeroEngine(bool forTraining)
-            : this(null, forTraining)
+            : this(VolcanoZeroConfig.FromFile(_defaultModel, _resBlocks, _resFeatures), forTraining)
         {
         }
 
@@ -72,7 +80,7 @@ namespace Volcano.Engine
             _settings = config;
             _config = new AlphaZeroConfig();
             _device = cuda.is_available() ? new Device("cuda") : new Device("cpu");
-            _model = new ResNet(_config.NumResBlocks, _config.NumHidden, _device);
+            _model = new ResNet(_settings.ResidualBlocks, _settings.ResidualFeatures, _device);
 
             string modelPath = Path.Combine(_savePath, "training-model.dat");
             string optimizerPath = Path.Combine(_savePath, "training-optimizer.dat");
@@ -159,6 +167,8 @@ namespace Volcano.Engine
             WriteLine = Debug;
 
             var alphaZero = new AlphaZeroParallel(_model, _optimizer, _scheduler, _encoder, _game, _config);
+
+            Debug($"Model: {_settings.ResidualBlocks} blocks, {_settings.ResidualFeatures} features");
 
             var watch = Stopwatch.StartNew();
             alphaZero.Learn(_savePath);

@@ -61,10 +61,6 @@ namespace Volcano
             engines.Add<MonteCarloCanonicalEngine>("Monte Carlo Canonical");
             //engines.Add<MonteCarloTreeSearchFixedEngine>("MCTS Alt");
 
-            engines.Add<AlphaZeroEngine>("VolcanoZero v1-102k");
-            engines.Add("VolcanoZero TRAINING", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat")));
-            engines.Add("VolcanoZero v1-102k Policy", () => new AlphaZeroEngine() { _policyOnly = true });
-
             engines.Add("MCTS Opening Book", () => new MonteCarloTreeSearchEngine(true, false, false, false, openingBook));
             engines.Add("MCTS Victory Hash", () => new MonteCarloTreeSearchEngine(true, true, false, false, ""));
             engines.Add("MCTS Fast Win Check", () => new MonteCarloTreeSearchEngine(true, false, true, false, ""));
@@ -73,6 +69,14 @@ namespace Volcano
             engines.Add("MCTS Count Draws", () => new MonteCarloTreeSearchEngine() { _countDraws = true });
             engines.Add("MCTS v2", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2));
             engines.Add("MCTS Persist", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _persistable = true });
+
+            engines.Add("VolcanoZero v1-102k", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-102400g.dat", 6, 128)));
+            engines.Add("VolcanoZero v1-102k Policy", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-102400g.dat", 6, 128)) { _policyOnly = true });
+            engines.Add("VolcanoZero v1-233k", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128)));
+
+#if DEBUG
+            engines.Add("VolcanoZero TRAINING", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat", 6, 128)));
+#endif
 
             //engines.Add<DeepQNetworkEngine>("Deep Q-Network");
 

@@ -45,7 +45,10 @@
     <None Update="Books\openings-v1-60s.dat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Models\volcanozero-v1-102400g.dat">
+    <None Update="Models\volcanozero-v1-6r-128f-102400g.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Models\volcanozero-v1-6r-128f-233472g.dat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

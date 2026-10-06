@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TorchSharp;
 using Volcano.Game;
 
@@ -59,12 +60,15 @@ namespace Volcano.Neural
             for (int i = 0; i < spGames.Length; i++)
             {
                 float[] policy = rootPolicies[i];
+                var validMoves = game.GetValidMoves(neutralStates[i]);
                 if (config.DirichletEpsilon > 0)
                 {
-                    float[] noise = Sampling.Dirichlet(Random.Shared, game.ActionSize, config.DirichletAlpha);
+                    var validMoveCount = validMoves.Count(x => x); // game.ActionSize
+                    PolicyMath.MaskAndNormalize(policy, validMoves);
+                    float[] noise = Sampling.Dirichlet(Random.Shared, validMoveCount, config.DirichletAlpha);
                     PolicyMath.AddDirichletNoise(policy, noise, config.DirichletEpsilon);
                 }
-                PolicyMath.MaskAndNormalize(policy, game.GetValidMoves(neutralStates[i]));
+                PolicyMath.MaskAndNormalize(policy, validMoves);
 
                 spGames[i].Root = new NNNode(game, config, neutralStates[i], visitCount: 1);
                 spGames[i].Root!.Expand(policy);

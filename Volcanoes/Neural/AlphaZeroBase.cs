@@ -66,8 +66,22 @@ namespace Volcano.Neural
         }
 
         /// <summary>Temperature for a given ply: exploratory in the opening, greedy afterwards.</summary>
-        protected double TemperatureForMove(int moveCount) =>
-            moveCount < config.TemperatureMoves ? config.Temperature : 0.0;
+        protected double TemperatureForMove(int moveIndex)
+        {
+            //moveCount < config.TemperatureMoves ? config.Temperature : 0.0;
+            if (moveIndex < config.TemperatureMovesFull)
+            {
+                return 1.0;
+            }
+            else if (moveIndex < config.TemperatureMovesPartial)
+            {
+                return Math.Pow(config.TemperatureMovesDecay, moveIndex - (config.TemperatureMovesFull - 1));
+            }
+            else
+            {
+                return 0.0;
+            }
+        }
 
         /// <summary>Visit-count distribution over actions at a search root.</summary>
         protected double[] GetActionProbs(NNNode root)
@@ -131,7 +145,7 @@ namespace Volcano.Neural
                 var output = model.forward(input);
                 torch.Tensor policyLoss = torch.nn.functional.cross_entropy(output.Item1, policyTarget);
                 torch.Tensor valueLoss = torch.nn.functional.mse_loss(output.Item2, valueTarget);
-                torch.Tensor loss = policyLoss + valueLoss;
+                torch.Tensor loss = policyLoss + 0.5 * valueLoss;
 
                 optimizer.zero_grad();
                 loss.backward();
