@@ -59,6 +59,7 @@ namespace Volcano.Engine
 
         private string _savePath = "models/";
         internal bool _policyOnly;
+        public int forcedIterations = -1;
 
         public AlphaZeroEngine()
             : this(VolcanoZeroConfig.FromFile(_defaultModel, _resBlocks, _resFeatures))
@@ -151,7 +152,7 @@ namespace Volcano.Engine
             //canonical.SetIndex(state);
             //var canonicalized = canonical.Canonicalize(state);
 
-            var move = _alphaZero.GetBestMove(state, maxSeconds, token, _policyOnly);
+            var move = _alphaZero.GetBestMove(state, maxSeconds, forcedIterations, token, _policyOnly);
 
             return new SearchResult
             {

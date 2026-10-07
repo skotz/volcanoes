@@ -75,7 +75,7 @@ namespace Volcano
             engines.Add("VolcanoZero v1-233k", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128)));
 
 #if DEBUG
-            engines.Add("VolcanoZero TRAINING", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat", 6, 128)));
+            engines.Add("VolcanoZero TRAINING", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat", 10, 192)));
 #endif
 
             //engines.Add<DeepQNetworkEngine>("Deep Q-Network");

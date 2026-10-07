@@ -1,8 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using TorchSharp;
 using TorchSharp.Modules;
 using Volcano.Engine;
@@ -249,12 +251,14 @@ namespace Volcano.Neural
 
                 string format = "0.##################################################";
 
+                var winRate = GetWinRate(10, 2000);
+
                 string status = Path.Combine(savePath, "status.csv");
                 if (!File.Exists(status))
                 {
-                    File.AppendAllLines(status, ["iteration,timestamp,games,policy loss,value loss,loss,lr"]);
+                    File.AppendAllLines(status, ["iteration,timestamp,games,policy loss,value loss,total loss,learning rate,win rate"]);
                 }
-                File.AppendAllLines(status, [$"{iteration + 1},{DateTime.Now.ToString("yyyyMMddHHmmss")},{config.NumSelfPlayIterations * (iteration + 1)},{lastLoss.Item1.ToString(format)},{lastLoss.Item2.ToString(format)},{lastLoss.Item3.ToString(format)},{lr.First().ToString(format)}"]);
+                File.AppendAllLines(status, [$"{iteration + 1},{DateTime.Now.ToString("yyyyMMddHHmmss")},{config.NumSelfPlayIterations * (iteration + 1)},{lastLoss.Item1.ToString(format)},{lastLoss.Item2.ToString(format)},{lastLoss.Item3.ToString(format)},{lr.First().ToString(format)},{winRate.ToString(format)}"]);
                 string path1 = Path.Combine(savePath, $"model-{config.NumSelfPlayIterations * (iteration + 1)}-{DateTime.Now.ToString("yyyyMMddHHmmss")}.dat");
                 model.save(path1);
 
@@ -271,6 +275,75 @@ namespace Volcano.Neural
                 }
                 File.WriteAllLines(replayBufferPath, replayBuffer.Select(x => JsonConvert.SerializeObject(x)));
             }
+        }
+
+        private double GetWinRate(int rounds, int simulations)
+        {
+            var wins = 0;
+            var games = new List<Action>();
+
+            for (var i = 0; i < rounds; i++)
+            {
+                games.Add(() =>
+                {
+                    try
+                    {
+                        var killswitch = Stopwatch.StartNew();
+                        var game = new VolcanoGame();
+                        var victory = VictoryType.None;
+                        game.OnGameOver += (p, v) => victory = v;
+
+                        var opponent = new MonteCarloTreeSearchEngine(MCTSVersion.V2) { forcedIterations = simulations };
+                        var model = new AlphaZeroEngine(VolcanoZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat", 10, 192)) { forcedIterations = simulations };
+
+                        game.RegisterEngine(Player.One, i % 2 == 0 ? model : opponent, true);
+                        game.RegisterEngine(Player.Two, i % 2 == 0 ? opponent : model, true);
+                        game.SecondsPerEngineMove = 60;
+                        game.TimeoutGrace = 5000;
+                        game.StartNewGame();
+                        game.ComputerPlay();
+
+                        while (victory == VictoryType.None &&
+                            game.CurrentState.Winner == Player.Empty &&
+                            game.CurrentState.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns &&
+                            killswitch.ElapsedMilliseconds < VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000)
+                        {
+                            System.Threading.Thread.Sleep(100);
+                        }
+
+                        game.ForceStop();
+
+                        if (game.CurrentState.Winner == Player.One && i % 2 == 0)
+                        {
+                            wins++;
+                        }
+                        if (game.CurrentState.Winner == Player.Two && i % 2 == 1)
+                        {
+                            wins++;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        try
+                        {
+                            using (var sw = new StreamWriter("errors.txt", true))
+                            {
+                                sw.WriteLine("Failed to run validation game: " + ex.ToString());
+                            }
+                        }
+                        catch
+                        {
+                            // oh well
+                        }
+                    }
+                });
+            }
+
+            Parallel.ForEach(games, g => g());
+
+            AlphaZeroEngine.WriteLine($"Won {wins} of {rounds} games");
+
+            return (double)wins / rounds;
         }
     }
 }

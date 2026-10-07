@@ -41,7 +41,7 @@ namespace Volcano.Neural
             }
         }
 
-        public double[] Search(Board state, int seconds, bool policyOnly, EngineCancellationToken token)
+        public double[] Search(Board state, int seconds, int forcedIterations, bool policyOnly, EngineCancellationToken token)
         {
             // visitCount starts at 1 so the sqrt(parent visits) term in PUCT is non-zero on the
             // first simulation; with 0 every child scores exactly 0 and the priors are ignored.
@@ -66,7 +66,7 @@ namespace Volcano.Neural
             simulations = 0;
 
             //for (int i = 0; i < config.NumSearches; i++)
-            while (stopwatch.ElapsedMilliseconds <= seconds * 1000 - buffer && !token.Cancelled && (!policyOnly || simulations == 0))
+            while (forcedIterations == -1 ? stopwatch.ElapsedMilliseconds <= seconds * 1000 - buffer && !token.Cancelled && (!policyOnly || simulations == 0) : (simulations < forcedIterations))
             {
                 simulations++;
                 NNNode node = root;
