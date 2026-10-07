@@ -565,8 +565,8 @@ namespace Volcano.Interface
                     analysisMove = gameState.Turn;
                     analysisEngine = new VolcanoGame();
                     analysisEngine.SecondsPerEngineMove = 1000000;
-                    analysisEngine.RegisterEngine(Player.One, new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false });
-                    analysisEngine.RegisterEngine(Player.Two, new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false });
+                    analysisEngine.RegisterEngine(Player.One, new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128))); // new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false });
+                    analysisEngine.RegisterEngine(Player.Two, new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128))); // new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false });
                     analysisEngine.OnEngineStatus += AnalysisEngine_OnEngineStatus;
                     analysisEngine.CurrentState = new Board(gameState);
                     analysisEngine.ComputerPlay();
@@ -669,14 +669,16 @@ namespace Volcano.Interface
                         var details = analysisStatus?.Details?.FirstOrDefault(x => x.MoveIndex == boardIndexFromTileIndex[i]);
                         if (details != null)
                         {
-                            var min = analysisStatus.Details.Min(x => x.Evaluation);
-                            var max = analysisStatus.Details.Max(x => x.Evaluation);
+                            var best = analysisStatus.Details.Max(x => x.Evaluation);
+
+                            var min = -100; // analysisStatus.Details.Min(x => x.Evaluation);
+                            var max = 100; // analysisStatus.Details.Max(x => x.Evaluation);
                             var scale = 1.0;
                             if (max - min > 0)
                             {
                                 scale = (details.Evaluation - min) / (max - min);
                             }
-                            var isBest = details.Evaluation == max;
+                            var isBest = details.Evaluation == best;
                             FillRoundedRectangle(g, i, scale, isBest);
                             DrawTileText(g, i, details.Evaluation.ToString(), 3, GraphicsSettings.SubTextFontSize, false, Color.Black);
                         }
@@ -994,10 +996,13 @@ namespace Volcano.Interface
 
         private void FillRoundedRectangle(Graphics g, int index, double intensity, bool isBest)
         {
-            var cr = Math.Min(255, Math.Max(0, (1 - intensity) * 255));
-            var cg = Math.Min(255, Math.Max(0, intensity * 255));
-            var cb = isBest ? 255 : 0;
-            var brush = new SolidBrush(Color.FromArgb((int)cr, (int)cg, cb));
+            var color = isBest ? Color.FromArgb(128, 0, 255, 255) : ColorTransition.GetColorFromRedToGreen(intensity, 128);
+            var brush = new SolidBrush(color);
+
+            //var cr = Math.Min(255, Math.Max(0, (1 - intensity) * 255));
+            //var cg = Math.Min(255, Math.Max(0, intensity * 255));
+            //var cb = isBest ? 255 : 0;
+            //var brush = new SolidBrush(Color.FromArgb((int)cr, (int)cg, cb));
 
             var width = _tiles[index].BoundingBox.Width * 0.6f;
             var height = _tiles[index].BoundingBox.Height / 5;
