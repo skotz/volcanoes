@@ -15,6 +15,8 @@ namespace Volcano
             InitializeComponent();
 
             BookLocation = location;
+
+            cbResume.Enabled = File.Exists("book.temp");
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -24,21 +26,44 @@ namespace Volcano
                 button1.Enabled = false;
                 numIterations.Enabled = false;
                 numGap.Enabled = false;
-                backgroundWorker1.RunWorkerAsync(new int[] { (int)numIterations.Value, (int)numGap.Value });
+                cbParallel.Enabled = false;
+                cbResume.Enabled = false;
+                backgroundWorker1.RunWorkerAsync(new int[] { (int)numIterations.Value, (int)numGap.Value, cbParallel.Checked ? 1 : 0, cbResume.Checked ? 1 : 0 });
             }
         }
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
+            var args = e.Argument as int[];
+            var resume = args[3] == 1;
+
             if (File.Exists(BookLocation))
             {
-                File.Move(BookLocation, BookLocation + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak.");
+                if (resume)
+                {
+                    File.Copy(BookLocation, BookLocation + "." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".resume.bak.");
+                }
+                else
+                {
+                    File.Move(BookLocation, BookLocation + "." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak.");
+                }
+            }
+
+            if (File.Exists("book.temp"))
+            {
+                if (resume)
+                {
+                    File.Copy("book.temp", "book.temp" + "." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".resume.bak.");
+                }
+                else
+                {
+                    File.Move("book.temp", "book.temp" + "." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak.");
+                }
             }
 
             var bookGenerator = new OpeningBook(BookLocation);
             bookGenerator.OnStatusUpdate += BookGenerator_OnStatusUpdate;
-            var args = e.Argument as int[];
-            bookGenerator.Generate(7, args[0], args[1]);
+            bookGenerator.Generate(7, args[0], args[1], args[2] == 1, resume);
         }
 
         private void BookGenerator_OnStatusUpdate(int completed, int total)
@@ -59,6 +84,8 @@ namespace Volcano
             button1.Enabled = true;
             numIterations.Enabled = true;
             numGap.Enabled = true;
+            cbParallel.Enabled = true;
+            cbResume.Enabled = File.Exists("book.temp");
             MessageBox.Show("Done");
         }
 

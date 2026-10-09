@@ -146,7 +146,7 @@ namespace Volcano.Engine
             }
         }
 
-        public void Generate(int depth, int iterations, int gap)
+        public void Generate(int depth, int iterations, int gap, bool parallel, bool resume)
         {
             var done = 0;
             var total = 1;
@@ -154,7 +154,6 @@ namespace Volcano.Engine
             // Blue's first move (hardcode to one of the 20 identical equilateral triangles since plenty of computational power says that's slightly better than one of the 60 identical isosceles triangles)
             var blueStart = "N07";
             _book[""] = Constants.TileIndexes[blueStart];
-            OnStatusUpdate?.Invoke(done, 1);
             UpdateBook(depth, iterations, gap);
 
             //// Prime the root node
@@ -174,23 +173,60 @@ namespace Volcano.Engine
             var allGamesOrange = GetAllTranscriptsAfterPosition("", true);
             total += allGamesOrange.Count;
 
-            OnStatusUpdate?.Invoke(++done, total);
-
             var allGames = new List<string>();
             allGames.AddRange(allGamesBlue);
             allGames.AddRange(allGamesOrange);
 
+            //if (resume && File.Exists("book.temp"))
+            //{
+            //    var completed = File.ReadAllLines("book.temp");
+            //    for (var i = allGames.Count - 1; i >= 0; i--)
+            //    {
+            //        if (completed.Contains(allGames[i]))
+            //        {
+            //            allGames.RemoveAt(i);
+            //            done++;
+            //        }
+            //    }
+            //    OnStatusUpdate?.Invoke(done, total);
+            //}
+
+            OnStatusUpdate?.Invoke(_book.Count, total);
+
             // Order by initial depth
             allGames = allGames.OrderBy(x => x.Length).ThenBy(x => x).ToList();
 
-            // Run sequentially so we benefit from MCTS tree reuse
-            Parallel.ForEach(allGames, transcript =>
+            if (parallel)
             {
-                GenerateBookForPosition(depth, iterations, transcript, false, gap);
-                OnStatusUpdate?.Invoke(++done, total);
-            });
+                // Warning! This consumes a ton of memory and will grind to a halt if you set an interation count too high!
+                Parallel.ForEach(allGames, transcript =>
+                {
+                    GenerateBookForPosition(depth, iterations, transcript, false, gap);
+                    SaveProgress(transcript);
+                    OnStatusUpdate?.Invoke(_book.Count, total);
+                });
+            }
+            else
+            {
+                allGames.ForEach(transcript =>
+                {
+                    GenerateBookForPosition(depth, iterations, transcript, false, gap);
+                    SaveProgress(transcript);
+                    OnStatusUpdate?.Invoke(_book.Count, total);
+                });
+            }
 
-            OnStatusUpdate?.Invoke(done, total);
+            OnStatusUpdate?.Invoke(_book.Count, total);
+        }
+
+        private static readonly object _fileLock = new object();
+
+        private void SaveProgress(string transcript)
+        {
+            lock (_fileLock)
+            {
+                File.AppendAllLines("book.temp", [transcript]);
+            }
         }
 
         private string GenerateBookForPosition(int depth, int iterations, string transcript, bool singleOnly, int gap)

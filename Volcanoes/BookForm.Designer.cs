@@ -39,6 +39,8 @@
             labelStatus = new System.Windows.Forms.Label();
             numGap = new System.Windows.Forms.NumericUpDown();
             label3 = new System.Windows.Forms.Label();
+            cbParallel = new System.Windows.Forms.CheckBox();
+            cbResume = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)numIterations).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numDepth).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numGap).BeginInit();
@@ -46,7 +48,7 @@
             // 
             // button1
             // 
-            button1.Location = new System.Drawing.Point(131, 102);
+            button1.Location = new System.Drawing.Point(131, 127);
             button1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             button1.Name = "button1";
             button1.Size = new System.Drawing.Size(88, 27);
@@ -99,7 +101,7 @@
             // 
             // progressBar2
             // 
-            progressBar2.Location = new System.Drawing.Point(13, 135);
+            progressBar2.Location = new System.Drawing.Point(13, 160);
             progressBar2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             progressBar2.Name = "progressBar2";
             progressBar2.Size = new System.Drawing.Size(206, 27);
@@ -115,7 +117,7 @@
             // labelStatus
             // 
             labelStatus.AutoSize = true;
-            labelStatus.Location = new System.Drawing.Point(13, 108);
+            labelStatus.Location = new System.Drawing.Point(13, 133);
             labelStatus.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             labelStatus.Name = "labelStatus";
             labelStatus.Size = new System.Drawing.Size(39, 15);
@@ -142,11 +144,33 @@
             label3.TabIndex = 4;
             label3.Text = "Gap";
             // 
+            // cbParallel
+            // 
+            cbParallel.AutoSize = true;
+            cbParallel.Location = new System.Drawing.Point(156, 102);
+            cbParallel.Name = "cbParallel";
+            cbParallel.Size = new System.Drawing.Size(64, 19);
+            cbParallel.TabIndex = 10;
+            cbParallel.Text = "Parallel";
+            cbParallel.UseVisualStyleBackColor = true;
+            // 
+            // cbResume
+            // 
+            cbResume.AutoSize = true;
+            cbResume.Location = new System.Drawing.Point(81, 102);
+            cbResume.Name = "cbResume";
+            cbResume.Size = new System.Drawing.Size(68, 19);
+            cbResume.TabIndex = 10;
+            cbResume.Text = "Resume";
+            cbResume.UseVisualStyleBackColor = true;
+            // 
             // BookForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(232, 175);
+            ClientSize = new System.Drawing.Size(232, 199);
+            Controls.Add(cbResume);
+            Controls.Add(cbParallel);
             Controls.Add(labelStatus);
             Controls.Add(progressBar2);
             Controls.Add(numDepth);
@@ -183,5 +207,7 @@
         private System.Windows.Forms.Label labelStatus;
         private System.Windows.Forms.NumericUpDown numGap;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.CheckBox cbParallel;
+        private System.Windows.Forms.CheckBox cbResume;
     }
 }

@@ -61,7 +61,8 @@ namespace Volcano
             engines.Add<MonteCarloCanonicalEngine>("Monte Carlo Canonical");
             //engines.Add<MonteCarloTreeSearchFixedEngine>("MCTS Alt");
 
-            engines.Add("MCTS Opening Book", () => new MonteCarloTreeSearchEngine(true, false, false, false, openingBook));
+            engines.Add("MCTS Book v1", () => new MonteCarloTreeSearchEngine(true, false, false, false, openingBook));
+            engines.Add("MCTS Book v2", () => new MonteCarloTreeSearchEngine(true, false, false, false, "Books\\openings-v2-100000i.dat"));
             engines.Add("MCTS Victory Hash", () => new MonteCarloTreeSearchEngine(true, true, false, false, ""));
             engines.Add("MCTS Fast Win Check", () => new MonteCarloTreeSearchEngine(true, false, true, false, ""));
             engines.Add("MCTS Trio", () => new MonteCarloTreeSearchEngine(true, true, true, false, openingBook));
@@ -70,13 +71,15 @@ namespace Volcano
             engines.Add("MCTS v2", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2));
             engines.Add("MCTS Persist", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _persistable = true });
 
-            engines.Add("VolcanoZero v1-102k", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-102400g.dat", 6, 128)));
-            engines.Add("VolcanoZero v1-102k Policy", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-102400g.dat", 6, 128)) { _policyOnly = true });
-            engines.Add("VolcanoZero v1-233k", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128)));
+            engines.Add("VolcanoZero v1 6r-128f-102k", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-102400g.dat", 6, 128)));
+            engines.Add("VolcanoZero v1 6r-128f-102k Policy", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-102400g.dat", 6, 128)) { _policyOnly = true });
+            engines.Add("VolcanoZero v1 6r-128f-233k", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128)));
+            engines.Add("VolcanoZero v1 10r-192f-204k", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-10r-192f-204800g.dat", 10, 192)));
 
-#if DEBUG
-            engines.Add("VolcanoZero TRAINING", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat", 10, 192)));
-#endif
+            if (File.Exists("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat"))
+            {
+                engines.Add("VolcanoZero TRAINING", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat", 10, 192)));
+            }
 
             //engines.Add<DeepQNetworkEngine>("Deep Q-Network");
 
@@ -526,8 +529,8 @@ namespace Volcano
         {
             DisableGraphics();
 
-            var bookForm = new BookForm(openingBook);
-            bookForm.ShowDialog();
+            var bookForm = new BookForm("new-book.dat");
+            bookForm.ShowAsync();
         }
 
         private void loadCGStringFromClipboardToolStripMenuItem_Click(object sender, EventArgs e)
