@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Volcano.Game;
+using static System.Environment;
 
 namespace Volcano.Engine
 {
@@ -27,9 +29,11 @@ namespace Volcano.Engine
 
         public event BookGenerationHandler OnStatusUpdate;
 
-        public delegate void BookGenerationHandler(int completed, int total);
+        public delegate void BookGenerationHandler(int completed, int total, string message);
 
         private const string _fileHeader = "volcanoes-opening-book";
+
+        private bool _stop;
 
         public OpeningBook(string file)
         {
@@ -113,7 +117,7 @@ namespace Volcano.Engine
             }
         }
 
-        public int GetMove(string transcript)
+        private (Canonical, string) GetCanonicalTranscript(string transcript)
         {
             var game = new VolcanoGame();
             game.LoadTranscript(transcript);
@@ -129,6 +133,13 @@ namespace Volcano.Engine
                     .Select(x => Constants.TileNames[x])
                     .Aggregate((c, n) => c + " " + n);
             }
+
+            return (canonical, canonicalTranscript);
+        }
+
+        public int GetMove(string transcript)
+        {
+            var (canonical, canonicalTranscript) = GetCanonicalTranscript(transcript);
 
             if (_book.ContainsKey(canonicalTranscript))
             {
@@ -146,8 +157,112 @@ namespace Volcano.Engine
             }
         }
 
+        public void Extend(int depth, int iterations, int gap, bool parallel, bool resume, string bot)
+        {
+            _stop = false;
+
+            var batch = 2;
+            var maxstreak = 100;
+            var winstreak = 0;
+            var failstreak = 0;
+            var first = true;
+
+            while (winstreak < maxstreak && failstreak < maxstreak)
+            {
+                var transcripts = new List<(Player, string)>();
+
+                if (!string.IsNullOrEmpty(bot) && first)
+                {
+                    first = false;
+                    var gameFolder = $"{Environment.GetFolderPath(SpecialFolder.MyDocuments)}\\My Games\\Volcanoes\\";
+                    foreach (var tf in Directory.GetFiles(gameFolder, "*.csv"))
+                    {
+                        if (tf.Contains("-data-"))
+                        {
+                            var records = File.ReadAllLines(tf).Skip(1).ToList();
+                            foreach (var result in records)
+                            {
+                                var cols = result.Split(",");
+                                if (cols[0] == bot && cols[2] != "One")
+                                {
+                                    transcripts.Add((Player.One, cols[7]));
+                                }
+                                else if (cols[1] == bot && cols[2] != "Two")
+                                {
+                                    transcripts.Add((Player.Two, cols[7]));
+                                }
+                            }
+                        }
+                    }
+
+                    OnStatusUpdate?.Invoke(_book.Count, _book.Count, $"Processing {transcripts.Count} tournament losses");
+                }
+                else
+                {
+                    transcripts = GenerateLosingTranscripts(batch);
+                }
+
+                if (transcripts.Count == 0)
+                {
+                    winstreak += batch;
+                    OnStatusUpdate?.Invoke(_book.Count, _book.Count, $"{_book.Count} positions (win streak {winstreak})");
+                    continue;
+                }
+                else
+                {
+                    winstreak = 0;
+                }
+
+                var count = _book.Count;
+
+                foreach (var loss in transcripts)
+                {
+                    if (_stop)
+                    {
+                        return;
+                    }
+
+                    var (_, canonicalTranscript) = GetCanonicalTranscript(loss.Item2);
+
+                    // find the first non-book move
+                    var player = loss.Item1;
+                    var moves = canonicalTranscript.Split(" ");
+                    for (var i = 1; i <= Math.Min(depth, moves.Length); i++)
+                    {
+                        var extra = i < moves.Length && moves[i] == "G" ? 1 : 0;
+                        var partial = string.Join(" ", moves.Take(i + extra));
+                        if (GetPlayerToMove(partial) == player)
+                        {
+                            var next = GetMove(partial);
+                            if (next == -1)
+                            {
+                                // update the book with a better move
+                                GenerateBookForPosition(depth, iterations, partial, true, gap);
+                                OnStatusUpdate?.Invoke(_book.Count, _book.Count, $"{_book.Count} positions");
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // was anything added
+                if (count == _book.Count)
+                {
+                    failstreak += batch;
+                    OnStatusUpdate?.Invoke(_book.Count, _book.Count, $"{_book.Count} positions (fail streak {failstreak})");
+                    continue;
+                }
+                else
+                {
+                    failstreak = 0;
+                }
+            }
+        }
+
         public void Generate(int depth, int iterations, int gap, bool parallel, bool resume)
         {
+            _stop = false;
+
             var done = 0;
             var total = 1;
 
@@ -167,11 +282,12 @@ namespace Volcano.Engine
 
             // Blue's second and third move (after all possible moves from orange)
             var allGamesBlue = GetAllTranscriptsAfterPosition(blueStart, false);
-            total += allGamesBlue.Count;
+            total += allGamesBlue.Count * 2;
 
             // Orange's first and second move (after all possible moves from blue)
             var allGamesOrange = GetAllTranscriptsAfterPosition("", true);
-            total += allGamesOrange.Count;
+            total += allGamesOrange.Count * 2;
+            total += allGamesOrange.Count * 2;
 
             var allGames = new List<string>();
             allGames.AddRange(allGamesBlue);
@@ -191,7 +307,7 @@ namespace Volcano.Engine
             //    OnStatusUpdate?.Invoke(done, total);
             //}
 
-            OnStatusUpdate?.Invoke(_book.Count, total);
+            OnStatusUpdate?.Invoke(_book.Count, total, null);
 
             // Order by initial depth
             allGames = allGames.OrderBy(x => x.Length).ThenBy(x => x).ToList();
@@ -201,22 +317,32 @@ namespace Volcano.Engine
                 // Warning! This consumes a ton of memory and will grind to a halt if you set an interation count too high!
                 Parallel.ForEach(allGames, transcript =>
                 {
+                    if (_stop)
+                    {
+                        return;
+                    }
+
                     GenerateBookForPosition(depth, iterations, transcript, false, gap);
                     SaveProgress(transcript);
-                    OnStatusUpdate?.Invoke(_book.Count, total);
+                    OnStatusUpdate?.Invoke(_book.Count, total, null);
                 });
             }
             else
             {
                 allGames.ForEach(transcript =>
                 {
+                    if (_stop)
+                    {
+                        return;
+                    }
+
                     GenerateBookForPosition(depth, iterations, transcript, false, gap);
                     SaveProgress(transcript);
-                    OnStatusUpdate?.Invoke(_book.Count, total);
+                    OnStatusUpdate?.Invoke(_book.Count, total, null);
                 });
             }
 
-            OnStatusUpdate?.Invoke(_book.Count, total);
+            OnStatusUpdate?.Invoke(_book.Count, total, null);
         }
 
         private static readonly object _fileLock = new object();
@@ -255,7 +381,7 @@ namespace Volcano.Engine
             engine.forcedIterations = iterations;
             engine.forcedGap = gap;
 
-            if (!_book.ContainsKey(t))
+            if (!_book.ContainsKey(t) && game.CurrentState.GetMoves().Count > 0)
             {
                 var best = engine.GetBestMove(game.CurrentState, iterations, new EngineCancellationToken(() => false));
 
@@ -271,7 +397,7 @@ namespace Volcano.Engine
 
                 UpdateBook(depth, iterations, gap);
 
-                if (!singleOnly)
+                if (!singleOnly && game.CurrentState.GetMoves().Count > 0)
                 {
                     best = engine.GetBestMove(game.CurrentState, iterations, new EngineCancellationToken(() => false));
 
@@ -309,6 +435,15 @@ namespace Volcano.Engine
             //    }
             //}
 
+            if (File.Exists(_file))
+            {
+                if (File.Exists($"{_file}.tempsave"))
+                {
+                    File.Delete($"{_file}.tempsave");
+                }
+                File.Copy(_file, $"{_file}.tempsave");
+            }
+
             using (var writer = new BinaryWriter(File.Open(_file, FileMode.Create)))
             {
                 writer.Write(_fileHeader); // header
@@ -327,6 +462,11 @@ namespace Volcano.Engine
                     }
                     writer.Write((byte)entry.Value);
                 }
+            }
+
+            if (File.Exists($"{_file}.tempsave"))
+            {
+                File.Delete($"{_file}.tempsave");
             }
 
             _lock.Release();
@@ -372,6 +512,107 @@ namespace Volcano.Engine
             }
 
             return transcripts;
+        }
+
+        private List<(Player, string)> GenerateLosingTranscripts(int rounds)
+        {
+            var transcripts = new List<(Player, string)>();
+            var games = new List<Action>();
+
+            for (var i = 0; i < rounds; i++)
+            {
+                games.Add(() =>
+                {
+                    try
+                    {
+                        var killswitch = Stopwatch.StartNew();
+                        var game = new VolcanoGame();
+                        var victory = VictoryType.None;
+                        game.OnGameOver += (p, v) => victory = v;
+
+                        var me = new MonteCarloTreeSearchEngine(MCTSVersion.V2, this); // new AlphaZeroEngine(VolcanoZeroVersion.V2, this) { _policyOnly = true }; // new RandomEngine(this);
+                        var op = new MonteCarloTreeSearchEngine(MCTSVersion.V2); // new RandomEngine(); // AlphaZeroEngine(VolcanoZeroVersion.v1_6r_128f_233472g) { _policyOnly = true };
+
+                        game.RegisterEngine(Player.One, i % 2 == 0 ? me : op, true);
+                        game.RegisterEngine(Player.Two, i % 2 == 0 ? op : me, true);
+                        game.SecondsPerEngineMove = 1;
+                        game.TimeoutGrace = 5000;
+                        game.StartNewGame();
+                        game.ComputerPlay();
+
+                        while (victory == VictoryType.None &&
+                            game.CurrentState.Winner == Player.Empty &&
+                            game.CurrentState.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns &&
+                            killswitch.ElapsedMilliseconds < VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000)
+                        {
+                            System.Threading.Thread.Sleep(100);
+                        }
+
+                        game.ForceStop();
+
+                        // played as player 1 but lost
+                        if (i % 2 == 0 && game.CurrentState.Winner != Player.One)
+                        {
+                            lock (transcripts)
+                            {
+                                transcripts.Add((Player.One, game.GetTranscriptLine()));
+                            }
+                        }
+
+                        // played as player 2 but lost
+                        if (i % 2 == 1 && game.CurrentState.Winner != Player.Two)
+                        {
+                            lock (transcripts)
+                            {
+                                transcripts.Add((Player.Two, game.GetTranscriptLine()));
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        try
+                        {
+                            using (var sw = new StreamWriter("errors.txt", true))
+                            {
+                                sw.WriteLine("Failed to run validation game: " + ex.ToString());
+                            }
+                        }
+                        catch
+                        {
+                            // oh well
+                        }
+                    }
+                });
+            }
+
+            Parallel.ForEach(games, g => g());
+
+            return transcripts;
+        }
+
+        private Player GetPlayerToMove(string transcript)
+        {
+            var turn = transcript.Split(" ").Length;
+            switch (turn % 6)
+            {
+                case 0:
+                case 4:
+                case 5:
+                    return Player.One;
+
+                case 1:
+                case 2:
+                case 3:
+                    return Player.Two;
+
+                default:
+                    return Player.Empty;
+            }
+        }
+
+        internal void Cancel()
+        {
+            _stop = true;
         }
 
         private class BookNode

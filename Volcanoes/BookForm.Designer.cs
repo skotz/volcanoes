@@ -41,6 +41,10 @@
             label3 = new System.Windows.Forms.Label();
             cbParallel = new System.Windows.Forms.CheckBox();
             cbResume = new System.Windows.Forms.CheckBox();
+            cbExtend = new System.Windows.Forms.CheckBox();
+            btnStop = new System.Windows.Forms.Button();
+            txtExtend = new System.Windows.Forms.TextBox();
+            label4 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)numIterations).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numDepth).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numGap).BeginInit();
@@ -48,10 +52,10 @@
             // 
             // button1
             // 
-            button1.Location = new System.Drawing.Point(131, 127);
+            button1.Location = new System.Drawing.Point(96, 204);
             button1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             button1.Name = "button1";
-            button1.Size = new System.Drawing.Size(88, 27);
+            button1.Size = new System.Drawing.Size(123, 27);
             button1.TabIndex = 2;
             button1.Text = "Generate";
             button1.UseVisualStyleBackColor = true;
@@ -89,7 +93,6 @@
             // 
             // numDepth
             // 
-            numDepth.Enabled = false;
             numDepth.Location = new System.Drawing.Point(96, 14);
             numDepth.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             numDepth.Maximum = new decimal(new int[] { 1000000, 0, 0, 0 });
@@ -97,11 +100,11 @@
             numDepth.ReadOnly = true;
             numDepth.Size = new System.Drawing.Size(123, 23);
             numDepth.TabIndex = 6;
-            numDepth.Value = new decimal(new int[] { 7, 0, 0, 0 });
+            numDepth.Value = new decimal(new int[] { 50, 0, 0, 0 });
             // 
             // progressBar2
             // 
-            progressBar2.Location = new System.Drawing.Point(13, 160);
+            progressBar2.Location = new System.Drawing.Point(13, 269);
             progressBar2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             progressBar2.Name = "progressBar2";
             progressBar2.Size = new System.Drawing.Size(206, 27);
@@ -117,7 +120,7 @@
             // labelStatus
             // 
             labelStatus.AutoSize = true;
-            labelStatus.Location = new System.Drawing.Point(13, 133);
+            labelStatus.Location = new System.Drawing.Point(13, 242);
             labelStatus.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             labelStatus.Name = "labelStatus";
             labelStatus.Size = new System.Drawing.Size(39, 15);
@@ -147,7 +150,7 @@
             // cbParallel
             // 
             cbParallel.AutoSize = true;
-            cbParallel.Location = new System.Drawing.Point(156, 102);
+            cbParallel.Location = new System.Drawing.Point(96, 156);
             cbParallel.Name = "cbParallel";
             cbParallel.Size = new System.Drawing.Size(64, 19);
             cbParallel.TabIndex = 10;
@@ -157,24 +160,67 @@
             // cbResume
             // 
             cbResume.AutoSize = true;
-            cbResume.Location = new System.Drawing.Point(81, 102);
+            cbResume.Location = new System.Drawing.Point(96, 131);
             cbResume.Name = "cbResume";
             cbResume.Size = new System.Drawing.Size(68, 19);
             cbResume.TabIndex = 10;
             cbResume.Text = "Resume";
             cbResume.UseVisualStyleBackColor = true;
             // 
+            // cbExtend
+            // 
+            cbExtend.AutoSize = true;
+            cbExtend.Location = new System.Drawing.Point(96, 181);
+            cbExtend.Name = "cbExtend";
+            cbExtend.Size = new System.Drawing.Size(62, 19);
+            cbExtend.TabIndex = 10;
+            cbExtend.Text = "Extend";
+            cbExtend.UseVisualStyleBackColor = true;
+            // 
+            // btnStop
+            // 
+            btnStop.Enabled = false;
+            btnStop.Location = new System.Drawing.Point(12, 204);
+            btnStop.Name = "btnStop";
+            btnStop.Size = new System.Drawing.Size(77, 27);
+            btnStop.TabIndex = 11;
+            btnStop.Text = "Stop";
+            btnStop.UseVisualStyleBackColor = true;
+            btnStop.Click += btnStop_Click;
+            // 
+            // txtExtend
+            // 
+            txtExtend.Location = new System.Drawing.Point(96, 102);
+            txtExtend.Name = "txtExtend";
+            txtExtend.Size = new System.Drawing.Size(123, 23);
+            txtExtend.TabIndex = 12;
+            txtExtend.Text = "VolcanoZero v2 PB";
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new System.Drawing.Point(13, 105);
+            label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label4.Name = "label4";
+            label4.Size = new System.Drawing.Size(64, 15);
+            label4.TabIndex = 4;
+            label4.Text = "Extend Bot";
+            // 
             // BookForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(232, 199);
+            ClientSize = new System.Drawing.Size(232, 308);
+            Controls.Add(txtExtend);
+            Controls.Add(btnStop);
             Controls.Add(cbResume);
+            Controls.Add(cbExtend);
             Controls.Add(cbParallel);
             Controls.Add(labelStatus);
             Controls.Add(progressBar2);
             Controls.Add(numDepth);
             Controls.Add(label2);
+            Controls.Add(label4);
             Controls.Add(label3);
             Controls.Add(label1);
             Controls.Add(numGap);
@@ -209,5 +255,9 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.CheckBox cbParallel;
         private System.Windows.Forms.CheckBox cbResume;
+        private System.Windows.Forms.CheckBox cbExtend;
+        private System.Windows.Forms.Button btnStop;
+        private System.Windows.Forms.TextBox txtExtend;
+        private System.Windows.Forms.Label label4;
     }
 }

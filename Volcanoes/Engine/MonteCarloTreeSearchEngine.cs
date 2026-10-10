@@ -89,7 +89,17 @@ namespace Volcano.Engine
             _allowForcedWins = true;
         }
 
-        public MonteCarloTreeSearchEngine(MCTSVersion version, string book = "")
+        public MonteCarloTreeSearchEngine(MCTSVersion version)
+            : this(version, (OpeningBook)null)
+        {
+        }
+
+        public MonteCarloTreeSearchEngine(MCTSVersion version, string book)
+            : this(version, new OpeningBook(book))
+        {
+        }
+
+        public MonteCarloTreeSearchEngine(MCTSVersion version, OpeningBook book)
             : this()
         {
             switch (version)
@@ -116,9 +126,9 @@ namespace Volcano.Engine
                     throw new ArgumentException("Invalid MCTS Version");
             }
 
-            if (!string.IsNullOrEmpty(book))
+            if (book != null)
             {
-                _book = new OpeningBook(book);
+                _book = book;
                 _useOpeningBook = _book.Loaded;
             }
         }

@@ -11,6 +11,24 @@ using static TorchSharp.torch.optim.lr_scheduler;
 
 namespace Volcano.Engine
 {
+    internal enum VolcanoZeroVersion
+    {
+        /// <summary>
+        /// 6r 128f 102400g
+        /// </summary>
+        V1,
+
+        /// <summary>
+        /// 6r 128f 233472g
+        /// </summary>
+        V2,
+
+        /// <summary>
+        /// 10r 192f 204800g
+        /// </summary>
+        V3,
+    }
+
     internal class VolcanoZeroConfig
     {
         public string ModelPath { get; private set; }
@@ -61,9 +79,28 @@ namespace Volcano.Engine
         internal bool _policyOnly;
         public int forcedIterations = -1;
 
+        private OpeningBook _book;
+
         public AlphaZeroEngine()
             : this(VolcanoZeroConfig.FromFile(_defaultModel, _resBlocks, _resFeatures))
         {
+        }
+
+        public AlphaZeroEngine(VolcanoZeroVersion version)
+            : this(GetConfig(version), false)
+        {
+        }
+
+        public AlphaZeroEngine(VolcanoZeroVersion version, string book)
+            : this(GetConfig(version), false)
+        {
+            _book = new OpeningBook(book);
+        }
+
+        public AlphaZeroEngine(VolcanoZeroVersion version, OpeningBook book)
+            : this(GetConfig(version), false)
+        {
+            _book = book;
         }
 
         public AlphaZeroEngine(VolcanoZeroConfig config)
@@ -74,6 +111,24 @@ namespace Volcano.Engine
         public AlphaZeroEngine(bool forTraining)
             : this(VolcanoZeroConfig.FromFile(_defaultModel, _resBlocks, _resFeatures), forTraining)
         {
+        }
+
+        private static VolcanoZeroConfig GetConfig(VolcanoZeroVersion version)
+        {
+            switch (version)
+            {
+                case VolcanoZeroVersion.V1:
+                    return VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-102400g.dat", 6, 128);
+
+                case VolcanoZeroVersion.V2:
+                    return VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128);
+
+                case VolcanoZeroVersion.V3:
+                    return VolcanoZeroConfig.FromFile("models\\volcanozero-v1-10r-192f-204800g.dat", 10, 192);
+
+                default:
+                    throw new ArgumentException("Invalid VolcanoZero Version");
+            }
         }
 
         public AlphaZeroEngine(VolcanoZeroConfig config, bool forTraining)
@@ -146,6 +201,18 @@ namespace Volcano.Engine
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
+            if (_book != null)
+            {
+                var bookMove = _book.GetMove(state.Transcript);
+                if (bookMove >= 0)
+                {
+                    return new SearchResult
+                    {
+                        BestMove = bookMove
+                    };
+                }
+            }
+
             var timer = Stopwatch.StartNew();
 
             //var canonical = new Canonical();

@@ -10,25 +10,29 @@ namespace Volcano
     {
         public string BookLocation { get; set; }
 
+        private OpeningBook _bookGenerator;
+
         public BookForm(string location)
         {
             InitializeComponent();
 
             BookLocation = location;
-
-            cbResume.Enabled = File.Exists("book.temp");
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             if (!backgroundWorker1.IsBusy)
             {
+                numDepth.Enabled = false;
                 button1.Enabled = false;
                 numIterations.Enabled = false;
                 numGap.Enabled = false;
                 cbParallel.Enabled = false;
                 cbResume.Enabled = false;
-                backgroundWorker1.RunWorkerAsync(new int[] { (int)numIterations.Value, (int)numGap.Value, cbParallel.Checked ? 1 : 0, cbResume.Checked ? 1 : 0 });
+                cbExtend.Enabled = false;
+                btnStop.Enabled = true;
+                txtExtend.Enabled = false;
+                backgroundWorker1.RunWorkerAsync(new int[] { (int)numIterations.Value, (int)numGap.Value, cbParallel.Checked ? 1 : 0, cbResume.Checked ? 1 : 0, cbExtend.Checked ? 1 : 0, (int)numDepth.Value });
             }
         }
 
@@ -36,6 +40,7 @@ namespace Volcano
         {
             var args = e.Argument as int[];
             var resume = args[3] == 1;
+            var extend = args[4] == 1;
 
             if (File.Exists(BookLocation))
             {
@@ -61,16 +66,35 @@ namespace Volcano
                 }
             }
 
-            var bookGenerator = new OpeningBook(BookLocation);
-            bookGenerator.OnStatusUpdate += BookGenerator_OnStatusUpdate;
-            bookGenerator.Generate(7, args[0], args[1], args[2] == 1, resume);
+            _bookGenerator = new OpeningBook(BookLocation);
+            _bookGenerator.OnStatusUpdate += BookGenerator_OnStatusUpdate;
+
+            if (extend)
+            {
+                _bookGenerator.Extend(args[5], args[0], args[1], args[2] == 1, resume, txtExtend.Text);
+            }
+            else
+            {
+                _bookGenerator.Generate(args[5], args[0], args[1], args[2] == 1, resume);
+            }
         }
 
-        private void BookGenerator_OnStatusUpdate(int completed, int total)
+        private void BookGenerator_OnStatusUpdate(int completed, int total, string message)
         {
             var percent = (int)(100.0 * completed / total);
 
-            backgroundWorker1.ReportProgress(percent, completed == 0 ? "Initializing" : (completed.ToString("N0") + "/" + total.ToString("N0")));
+            if (percent > 100)
+            {
+                percent = 100;
+            }
+
+            var status = completed == 0 ? "Initializing" : (completed.ToString("N0") + "/" + total.ToString("N0"));
+            if (!string.IsNullOrEmpty(message))
+            {
+                status = message;
+            }
+
+            backgroundWorker1.ReportProgress(percent, status);
         }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -81,11 +105,15 @@ namespace Volcano
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            numDepth.Enabled = true;
             button1.Enabled = true;
             numIterations.Enabled = true;
             numGap.Enabled = true;
             cbParallel.Enabled = true;
-            cbResume.Enabled = File.Exists("book.temp");
+            cbExtend.Enabled = true;
+            cbResume.Enabled = true; // File.Exists("book.temp");
+            btnStop.Enabled = false;
+            txtExtend.Enabled = true;
             MessageBox.Show("Done");
         }
 
@@ -97,6 +125,14 @@ namespace Volcano
                 {
                     e.Cancel = true;
                 }
+            }
+        }
+
+        private void btnStop_Click(object sender, EventArgs e)
+        {
+            if (_bookGenerator != null)
+            {
+                _bookGenerator.Cancel();
             }
         }
     }
