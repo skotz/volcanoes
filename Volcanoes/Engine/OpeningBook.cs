@@ -99,6 +99,10 @@ namespace Volcano.Engine
 
                 Loaded = true;
             }
+            else
+            {
+                throw new ArgumentException($"Opening book \"{_file}\" does not exist");
+            }
         }
 
         private int DetectVersion(string file)

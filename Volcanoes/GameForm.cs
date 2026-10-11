@@ -69,6 +69,7 @@ namespace Volcano
             engines.Add("MCTS Last Player Fix", () => new MonteCarloTreeSearchEngine(true, false, false, true, ""));
             engines.Add("MCTS Count Draws", () => new MonteCarloTreeSearchEngine() { _countDraws = true });
             engines.Add("MCTS v2", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2));
+            engines.Add("MCTS v2 Book", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2, "Books\\openings-v3-ex-100000i.dat"));
             engines.Add("MCTS Persist", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _persistable = true });
 
             engines.Add("VolcanoZero v1", () => new AlphaZeroEngine(VolcanoZeroVersion.V1));
