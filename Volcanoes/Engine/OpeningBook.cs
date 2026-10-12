@@ -628,6 +628,7 @@ namespace Volcano.Engine
             using (var ms = new MemoryStream())
             using (var bw = new BinaryWriter(ms))
             {
+                bw.Write(_book.Count);
                 foreach (var entry in _book)
                 {
                     var t = entry.Key;

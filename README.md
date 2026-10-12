@@ -34,7 +34,7 @@ When a volcano advances to level-four (via a player's turn or via a growth turn)
 ## Engines
 Several computer AIs are included with Volcanoes. Here are the current rankings from a recent round robin tournament:
 
-![Engine Cross Table](Concept/History/z-history-20190101.png)
+![Engine Cross Table](Concept/History/z-history-20261012a.png)
 
 Our goal is to learn strategies for this game through the analysis of games played by computer AIs.
 
