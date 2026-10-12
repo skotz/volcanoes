@@ -69,7 +69,7 @@
             numIterations.Name = "numIterations";
             numIterations.Size = new System.Drawing.Size(123, 23);
             numIterations.TabIndex = 3;
-            numIterations.Value = new decimal(new int[] { 1000000, 0, 0, 0 });
+            numIterations.Value = new decimal(new int[] { 250000, 0, 0, 0 });
             // 
             // label1
             // 
@@ -160,6 +160,8 @@
             // cbResume
             // 
             cbResume.AutoSize = true;
+            cbResume.Checked = true;
+            cbResume.CheckState = System.Windows.Forms.CheckState.Checked;
             cbResume.Location = new System.Drawing.Point(96, 131);
             cbResume.Name = "cbResume";
             cbResume.Size = new System.Drawing.Size(68, 19);
@@ -170,6 +172,8 @@
             // cbExtend
             // 
             cbExtend.AutoSize = true;
+            cbExtend.Checked = true;
+            cbExtend.CheckState = System.Windows.Forms.CheckState.Checked;
             cbExtend.Location = new System.Drawing.Point(96, 181);
             cbExtend.Name = "cbExtend";
             cbExtend.Size = new System.Drawing.Size(62, 19);
@@ -194,7 +198,7 @@
             txtExtend.Name = "txtExtend";
             txtExtend.Size = new System.Drawing.Size(123, 23);
             txtExtend.TabIndex = 12;
-            txtExtend.Text = "VolcanoZero v2 PB";
+            txtExtend.Text = "skotz";
             // 
             // label4
             // 
