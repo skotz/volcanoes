@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Volcano.Engine;
+using Volcano.Interface;
 
 namespace Volcano.Game
 {
@@ -61,6 +62,8 @@ namespace Volcano.Game
         {
             if (!worker.IsBusy)
             {
+                ApplicationPriorityOptimizer.EnableMaximumPerformanceMode();
+
                 if (_tournamentType == TournamentType.RoundRobin)
                 {
                     totalGames = _rounds * _players.Count * (_allowSelfPlay ? _players.Count : (_players.Count - 1));

@@ -428,7 +428,7 @@ namespace Volcano.Game
 
         private static long[,] GetZobristKeys()
         {
-            var rand = new Random();
+            var rand = new Random(314);
             var tiles = new long[80, 100];
 
             for (int i = 0; i < 80; i++)

@@ -197,6 +197,7 @@ namespace Volcano.Game
                 }
             }
         }
+
         public void SetIndex(VolcanoGame game)
         {
             if (game.MoveHistory?.Count > 0)

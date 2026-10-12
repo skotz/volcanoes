@@ -99,10 +99,10 @@ namespace Volcano.Engine
 
                 Loaded = true;
             }
-            else
-            {
-                throw new ArgumentException($"Opening book \"{_file}\" does not exist");
-            }
+            //else
+            //{
+            //    throw new ArgumentException($"Opening book \"{_file}\" does not exist");
+            //}
         }
 
         private int DetectVersion(string file)
@@ -473,6 +473,10 @@ namespace Volcano.Engine
                 File.Delete($"{_file}.tempsave");
             }
 
+#if DEBUG
+            SaveCG();
+#endif
+
             _lock.Release();
         }
 
@@ -617,6 +621,113 @@ namespace Volcano.Engine
         internal void Cancel()
         {
             _stop = true;
+        }
+
+        private void SaveCG()
+        {
+            using (var ms = new MemoryStream())
+            using (var bw = new BinaryWriter(ms))
+            {
+                foreach (var entry in _book)
+                {
+                    var t = entry.Key;
+                    var m = entry.Value;
+                    var game = new VolcanoGame();
+                    game.LoadTranscript(t);
+                    var h = game.CurrentState.GetFullHash();
+                    bw.Write(h);
+                    bw.Write((byte)m);
+                }
+                var s = new CGS().Serialize(ms.ToArray());
+                File.WriteAllText("cgs.txt", s);
+            }
+        }
+
+        internal class CGS
+        {
+            public string Serialize(byte[] data)
+            {
+                var bitIndex = 0;
+                var number = 0;
+                var encoded = data.Length.ToString().PadLeft(6, '0');
+
+                for (var i = 0; i < data.Length; i++)
+                {
+                    number |= data[i] << bitIndex;
+                    bitIndex += 8;
+
+                    if (bitIndex >= 15)
+                    {
+                        var charNumber = (number & 0x7FFF) + 95;
+
+                        if (charNumber + 97 >= 8232)
+                        {
+                            charNumber += 2;
+                        }
+
+                        var b = 'a' + charNumber;
+
+                        encoded += Convert.ToChar(b);
+                        number = number >> 15;
+                        bitIndex -= 15;
+                    }
+                }
+
+                if (bitIndex > 0)
+                {
+                    var charNumber = (number & 0x7FFF) + 95;
+                    if (charNumber >= 8232)
+                    {
+                        charNumber += 2;
+                    }
+
+                    var b = 'a' + charNumber;
+                    encoded += Convert.ToChar(b);
+                }
+
+                return encoded;
+            }
+
+            public byte[] Deserialize(string serialized)
+            {
+                var charIndex = 0;
+                var charNumber = 0;
+                var bitStorage = 0;
+                var errorCount = 0;
+
+                var length = int.Parse(serialized.Substring(0, 6));
+                serialized = serialized.Substring(6);
+
+                var data = new byte[length];
+
+                for (var i = 0; i < length; i++)
+                {
+                    if (bitStorage < 8 && charIndex < serialized.Length)
+                    {
+                        var number = (serialized[charIndex++] - 'a');
+                        if (number + 97 >= 8232)
+                        {
+                            number -= 2;
+                        }
+
+                        number -= 95;
+
+                        charNumber |= number << bitStorage;
+                        bitStorage += 15;
+                    }
+
+                    if (data[i] != (charNumber & 0xFF))
+                    {
+                        errorCount++;
+                    }
+
+                    data[i] = (byte)(charNumber & 0xFF);
+                    charNumber >>= 8;
+                    bitStorage -= 8;
+                }
+
+                return data;
+            }
         }
 
         private class BookNode
