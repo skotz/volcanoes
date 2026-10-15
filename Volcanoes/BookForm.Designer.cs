@@ -69,7 +69,7 @@
             numIterations.Name = "numIterations";
             numIterations.Size = new System.Drawing.Size(123, 23);
             numIterations.TabIndex = 3;
-            numIterations.Value = new decimal(new int[] { 250000, 0, 0, 0 });
+            numIterations.Value = new decimal(new int[] { 1000000, 0, 0, 0 });
             // 
             // label1
             // 
@@ -135,7 +135,7 @@
             numGap.Name = "numGap";
             numGap.Size = new System.Drawing.Size(123, 23);
             numGap.TabIndex = 3;
-            numGap.Value = new decimal(new int[] { 10000, 0, 0, 0 });
+            numGap.Value = new decimal(new int[] { 250000, 0, 0, 0 });
             // 
             // label3
             // 

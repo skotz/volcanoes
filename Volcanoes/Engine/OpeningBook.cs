@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Volcano.Game;
+using Volcano.Interface;
 using static System.Environment;
 
 namespace Volcano.Engine
@@ -16,6 +17,8 @@ namespace Volcano.Engine
         private string _file;
 
         private ConcurrentDictionary<string, int> _book;
+
+        private ConcurrentDictionary<string, bool> _pending;
 
         private SemaphoreSlim _lock;
 
@@ -163,7 +166,10 @@ namespace Volcano.Engine
 
         public void Extend(int depth, int iterations, int gap, bool parallel, bool resume, string bot)
         {
+            ApplicationPriorityOptimizer.EnableMaximumPerformanceMode();
+
             _stop = false;
+            _pending = new ConcurrentDictionary<string, bool>();
 
             var batch = 2;
             var maxstreak = 100;
@@ -171,13 +177,27 @@ namespace Volcano.Engine
             var failstreak = 0;
             var first = true;
 
+            //var redo = _book.Select(x => x.Key).ToList();
+            //_book.Clear();
+            //Parallel.ForEach(redo, new ParallelOptions() { MaxDegreeOfParallelism = 8 }, r =>
+            //{
+            //    GenerateBookForPosition(depth, iterations, r, true, gap);
+            //    OnStatusUpdate?.Invoke(_book.Count, redo.Count, null);
+            //});
+            //return;
+
             while (winstreak < maxstreak && failstreak < maxstreak)
             {
                 var transcripts = new List<(Player, string)>();
 
-                if (!string.IsNullOrEmpty(bot) && first)
+                if (!string.IsNullOrEmpty(bot))
                 {
+                    if (!first)
+                    {
+                        break;
+                    }
                     first = false;
+
                     var gameFolder = $"{Environment.GetFolderPath(SpecialFolder.MyDocuments)}\\My Games\\Volcanoes\\";
                     foreach (var tf in Directory.GetFiles(gameFolder, "*.csv"))
                     {
@@ -219,7 +239,7 @@ namespace Volcano.Engine
 
                 var count = _book.Count;
 
-                foreach (var loss in transcripts)
+                var action = ((Player, string) loss) =>
                 {
                     if (_stop)
                     {
@@ -247,6 +267,15 @@ namespace Volcano.Engine
                             }
                         }
                     }
+                };
+
+                if (parallel)
+                {
+                    Parallel.ForEach(transcripts, new ParallelOptions() { MaxDegreeOfParallelism = 8 }, action);
+                }
+                else
+                {
+                    transcripts.ForEach(action);
                 }
 
                 // was anything added
@@ -265,7 +294,10 @@ namespace Volcano.Engine
 
         public void Generate(int depth, int iterations, int gap, bool parallel, bool resume)
         {
+            ApplicationPriorityOptimizer.EnableMaximumPerformanceMode();
+
             _stop = false;
+            _pending = new ConcurrentDictionary<string, bool>();
 
             var done = 0;
             var total = 1;
@@ -380,13 +412,26 @@ namespace Volcano.Engine
 
             // use iterations instead of time so we can run in parallel without starving a thread and getting bad results
             // on my machine a 60 second search resulted in just over 1,000,000 mcts playouts, so roughly 15,000 per second
-            var engine = new MonteCarloTreeSearchEngine(MCTSVersion.V2);
-            engine.simplifyFirstMove = true;
+            var engine = new AlphaZeroEngine(VolcanoZeroVersion.V2); // new MonteCarloTreeSearchEngine(MCTSVersion.V2);
+            //engine.simplifyFirstMove = true;
             engine.forcedIterations = iterations;
-            engine.forcedGap = gap;
+            //engine.forcedGap = gap;
 
-            if (!_book.ContainsKey(t) && game.CurrentState.GetMoves().Count > 0)
+            if (!_book.ContainsKey(t) && !_pending.ContainsKey(t) && game.CurrentState.GetMoves().Count > 0)
             {
+                _pending.TryAdd(t, true);
+
+                //if (t == "")
+                //{
+                //    lock (_book)
+                //    {
+                //        // hardcoded first move
+                //        _book[t] = Constants.TileIndexes["N26"];
+                //    }
+                //    UpdateBook(depth, iterations, gap);
+                //    return "N26";
+                //}
+
                 var best = engine.GetBestMove(game.CurrentState, iterations, new EngineCancellationToken(() => false));
 
                 var b = best.BestMove;
@@ -422,62 +467,81 @@ namespace Volcano.Engine
 
         private void UpdateBook(int depth, int iterations, int gap)
         {
-            _lock.Wait();
-
-            //using (var r = new StreamWriter(_file))
-            //{
-            //    r.WriteLine(depth);
-            //    r.WriteLine(_book.Count);
-            //    r.WriteLine(iterations);
-            //    lock (_book)
-            //    {
-            //        foreach (var entry in _book)
-            //        {
-            //            r.WriteLine(entry.Key);
-            //            r.WriteLine(Constants.TileNames[entry.Value]);
-            //        }
-            //    }
-            //}
-
-            if (File.Exists(_file))
+            var attempts = 3;
+            for (var i = 1; i <= attempts; i++)
             {
-                if (File.Exists($"{_file}.tempsave"))
-                {
-                    File.Delete($"{_file}.tempsave");
-                }
-                File.Copy(_file, $"{_file}.tempsave");
-            }
+                _lock.Wait();
 
-            using (var writer = new BinaryWriter(File.Open(_file, FileMode.Create)))
-            {
-                writer.Write(_fileHeader); // header
-                writer.Write("mcts-v2"); // engine
-                writer.Write(iterations); // iterations
-                writer.Write(gap); // gap
-
-                writer.Write(_book.Count);
-                foreach (var entry in _book)
+                try
                 {
-                    var transcriptMoves = entry.Key == "" ? [] : entry.Key.Split(' ').Select(x => Constants.TileIndexes[x.Replace("+", "")]).ToList();
-                    writer.Write((byte)transcriptMoves.Count);
-                    foreach (var move in transcriptMoves)
+                    //using (var r = new StreamWriter(_file))
+                    //{
+                    //    r.WriteLine(depth);
+                    //    r.WriteLine(_book.Count);
+                    //    r.WriteLine(iterations);
+                    //    lock (_book)
+                    //    {
+                    //        foreach (var entry in _book)
+                    //        {
+                    //            r.WriteLine(entry.Key);
+                    //            r.WriteLine(Constants.TileNames[entry.Value]);
+                    //        }
+                    //    }
+                    //}
+
+                    if (File.Exists(_file))
                     {
-                        writer.Write((byte)move);
+                        if (File.Exists($"{_file}.tempsave"))
+                        {
+                            File.Delete($"{_file}.tempsave");
+                        }
+                        File.Copy(_file, $"{_file}.tempsave");
                     }
-                    writer.Write((byte)entry.Value);
-                }
-            }
 
-            if (File.Exists($"{_file}.tempsave"))
-            {
-                File.Delete($"{_file}.tempsave");
-            }
+                    using (var writer = new BinaryWriter(File.Open(_file, FileMode.Create)))
+                    {
+                        writer.Write(_fileHeader); // header
+                        writer.Write("mcts-v2"); // engine
+                        writer.Write(iterations); // iterations
+                        writer.Write(gap); // gap
+
+                        writer.Write(_book.Count);
+                        foreach (var entry in _book)
+                        {
+                            var transcriptMoves = entry.Key == "" ? [] : entry.Key.Split(' ').Select(x => Constants.TileIndexes[x.Replace("+", "")]).ToList();
+                            writer.Write((byte)transcriptMoves.Count);
+                            foreach (var move in transcriptMoves)
+                            {
+                                writer.Write((byte)move);
+                            }
+                            writer.Write((byte)entry.Value);
+                        }
+                    }
+
+                    if (File.Exists($"{_file}.tempsave"))
+                    {
+                        File.Delete($"{_file}.tempsave");
+                    }
 
 #if DEBUG
-            SaveCG();
+                    SaveCG();
 #endif
+                    break;
+                }
+                catch
+                {
+                    if (i == attempts)
+                    {
+                        throw;
+                    }
 
-            _lock.Release();
+                    Thread.Sleep(1000 + Random.Shared.Next(1000));
+                }
+                finally
+                {
+                    _lock.Release();
+                }
+            }
         }
 
         private List<string> GetAllTranscriptsAfterPosition(string transcript, bool singleOnly)

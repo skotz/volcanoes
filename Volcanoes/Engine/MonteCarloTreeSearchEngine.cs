@@ -3,7 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using TorchSharp.Modules;
 using Volcano.Game;
+using Volcano.Search;
 
 namespace Volcano.Engine
 {
@@ -18,12 +20,18 @@ namespace Volcano.Engine
         /// mcts with fast win, draw count, and player fix
         /// </summary>
         V2,
+
+        /// <summary>
+        /// mcts with puct
+        /// </summary>
+        V3,
     }
 
     internal class MonteCarloTreeSearchEngine : IEngine, IStatus
     {
         private Random random;
         private int simulationCount;
+        private int maxSeconds;
         private int visitedNodes;
         public bool _allowForcedWins;
         private bool _allowHash;
@@ -45,7 +53,8 @@ namespace Volcano.Engine
 
         public ConcurrentDictionary<long, Player> winHashes = new ConcurrentDictionary<long, Player>();
 
-        private double _ucbFactor = 2.0;
+        public double _ucbFactor = 2.0;
+        public double _temperature = 0.25;
         public bool simplifyFirstMove;
         public int forcedIterations = -1;
         public int forcedGap = -1;
@@ -54,6 +63,8 @@ namespace Volcano.Engine
 
         public bool _persistable;
         public bool _persistableFull;
+
+        public bool _puct;
 
         public MonteCarloTreeSearchEngine(double ucbFactor)
         {
@@ -122,6 +133,18 @@ namespace Volcano.Engine
                     _countDraws = true;
                     break;
 
+                case MCTSVersion.V3:
+                    _allowForcedWins = true;
+                    _allowHash = false;
+                    _allowFastWinSearch = true;
+                    _fixedLastPlayer = true;
+                    _useOpeningBook = false;
+                    _countDraws = true;
+                    _puct = true;
+                    _ucbFactor = 0.6; // 1.5;
+                    _temperature = 0.75; // 0.55;
+                    break;
+
                 default:
                     throw new ArgumentException("Invalid MCTS Version");
             }
@@ -155,6 +178,8 @@ namespace Volcano.Engine
             statusUpdate = Stopwatch.StartNew();
             visitedNodes = 0;
             simulationCount = 0;
+
+            this.maxSeconds = maxSeconds;
 
             cancel = new EngineCancellationToken(() => token.Cancelled || timer.ElapsedMilliseconds >= maxSeconds * 1000L - bufferMilliseconds);
 
@@ -274,7 +299,14 @@ namespace Volcano.Engine
                     }
                     else
                     {
-                        node = node.SelectChild(_ucbFactor);
+                        if (_puct)
+                        {
+                            node = node.SelectChildPUCT(state, _ucbFactor, _temperature, forcedIterations > 0 ? forcedIterations : (maxSeconds * 10000));
+                        }
+                        else
+                        {
+                            node = node.SelectChild(_ucbFactor);
+                        }
                     }
 
                     state.MakeMove(node.Move);
@@ -339,6 +371,10 @@ namespace Volcano.Engine
                     {
                         double eval = Math.Round((child.Visits > 0 ? 200.0 * child.Wins / child.Visits : 0) - 100.0, 2);
                         string pv = "";
+                        if (_puct)
+                        {
+                            pv += $"[{child.Prior.ToString("0.000000")}]   ";
+                        }
                         var c = child;
                         while (c != null && c.Move >= 0 && c.Move <= 80)
                         {
@@ -383,6 +419,9 @@ namespace Volcano.Engine
             public List<MonteCarloTreeSearchNode> Children;
             public List<int> Untried;
             public long hash;
+            public double Prior;
+            public bool SetPrior;
+            public int Interesting;
 
             public MonteCarloTreeSearchNode(Board state, Func<Board, List<int>> getMoves, bool fixedLastPlayer, bool persist)
                 : this(state, -2, null, getMoves, fixedLastPlayer, Player.Empty, persist)
@@ -456,6 +495,140 @@ namespace Volcano.Engine
             private double UpperConfidenceBound(double ucbFactor, MonteCarloTreeSearchNode node)
             {
                 return node.Wins / node.Visits + Math.Sqrt(ucbFactor * Math.Log(Visits) / node.Visits);
+            }
+
+            public MonteCarloTreeSearchNode SelectChildPUCT(Board state, double factor, double temperature, int simulations)
+            {
+                if (Untried.Count == 0 && !SetPrior)
+                {
+                    var paths = new TotalPathFinder().GetAllPaths(state);
+                    var scores = new double[80];
+
+                    var bestPath = paths.MyPaths.OrderBy(x => x.Distance).FirstOrDefault();
+                    var bestOppPath = paths.OpponentPaths.OrderBy(x => x.Distance).FirstOrDefault();
+
+                    if (bestPath != null)
+                    {
+                        foreach (var tile in bestPath.Path)
+                        {
+                            scores[tile] += state.Tiles[tile] == 0 ? 1 : 0.5;
+
+                            if (state.Tiles[tile] == 0)
+                            {
+                                Interesting++;
+                            }
+                        }
+                    }
+
+                    if (bestOppPath != null)
+                    {
+                        foreach (var tile in bestOppPath.Path)
+                        {
+                            scores[tile] += state.Tiles[tile] == 0 ? 1 : 0.5;
+
+                            if (state.Tiles[tile] == 0)
+                            {
+                                Interesting++;
+                            }
+                        }
+                    }
+
+                    foreach (var path in paths.MyPaths)
+                    {
+                        foreach (var tile in path.Path)
+                        {
+                            scores[tile] += 0.01;
+                        }
+                    }
+
+                    foreach (var path in paths.OpponentPaths)
+                    {
+                        foreach (var tile in path.Path)
+                        {
+                            scores[tile] += 0.01;
+                        }
+                    }
+
+                    foreach (var child in Children)
+                    {
+                        child.Prior = scores[child.Move];
+                    }
+
+                    ApplySoftmaxPriors(temperature);
+
+                    SetPrior = true;
+                }
+
+                var minAllowedBranches = Math.Clamp(Interesting, 5, 20);
+
+                // 1. Sort all children by their raw heuristic score / prior descending
+                var sortedChildren = Children.OrderByDescending(c => c.Prior).ToList();
+
+                // 2. Calculate how many branches are allowed to be active right now
+                // Alpha controls baseline width, Beta controls how fast it widens
+                double alpha = minAllowedBranches;
+                // double beta = 0.15;  // Slowly unlock the rest over 1,000,000 sims
+                double beta = (Math.Log(80) - Math.Log(minAllowedBranches)) / Math.Log(simulations + 1);
+
+                var maxAllowedBranches = (int)(alpha * Math.Pow(Visits + 1, beta));
+
+                // Ensure we don't exceed the total 80 moves, but always allow at least 20
+                if (sortedChildren.Count > minAllowedBranches)
+                {
+                    maxAllowedBranches = Math.Clamp(maxAllowedBranches, minAllowedBranches, sortedChildren.Count);
+                }
+
+                // 3. Run your UCB selection ONLY on the allowed subset
+                MonteCarloTreeSearchNode bestChild = null;
+                double bestScore = double.MinValue;
+
+                for (int i = 0; i < Math.Min(sortedChildren.Count, maxAllowedBranches); i++)
+                {
+                    var child = sortedChildren[i];
+                    double ucbScore = PUCT(factor, child);
+
+                    if (ucbScore > bestScore)
+                    {
+                        bestScore = ucbScore;
+                        bestChild = child;
+                    }
+                }
+
+                return bestChild;
+            }
+
+            private double PUCT(double factor, MonteCarloTreeSearchNode node)
+            {
+                double exploitation = node.Visits == 0 ? 0.5 : (double)node.Wins / node.Visits;
+                double exploration = factor * node.Prior * (Math.Sqrt(Visits) / (1 + node.Visits));
+
+                return exploitation + exploration;
+            }
+
+            private void ApplySoftmaxPriors(double temperature)
+            {
+                Children.ForEach(x => x.Prior += 0.00001);
+
+                // 1. Find the maximum score to ensure numerical stability (prevents float overflow)
+                double maxScore = Children.Max(x => x.Prior);
+
+                // 2. Compute the exponentiated values, adjusted by temperature
+                double[] expScores = new double[Children.Count];
+                double sumExp = 0.0;
+
+                for (int i = 0; i < Children.Count; i++)
+                {
+                    // Subtracting maxScore ensures the largest exponent evaluated is e^0 = 1
+                    expScores[i] = Math.Exp((Children[i].Prior - maxScore) / temperature);
+                    sumExp += expScores[i];
+                }
+
+                // 3. Assign the normalized prior probabilities back to your nodes
+                for (int i = 0; i < Children.Count; i++)
+                {
+                    // Each prior will now properly sit between 0 and 1, and all priors will sum to exactly 1.0
+                    Children[i].Prior = expScores[i] / sumExp;
+                }
             }
         }
     }

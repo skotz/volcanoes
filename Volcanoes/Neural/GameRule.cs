@@ -59,7 +59,11 @@ namespace Volcano.Neural
 
             foreach (var m in moves)
             {
-                valid[m] = true;
+                // sometimes it returns the growth move
+                if (m >= 0 && m < ActionSize)
+                {
+                    valid[m] = true;
+                }
             }
 
             return valid;

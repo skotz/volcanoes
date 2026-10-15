@@ -72,6 +72,30 @@ namespace Volcano
             engines.Add("MCTS v2 Book", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2, "Books\\openings-v3-ex-100000i.dat"));
             engines.Add("MCTS Persist", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _persistable = true });
 
+            engines.Add("MCTS v3", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3));
+
+            engines.Add("MCTS UCB SQRT(0.5)", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 0.5 });
+            //engines.Add("MCTS UCB 0.75", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 0.75 });
+            //engines.Add("MCTS UCB 1", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 1 });
+            //engines.Add("MCTS UCB 1.25", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 1.25 });
+            //engines.Add("MCTS UCB 1.5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 1.5 });
+            //engines.Add("MCTS UCB 1.75", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 1.75 });
+            //engines.Add("MCTS UCB 2", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 2 });
+            //engines.Add("MCTS UCB 2.5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 2.5 });
+            //engines.Add("MCTS UCB 3", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 3 });
+
+            //engines.Add("MCTS PUCT 0.1", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.1 });
+            //engines.Add("MCTS PUCT 0.2", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.2 });
+            //engines.Add("MCTS PUCT 0.3", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.3 });
+            //engines.Add("MCTS PUCT 0.4", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.4 });
+            //engines.Add("MCTS PUCT 0.5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.5 });
+            //engines.Add("MCTS PUCT 0.6", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.6 });
+            //engines.Add("MCTS PUCT 0.7", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.7 });
+            //engines.Add("MCTS PUCT 0.8", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.8 });
+            //engines.Add("MCTS PUCT 0.9", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.9 });
+            //engines.Add("MCTS PUCT 1.0", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 1.0 });
+            //engines.Add("MCTS PUCT 0.55 1.5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.55, _ucbFactor = 1.5 });
+
             engines.Add("VolcanoZero v1", () => new AlphaZeroEngine(VolcanoZeroVersion.V1));
             engines.Add("VolcanoZero v2", () => new AlphaZeroEngine(VolcanoZeroVersion.V2));
             engines.Add("VolcanoZero v3", () => new AlphaZeroEngine(VolcanoZeroVersion.V3));
