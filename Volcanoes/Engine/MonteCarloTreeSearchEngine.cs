@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using TorchSharp.Modules;
 using Volcano.Game;
 using Volcano.Search;
 
@@ -20,11 +19,6 @@ namespace Volcano.Engine
         /// mcts with fast win, draw count, and player fix
         /// </summary>
         V2,
-
-        /// <summary>
-        /// mcts with puct
-        /// </summary>
-        V3,
     }
 
     internal class MonteCarloTreeSearchEngine : IEngine, IStatus
@@ -63,8 +57,10 @@ namespace Volcano.Engine
 
         public bool _persistable;
         public bool _persistableFull;
-
         public bool _puct;
+        public IRolloutStrategy _rolloutStrategy;
+        public bool _rave;
+        public double _raveEquiv;
 
         public MonteCarloTreeSearchEngine(double ucbFactor)
         {
@@ -131,18 +127,6 @@ namespace Volcano.Engine
                     _fixedLastPlayer = true;
                     _useOpeningBook = false;
                     _countDraws = true;
-                    break;
-
-                case MCTSVersion.V3:
-                    _allowForcedWins = true;
-                    _allowHash = false;
-                    _allowFastWinSearch = true;
-                    _fixedLastPlayer = true;
-                    _useOpeningBook = false;
-                    _countDraws = true;
-                    _puct = true;
-                    _ucbFactor = 0.6; // 1.5;
-                    _temperature = 0.75; // 0.55;
                     break;
 
                 default:
@@ -303,6 +287,10 @@ namespace Volcano.Engine
                         {
                             node = node.SelectChildPUCT(state, _ucbFactor, _temperature, forcedIterations > 0 ? forcedIterations : (maxSeconds * 10000));
                         }
+                        else if (_rave)
+                        {
+                            node = node.SelectChildRAVE(_ucbFactor, _raveEquiv);
+                        }
                         else
                         {
                             node = node.SelectChild(_ucbFactor);
@@ -313,12 +301,18 @@ namespace Volcano.Engine
                     visitedNodes++;
                 }
 
+                var movesPlayed = _rave ? new HashSet<int>() : null;
+
                 // Expand
                 if (node.Untried.Count > 0)
                 {
                     var move = node.Untried[random.Next(node.Untried.Count)];
                     var player = state.Player;
                     state.MakeMove(move);
+                    if (_rave)
+                    {
+                        movesPlayed.Add(move);
+                    }
                     node = node.AddChild(state, move, player, _persistable);
                     visitedNodes++;
                 }
@@ -326,25 +320,48 @@ namespace Volcano.Engine
                 // Simulate
                 while (state.Winner == Player.Empty && state.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns)
                 {
-                    var moves = state.GetMoves();
-                    if (moves.Count == 0)
+                    if (_rolloutStrategy != null && _rolloutStrategy.UseStrategy())
                     {
-                        break;
+                        var move = _rolloutStrategy.GetNextMove(state);
+                        if (move < 0)
+                        {
+                            break;
+                        }
+                        state.MakeMove(move);
+                        if (_rave)
+                        {
+                            movesPlayed.Add(move);
+                        }
                     }
-                    state.MakeMove(moves[random.Next(moves.Count)]);
+                    else
+                    {
+                        var moves = state.GetMoves();
+                        if (moves.Count == 0)
+                        {
+                            break;
+                        }
+                        var move = moves[random.Next(moves.Count)];
+                        state.MakeMove(move);
+                        if (_rave)
+                        {
+                            movesPlayed.Add(move);
+                        }
+                    }
+
                     visitedNodes++;
                 }
 
                 // Backpropagate
                 while (node != null)
                 {
-                    if (_countDraws)
+                    var final = _countDraws ? (state.Winner == Player.Draw ? 0.5 : (state.Winner == node.LastToMove ? 1.0 : 0.0)) : (state.Winner == node.LastToMove ? 1.0 : 0.0);
+                    if (_rave)
                     {
-                        node.Update(state.Winner == Player.Draw ? 0.5 : (state.Winner == node.LastToMove ? 1.0 : 0.0));
+                        node.UpdateRAVE(final, movesPlayed);
                     }
                     else
                     {
-                        node.Update(state.Winner == node.LastToMove ? 1.0 : 0.0);
+                        node.Update(final);
                     }
                     node = node.Parent;
                     visitedNodes++;
@@ -423,6 +440,9 @@ namespace Volcano.Engine
             public bool SetPrior;
             public int Interesting;
 
+            public Dictionary<int, int> AmafVisits { get; } = new();
+            public Dictionary<int, double> AmafScore { get; } = new();
+
             public MonteCarloTreeSearchNode(Board state, Func<Board, List<int>> getMoves, bool fixedLastPlayer, bool persist)
                 : this(state, -2, null, getMoves, fixedLastPlayer, Player.Empty, persist)
             {
@@ -470,6 +490,66 @@ namespace Volcano.Engine
                 else
                 {
                     Untried = new List<int>();
+                }
+            }
+
+            public MonteCarloTreeSearchNode SelectChildRAVE(double ucbFactor, double equivalence = 1000.0)
+            {
+                var exploreConstant = Math.Sqrt(ucbFactor);
+
+                MonteCarloTreeSearchNode bestChild = null;
+                double bestValue = double.MinValue;
+
+                foreach (var child in Children)
+                {
+                    int moveId = child.Move;
+
+                    // Extract UCT components
+                    double uctWinRate = child.Visits > 0 ? child.Wins / child.Visits : 0.5;
+
+                    // Extract AMAF components
+                    int amafCount = AmafVisits.ContainsKey(moveId) ? AmafVisits[moveId] : 0;
+                    double amafWinRate = amafCount > 0 ? AmafScore[moveId] / amafCount : 0.5;
+
+                    // Calculate Beta (Blending Weight)
+                    // Beta approaches 1 when child visits are low; approaches 0 when high.
+                    double beta = amafCount + child.Visits == 0 ? 0.0 : (double)amafCount / (amafCount + child.Visits + (child.Visits * child.Visits / equivalence));
+
+                    // Standard UCT Exploration Term
+                    double exploration = child.Visits == 0 ? double.MaxValue : exploreConstant * Math.Sqrt(Math.Log(Visits) / child.Visits);
+
+                    // Combined RAVE Value Formula
+                    double raveValue = (1.0 - beta) * uctWinRate + beta * amafWinRate + exploration;
+
+                    if (raveValue > bestValue)
+                    {
+                        bestValue = raveValue;
+                        bestChild = child;
+                    }
+                }
+
+                return bestChild;
+            }
+
+            public void UpdateRAVE(double result, HashSet<int> movesPlayedInRollout)
+            {
+                Visits++;
+                Wins += result;
+
+                // Update AMAF statistics for any sibling moves that occurred during simulation
+                if (Parent != null)
+                {
+                    foreach (var moveId in movesPlayedInRollout)
+                    {
+                        if (!Parent.AmafVisits.ContainsKey(moveId))
+                        {
+                            Parent.AmafVisits[moveId] = 0;
+                            Parent.AmafScore[moveId] = 0.0;
+                        }
+
+                        Parent.AmafVisits[moveId]++;
+                        Parent.AmafScore[moveId] += result;
+                    }
                 }
             }
 

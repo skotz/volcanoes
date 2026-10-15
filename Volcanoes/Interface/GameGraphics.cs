@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Volcano.Engine;
 using Volcano.Game;
+using Volcano.Search;
 
 namespace Volcano.Interface
 {
@@ -565,8 +566,8 @@ namespace Volcano.Interface
                     analysisMove = gameState.Turn;
                     analysisEngine = new VolcanoGame();
                     analysisEngine.SecondsPerEngineMove = 1000000;
-                    analysisEngine.RegisterEngine(Player.One, new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false }); // new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128)));
-                    analysisEngine.RegisterEngine(Player.Two, new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false }); // new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128)));
+                    analysisEngine.RegisterEngine(Player.One, new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false, _rave = true }); // new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128)));
+                    analysisEngine.RegisterEngine(Player.Two, new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false, _rave = true }); // new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128)));
                     analysisEngine.OnEngineStatus += AnalysisEngine_OnEngineStatus;
                     analysisEngine.CurrentState = new Board(gameState);
                     analysisEngine.ComputerPlay();

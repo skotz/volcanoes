@@ -51,6 +51,7 @@ namespace Volcano
             engines = new EngineHelper();
             engines.Add<BarricadeEngine>("Barricade");
             engines.Add<RandomEngine>("Random");
+            engines.Add<BeeLineTwoEngine>("Beeline v2");
             engines.Add<DeepBeelineEngine>("Deep Beeline");
             engines.Add<MonteCarloBarricadeEngine>("Monte Carlo Barricade");
             engines.Add<MonteCarloBeelineRandParallelEngine>("Parallel MCTS Beeline");
@@ -60,6 +61,9 @@ namespace Volcano
             engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
             engines.Add<MonteCarloCanonicalEngine>("Monte Carlo Canonical");
             //engines.Add<MonteCarloTreeSearchFixedEngine>("MCTS Alt");
+            //engines.Add<MiniMaxAlphaBetaEngine>("MiniMax Alpha-Beta");
+
+            engines.Add<BeamSearchEngine>("Beam Search");
 
             engines.Add("MCTS Book v1", () => new MonteCarloTreeSearchEngine(true, false, false, false, openingBook));
             engines.Add("MCTS Book v2", () => new MonteCarloTreeSearchEngine(true, false, false, false, "Books\\openings-v2-100000i.dat"));
@@ -72,9 +76,32 @@ namespace Volcano
             engines.Add("MCTS v2 Book", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2, "Books\\openings-v3-ex-100000i.dat"));
             engines.Add("MCTS Persist", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _persistable = true });
 
-            engines.Add("MCTS v3", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3));
+            //engines.Add("MCTS v2 Rollout 0.5-1", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.5, 1) });
+            //engines.Add("MCTS v2 Rollout 0.5-2", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.5, 2) });
+            engines.Add("MCTS v2 Rollout", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.5, 3) });
+            //engines.Add("MCTS v2 Rollout 0.5-4", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.5, 4) });
+            //engines.Add("MCTS v2 Rollout 0.5-5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.5, 5) });
+            //engines.Add("MCTS v2 Rollout 0.8-1", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.8, 1) });
+            //engines.Add("MCTS v2 Rollout 0.8-2", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.8, 2) });
+            //engines.Add("MCTS v2 Rollout 0.8-3", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.8, 3) });
+            //engines.Add("MCTS v2 Rollout 0.8-4", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.8, 4) });
+            //engines.Add("MCTS v2 Rollout 0.8-5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.8, 5) });
+            //engines.Add("MCTS v2 Rollout 0.5-10", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.5, 10) });
+            //engines.Add("MCTS v2 Rollout 0.25-5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.25, 5) });
+            //engines.Add("MCTS v2 Rollout 0.75-5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.75, 5) });
+            //engines.Add("MCTS v2 Rollout 1.0-5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(1.0, 5) });
+            //engines.Add("MCTS v2 Rollout 1.0-10", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(1.0, 10) });
 
-            engines.Add("MCTS UCB SQRT(0.5)", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 0.5 });
+            engines.Add("MCTS UCB 0.5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 0.5 });
+
+            engines.Add("MCTS v2 PUCT", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _puct = true, _ucbFactor = 0.6, _temperature = 0.75 });
+
+            engines.Add("MCTS v2 RAVE", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true });
+            engines.Add("MCTS v2 RAVE 100", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true, _raveEquiv = 100 });
+            engines.Add("MCTS v2 RAVE 500", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true, _raveEquiv = 500 });
+            engines.Add("MCTS v2 RAVE 1000", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true, _raveEquiv = 1000 });
+            engines.Add("MCTS v2 RAVE 3000", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true, _raveEquiv = 3000 });
+
             //engines.Add("MCTS UCB 0.75", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 0.75 });
             //engines.Add("MCTS UCB 1", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 1 });
             //engines.Add("MCTS UCB 1.25", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 1.25 });

@@ -9,37 +9,25 @@ namespace Volcano.Search
         {
             var paths = new TotalPathFinderResult();
 
-            var done = new bool[80];
-
-            for (int i = 0; i < 80; i++)
+            for (int i = 0; i < 40; i++)
             {
-                if (state.Tiles[i] != 0 && !done[i])
+                if (state.Tiles[i] != 0)
                 {
-                    done[i] = true;
-
-                    if (Constants.Antipodes[i] != 0)
+                    for (var p = 1; p <= 2; p++)
                     {
-                        if (state.Tiles[i] > 0 && state.Tiles[Constants.Antipodes[i]] > 0)
-                        {
-                            done[Constants.Antipodes[i]] = true;
-                        }
-                        else if (state.Tiles[i] < 0 && state.Tiles[Constants.Antipodes[i]] < 0)
-                        {
-                            done[Constants.Antipodes[i]] = true;
-                        }
-                    }
+                        var player = p == 1 ? Player.One : Player.Two;
+                        var path = FindPath(state, i, Constants.Antipodes[i], true, player);
 
-                    var path = FindPath(state, i, Constants.Antipodes[i], true);
-                    if (path.Path.Count > 0)
-                    {
-                        var sourcePlayer = state.Tiles[i] == 0 ? Player.Empty : (state.Tiles[i] > 0 ? Player.One : Player.Two);
-                        if (sourcePlayer == state.Player)
+                        if (path.Path.Count > 0)
                         {
-                            paths.MyPaths.Add(path);
-                        }
-                        else
-                        {
-                            paths.OpponentPaths.Add(path);
+                            if (player == state.Player)
+                            {
+                                paths.MyPaths.Add(path);
+                            }
+                            else
+                            {
+                                paths.OpponentPaths.Add(path);
+                            }
                         }
                     }
                 }
@@ -48,12 +36,12 @@ namespace Volcano.Search
             return paths;
         }
 
-        private PathResult FindPath(Board state, int startingIndex, int endingIndex, bool returnPath)
+        private PathResult FindPath(Board state, int startingIndex, int endingIndex, bool returnPath, Player player)
         {
             // The set of nodes already evaluated
             bool[] closedSet = new bool[80];
 
-            Player player = state.Tiles[startingIndex] == 0 ? Player.Empty : (state.Tiles[startingIndex] > 0 ? Player.One : Player.Two);
+            //Player player = state.Tiles[startingIndex] == 0 ? Player.Empty : (state.Tiles[startingIndex] > 0 ? Player.One : Player.Two);
 
             // The set of currently discovered nodes that are not evaluated yet.
             // Initially, only the start node is known.
