@@ -294,10 +294,10 @@ namespace Volcano.Engine
                         }
                         else if (_solver)
                         {
-                            if (node.Status != ProofState.Unproven)
-                            {
-                                break;
-                            }
+                            //if (node.Status != ProofState.Unproven)
+                            //{
+                            //    break;
+                            //}
 
                             node = node.SelectChildSolver(_ucbFactor);
                         }
@@ -325,6 +325,18 @@ namespace Volcano.Engine
                     }
                     node = node.AddChild(state, move, player, _persistable);
                     visitedNodes++;
+                }
+
+                if (state.Winner != Player.Empty)
+                {
+                    if (state.Winner == node.LastToMove)
+                    {
+                        node.Status = ProofState.ProvenWin;
+                    }
+                    else
+                    {
+                        node.Status = ProofState.ProvenLoss;
+                    }
                 }
 
                 // Simulate
@@ -362,7 +374,6 @@ namespace Volcano.Engine
                 }
 
                 // Backpropagate
-                var first = true;
                 while (node != null)
                 {
                     var final = _countDraws ? (state.Winner == Player.Draw ? 0.5 : (state.Winner == node.LastToMove ? 1.0 : 0.0)) : (state.Winner == node.LastToMove ? 1.0 : 0.0);
@@ -372,20 +383,6 @@ namespace Volcano.Engine
                     }
                     else if (_solver)
                     {
-                        if (first && node.Untried.Count == 0)
-                        {
-                            if (final == 1.0)
-                            {
-                                node.Status = ProofState.ProvenWin;
-                            }
-                            else if (final == 0.0)
-                            {
-                                node.Status = ProofState.ProvenLoss;
-                            }
-                        }
-
-                        first = false;
-
                         node.Update(final);
 
                         if (node.Parent != null)
