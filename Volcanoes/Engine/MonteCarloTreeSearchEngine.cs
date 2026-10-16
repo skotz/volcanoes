@@ -63,6 +63,7 @@ namespace Volcano.Engine
         public double _raveEquiv;
         public bool _solver;
         public bool _store;
+        public bool _floodWinSearch;
 
         public MonteCarloTreeSearchEngine(double ucbFactor)
         {
@@ -270,6 +271,7 @@ namespace Volcano.Engine
                 {
                     state.allowHash = _allowHash;
                     state.fastWinSearch = _allowFastWinSearch;
+                    state._floodWinSearch = _floodWinSearch;
 
                     if (_allowHash)
                     {
@@ -326,6 +328,7 @@ namespace Volcano.Engine
 
                     state.allowHash = _allowHash;
                     state.fastWinSearch = _allowFastWinSearch;
+                    state._floodWinSearch = _floodWinSearch;
 
                     if (_allowHash)
                     {

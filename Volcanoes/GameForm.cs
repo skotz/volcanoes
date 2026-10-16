@@ -93,7 +93,9 @@ namespace Volcano
             //engines.Add("MCTS v2 Rollout 1.0-5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(1.0, 5) });
             //engines.Add("MCTS v2 Rollout 1.0-10", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(1.0, 10) });
 
-            engines.Add("MCTS UCB 0.5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 0.5 });
+            engines.Add("MCTS v2 Flood Win", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _floodWinSearch = true });
+
+            engines.Add("MCTS v2 UCB 0.5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 0.5 });
 
             engines.Add("MCTS v2 PUCT", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _puct = true, _ucbFactor = 0.6, _temperature = 0.75 });
 
