@@ -96,6 +96,8 @@ namespace Volcano
 
             engines.Add("MCTS v2 PUCT", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _puct = true, _ucbFactor = 0.6, _temperature = 0.75 });
 
+            engines.Add("MCTS v2 Solver", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _solver = true });
+
             engines.Add("MCTS v2 RAVE", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true });
             engines.Add("MCTS v2 RAVE 100", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true, _raveEquiv = 100 });
             engines.Add("MCTS v2 RAVE 500", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true, _raveEquiv = 500 });

@@ -61,6 +61,7 @@ namespace Volcano.Engine
         public IRolloutStrategy _rolloutStrategy;
         public bool _rave;
         public double _raveEquiv;
+        public bool _solver;
 
         public MonteCarloTreeSearchEngine(double ucbFactor)
         {
@@ -291,6 +292,15 @@ namespace Volcano.Engine
                         {
                             node = node.SelectChildRAVE(_ucbFactor, _raveEquiv);
                         }
+                        else if (_solver)
+                        {
+                            if (node.Status != ProofState.Unproven)
+                            {
+                                break;
+                            }
+
+                            node = node.SelectChildSolver(_ucbFactor);
+                        }
                         else
                         {
                             node = node.SelectChild(_ucbFactor);
@@ -352,12 +362,83 @@ namespace Volcano.Engine
                 }
 
                 // Backpropagate
+                var first = true;
                 while (node != null)
                 {
                     var final = _countDraws ? (state.Winner == Player.Draw ? 0.5 : (state.Winner == node.LastToMove ? 1.0 : 0.0)) : (state.Winner == node.LastToMove ? 1.0 : 0.0);
                     if (_rave)
                     {
                         node.UpdateRAVE(final, movesPlayed);
+                    }
+                    else if (_solver)
+                    {
+                        if (first && node.Untried.Count == 0)
+                        {
+                            if (final == 1.0)
+                            {
+                                node.Status = ProofState.ProvenWin;
+                            }
+                            else if (final == 0.0)
+                            {
+                                node.Status = ProofState.ProvenLoss;
+                            }
+                        }
+
+                        first = false;
+
+                        node.Update(final);
+
+                        if (node.Parent != null)
+                        {
+                            var parent = node.Parent;
+                            if (parent.Status == ProofState.Unproven)
+                            {
+                                bool turnChanged = node.LastToMove != parent.LastToMove;
+
+                                // Rule 1: A player can prove a win early if they find just ONE path that destroys the opponent.
+                                // Turn changed: if child is ProvenLoss, it means parent player wins.
+                                // Same turn: if child is ProvenWin, it means parent player wins.
+                                bool foundInstantWinningMove = (turnChanged && node.Status == ProofState.ProvenLoss) ||
+                                                               (!turnChanged && node.Status == ProofState.ProvenWin);
+
+                                if (foundInstantWinningMove)
+                                {
+                                    parent.Status = ProofState.ProvenWin;
+                                }
+                                else if (parent.Untried.Count == 0)
+                                {
+                                    // Rule 2: A player is only proven to lose if ALL possible 80 branches are accounted for and proven bad.
+                                    bool allPathsAreLosses = true;
+
+                                    foreach (var child in parent.Children)
+                                    {
+                                        if (turnChanged)
+                                        {
+                                            // If turn changes, a ProvenWin for the child means a Loss for the parent
+                                            if (child.Status != ProofState.ProvenWin)
+                                            {
+                                                allPathsAreLosses = false;
+                                                break;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            // If it's a consecutive turn, a ProvenLoss for the child means a Loss for the parent
+                                            if (child.Status != ProofState.ProvenLoss)
+                                            {
+                                                allPathsAreLosses = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+
+                                    if (allPathsAreLosses)
+                                    {
+                                        parent.Status = ProofState.ProvenLoss;
+                                    }
+                                }
+                            }
+                        }
                     }
                     else
                     {
@@ -395,7 +476,25 @@ namespace Volcano.Engine
                         var c = child;
                         while (c != null && c.Move >= 0 && c.Move <= 80)
                         {
-                            pv += Constants.TileNames[c.Move] + " (" + c.Wins + "/" + c.Visits + ")   ";
+                            if (_solver)
+                            {
+                                if (c.Status == ProofState.ProvenWin)
+                                {
+                                    pv += Constants.TileNames[c.Move] + " (W " + c.Wins + "/" + c.Visits + ")   ";
+                                }
+                                else if (c.Status == ProofState.ProvenLoss)
+                                {
+                                    pv += Constants.TileNames[c.Move] + " (L " + c.Wins + "/" + c.Visits + ")   ";
+                                }
+                                else
+                                {
+                                    pv += Constants.TileNames[c.Move] + " (" + c.Wins + "/" + c.Visits + ")   ";
+                                }
+                            }
+                            else
+                            {
+                                pv += Constants.TileNames[c.Move] + " (" + c.Wins + "/" + c.Visits + ")   ";
+                            }
                             c = c.Children?.OrderBy(x => x.Visits)?.ThenBy(x => x.Wins)?.LastOrDefault();
                         }
                         status.Add(child?.Move ?? 80, eval, pv, child.Visits);
@@ -421,7 +520,18 @@ namespace Volcano.Engine
                 }
             }
 
-            return rootNode.Children.OrderBy(x => x.Visits).LastOrDefault().Move;
+            if (_solver)
+            {
+                return rootNode.Children
+                    .OrderBy(x => x.Status == ProofState.ProvenWin ? 1 : (x.Status == ProofState.Unproven ? 2 : 3))
+                    .ThenBy(x => x.Visits)
+                    .LastOrDefault()
+                    .Move;
+            }
+            else
+            {
+                return rootNode.Children.OrderBy(x => x.Visits).LastOrDefault().Move;
+            }
         }
 
         public class MonteCarloTreeSearchNode
@@ -432,6 +542,7 @@ namespace Volcano.Engine
             public double Visits;
             public MonteCarloTreeSearchNode Parent;
             public Player LastToMove;
+            public bool IsFirstOfTwoMoves;
             public int Move;
             public List<MonteCarloTreeSearchNode> Children;
             public List<int> Untried;
@@ -439,6 +550,8 @@ namespace Volcano.Engine
             public double Prior;
             public bool SetPrior;
             public int Interesting;
+
+            public ProofState Status = ProofState.Unproven;
 
             public Dictionary<int, int> AmafVisits { get; } = new();
             public Dictionary<int, double> AmafScore { get; } = new();
@@ -486,6 +599,8 @@ namespace Volcano.Engine
                     {
                         LastToMove = state.GetPlayerForPreviousTurn();
                     }
+
+                    IsFirstOfTwoMoves = state.GetMoveTypeForTurn(state.Turn + 1) == MoveType.AllGrow;
                 }
                 else
                 {
@@ -556,6 +671,43 @@ namespace Volcano.Engine
             public MonteCarloTreeSearchNode SelectChild(double ucbFactor)
             {
                 return Children.OrderBy(x => UpperConfidenceBound(ucbFactor, x)).LastOrDefault();
+            }
+
+            public MonteCarloTreeSearchNode SelectChildSolver(double ucbFactor)
+            {
+                double c = Math.Sqrt(ucbFactor);
+                MonteCarloTreeSearchNode bestChild = null;
+                double bestUct = double.MinValue;
+
+                foreach (var child in Children)
+                {
+                    if (child.LastToMove != LastToMove)
+                    {
+                        // Consecutive turn (e.g., Move 1 to Move 2 of a double turn):
+                        // A win at the child is a win for the parent.
+                        if (child.Status == ProofState.ProvenWin) return child;
+                        if (child.Status == ProofState.ProvenLoss) continue;
+                    }
+                    else
+                    {
+                        // Turn changed:
+                        // An opponent's forced loss at the child is a win for us at the parent.
+                        if (child.Status == ProofState.ProvenLoss) return child;
+                        if (child.Status == ProofState.ProvenWin) continue;
+                    }
+
+                    // Traditional MCTS exploitation score adjusted for perspective
+                    double winRate = child.Wins / child.Visits;
+                    double uct = winRate + c * Math.Sqrt(Math.Log(Visits) / child.Visits);
+
+                    if (uct > bestUct)
+                    {
+                        bestUct = uct;
+                        bestChild = child;
+                    }
+                }
+
+                return bestChild ?? Children[0];
             }
 
             public MonteCarloTreeSearchNode AddChild(Board state, int move, Player player, bool persist)
@@ -710,6 +862,17 @@ namespace Volcano.Engine
                     Children[i].Prior = expScores[i] / sumExp;
                 }
             }
+        }
+
+        public enum ProofState
+        {
+            Unproven,
+
+            // The player whose turn it is to move from this node can force a win
+            ProvenWin,
+
+            // The player whose turn it is to move from this node will always lose under optimal play
+            ProvenLoss,
         }
     }
 }
