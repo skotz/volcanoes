@@ -412,7 +412,7 @@ namespace Volcano.Engine
 
             // use iterations instead of time so we can run in parallel without starving a thread and getting bad results
             // on my machine a 60 second search resulted in just over 1,000,000 mcts playouts, so roughly 15,000 per second
-            var engine = new AlphaZeroEngine(VolcanoZeroVersion.V2); // new MonteCarloTreeSearchEngine(MCTSVersion.V2);
+            var engine = new MonteCarloTreeSearchEngine(MCTSVersion.V2); // new AlphaZeroEngine(VolcanoZeroVersion.V2);
             //engine.simplifyFirstMove = true;
             engine.forcedIterations = iterations;
             //engine.forcedGap = gap;

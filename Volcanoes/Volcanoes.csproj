@@ -33,6 +33,7 @@
     <PackageReference Include="libtorch-cuda-12.8-win-x64-part9-fragment1" Version="2.10.0" />
     <PackageReference Include="libtorch-cuda-12.8-win-x64-part9-fragment2" Version="2.10.0" />
     <PackageReference Include="libtorch-cuda-12.8-win-x64-part9-primary" Version="2.10.0" />
+    <PackageReference Include="LiteDB" Version="5.0.21" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="SharpZipLib" Version="1.4.0" />
     <PackageReference Include="SkiaSharp" Version="2.88.6" />

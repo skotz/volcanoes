@@ -62,6 +62,7 @@ namespace Volcano.Engine
         public bool _rave;
         public double _raveEquiv;
         public bool _solver;
+        public bool _store;
 
         public MonteCarloTreeSearchEngine(double ucbFactor)
         {
@@ -236,7 +237,7 @@ namespace Volcano.Engine
                 }
             }
 
-            var rootNode = new MonteCarloTreeSearchNode(rootState, GetMoves, _fixedLastPlayer, _persistable);
+            var rootNode = new MonteCarloTreeSearchNode(rootState, GetMoves, _fixedLastPlayer, _persistable, _store);
 
             if (_persistable && originalRootNode == null)
             {
@@ -263,14 +264,17 @@ namespace Volcano.Engine
                 iterations++;
 
                 var node = rootNode;
-                var state = new Board(rootState);
+                var state = _store ? null : new Board(rootState);
 
-                state.allowHash = _allowHash;
-                state.fastWinSearch = _allowFastWinSearch;
-
-                if (_allowHash)
+                if (!_store)
                 {
-                    state.winHashes = winHashes;
+                    state.allowHash = _allowHash;
+                    state.fastWinSearch = _allowFastWinSearch;
+
+                    if (_allowHash)
+                    {
+                        state.winHashes = winHashes;
+                    }
                 }
 
                 simulationCount++;
@@ -307,11 +311,27 @@ namespace Volcano.Engine
                         }
                     }
 
-                    state.MakeMove(node.Move);
+                    if (!_store)
+                    {
+                        state.MakeMove(node.Move);
+                    }
                     visitedNodes++;
                 }
 
                 var movesPlayed = _rave ? new HashSet<int>() : null;
+
+                if (_store)
+                {
+                    state = new Board(node.state);
+
+                    state.allowHash = _allowHash;
+                    state.fastWinSearch = _allowFastWinSearch;
+
+                    if (_allowHash)
+                    {
+                        state.winHashes = winHashes;
+                    }
+                }
 
                 // Expand
                 if (node.Untried.Count > 0)
@@ -323,7 +343,7 @@ namespace Volcano.Engine
                     {
                         movesPlayed.Add(move);
                     }
-                    node = node.AddChild(state, move, player, _persistable);
+                    node = node.AddChild(state, move, player, _persistable, _store);
                     visitedNodes++;
                 }
 
@@ -550,15 +570,17 @@ namespace Volcano.Engine
 
             public ProofState Status = ProofState.Unproven;
 
-            public Dictionary<int, int> AmafVisits { get; } = new();
-            public Dictionary<int, double> AmafScore { get; } = new();
+            public Dictionary<int, int> AmafVisits;
+            public Dictionary<int, double> AmafScore;
+            private RolloutRecord rollout;
+            internal Board state;
 
-            public MonteCarloTreeSearchNode(Board state, Func<Board, List<int>> getMoves, bool fixedLastPlayer, bool persist)
-                : this(state, -2, null, getMoves, fixedLastPlayer, Player.Empty, persist)
+            public MonteCarloTreeSearchNode(Board state, Func<Board, List<int>> getMoves, bool fixedLastPlayer, bool persist, bool store)
+                : this(state, -2, null, getMoves, fixedLastPlayer, Player.Empty, persist, store)
             {
             }
 
-            public MonteCarloTreeSearchNode(Board state, int move, MonteCarloTreeSearchNode parent, Func<Board, List<int>> getMoves, bool fixedLastPlayer, Player player, bool persist)
+            public MonteCarloTreeSearchNode(Board state, int move, MonteCarloTreeSearchNode parent, Func<Board, List<int>> getMoves, bool fixedLastPlayer, Player player, bool persist, bool store)
             {
                 _getMoves = getMoves;
 
@@ -573,9 +595,26 @@ namespace Volcano.Engine
 
                 if (state != null)
                 {
+                    if (store)
+                    {
+                        this.state = new Board(state);
+                    }
+
                     if (persist)
                     {
                         hash = state.GetFullHash();
+                    }
+
+                    if (StaticRolloutDatabase.Enabled)
+                    {
+                        hash = state.GetFullHash();
+                        rollout = StaticRolloutDatabase.Find(hash);
+
+                        if (Parent != null && Parent.rollout != null && move >= 0 && move < 80)
+                        {
+                            Wins = Parent.rollout.Wins[move];
+                            Visits = Parent.rollout.Visits[move];
+                        }
                     }
 
                     Untried = _getMoves(state);
@@ -619,6 +658,12 @@ namespace Volcano.Engine
                     // Extract UCT components
                     double uctWinRate = child.Visits > 0 ? child.Wins / child.Visits : 0.5;
 
+                    if (AmafVisits == null)
+                    {
+                        AmafVisits = new();
+                        AmafScore = new();
+                    }
+
                     // Extract AMAF components
                     int amafCount = AmafVisits.ContainsKey(moveId) ? AmafVisits[moveId] : 0;
                     double amafWinRate = amafCount > 0 ? AmafScore[moveId] / amafCount : 0.5;
@@ -651,6 +696,12 @@ namespace Volcano.Engine
                 // Update AMAF statistics for any sibling moves that occurred during simulation
                 if (Parent != null)
                 {
+                    if (Parent.AmafVisits == null)
+                    {
+                        Parent.AmafVisits = new();
+                        Parent.AmafScore = new();
+                    }
+
                     foreach (var moveId in movesPlayedInRollout)
                     {
                         if (!Parent.AmafVisits.ContainsKey(moveId))
@@ -667,6 +718,15 @@ namespace Volcano.Engine
 
             public MonteCarloTreeSearchNode SelectChild(double ucbFactor)
             {
+                if (StaticRolloutDatabase.Enabled)
+                {
+                    var total = Children.Sum(x => x.Visits);
+                    if (total % 10000 == 0)
+                    {
+                        StaticRolloutDatabase.Update(this);
+                    }
+                }
+
                 return Children.OrderBy(x => UpperConfidenceBound(ucbFactor, x)).LastOrDefault();
             }
 
@@ -707,9 +767,9 @@ namespace Volcano.Engine
                 return bestChild ?? Children[0];
             }
 
-            public MonteCarloTreeSearchNode AddChild(Board state, int move, Player player, bool persist)
+            public MonteCarloTreeSearchNode AddChild(Board state, int move, Player player, bool persist, bool store)
             {
-                var newNode = new MonteCarloTreeSearchNode(state, move, this, _getMoves, _fixedLastPlayer, player, persist);
+                var newNode = new MonteCarloTreeSearchNode(state, move, this, _getMoves, _fixedLastPlayer, player, persist, store);
                 Untried.Remove(move);
                 Children.Add(newNode);
                 return newNode;
