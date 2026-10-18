@@ -57,11 +57,85 @@ namespace Volcano.Game
         public static int[][] ThreeAway = GetThreeAway();
 
         /// <summary>
+        /// An array mapping each tile to a list of tiles connected by their points
+        /// </summary>
+        public static int[][] PointNeighbors = GetPointNeighbors();
+
+        /// <summary>
+        /// Distances between two tiles
+        /// </summary>
+        public static int[][] Distances = GetDistances();
+
+        /// <summary>
         /// Random numbers to use for zobrist style hashes
         /// </summary>
         public static long[,] ZobristKeys = GetZobristKeys();
 
         public static long[,] AdditionalZobristKeys = GetAdditionalZobristKeys();
+
+        private static int[][] GetPointNeighbors()
+        {
+            var neighbors = new int[80][];
+
+            // solve for the canonical form then extrapolate
+            var n07 = new int[] { TileIndexes["N21"], TileIndexes["N22"], TileIndexes["N23"], TileIndexes["N09"], TileIndexes["N10"], TileIndexes["N02"], TileIndexes["N05"], TileIndexes["N19"], TileIndexes["N20"] };
+            var n01 = new int[] { TileIndexes["N08"], TileIndexes["N09"], TileIndexes["N10"], TileIndexes["N03"], TileIndexes["N04"], TileIndexes["N19"], TileIndexes["N20"], TileIndexes["N06"] };
+
+            for (var i = 0; i < 80; i++)
+            {
+                var canonical = new Canonical();
+                canonical.SetIndex(i);
+
+                var type = canonical.BoardToCanonical(i);
+                if (type == 0)
+                {
+                    // N07 x20
+                    neighbors[i] = new int[n07.Length];
+                    for (var x =  0; x < n07.Length; x++)
+                    {
+                        neighbors[i][x] = canonical.CanonicalToBoard(n07[x]);
+                    }
+                }
+                else if (type == 1)
+                {
+                    // N01 x60
+                    neighbors[i] = new int[n01.Length];
+                    for (var x = 0; x < n01.Length; x++)
+                    {
+                        neighbors[i][x] = canonical.CanonicalToBoard(n01[x]);
+                    }
+                }
+            }
+
+            return neighbors;
+        }
+
+        private static int[][] GetDistances()
+        {
+            var distances = new int[80][];
+            var pathfinder = new UnrestrictedPathFinder();
+            var state = new Board();
+
+            for (var f = 0; f < 80; f++)
+            {
+                distances[f] = new int[80];
+            }
+
+            for (var f = 0; f < 80; f++)
+            {
+                for (var t = 0; t < 80; t++)
+                {
+                    if (f != t)
+                    {
+                        var path = pathfinder.FindPath(state, f, t);
+                        distances[f][t] = path.Path.Count - 1;
+                        distances[t][f] = path.Path.Count - 1;
+                    }
+                }
+            }
+
+            return distances;
+        }
 
         private static int[][] GetConnectingTiles()
         {
