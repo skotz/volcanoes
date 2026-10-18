@@ -82,6 +82,7 @@ namespace Volcano
             engines.Add("MCTS v2 Empty Rollout", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new EmptyNeighborRolloutStrategy() });
             engines.Add("MCTS v2 Three Rollout", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new ThreeAwayRolloutStrategy() });
             engines.Add("MCTS v2 Point Rollout", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new PointNeighborRolloutStrategy() });
+            engines.Add("MCTS v2 Filter", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _moveFilter = new NearbyMoveFilter() });
             //engines.Add("MCTS v2 Rollout 0.5-4", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.5, 4) });
             //engines.Add("MCTS v2 Rollout 0.5-5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.5, 5) });
             //engines.Add("MCTS v2 Rollout 0.8-1", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.8, 1) });

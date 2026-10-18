@@ -27,7 +27,7 @@ namespace Volcano.Search
                 {
                     foreach (var n in Constants.PointNeighbors[i])
                     {
-                        if (!done[n])
+                        if (!done[n] && state.Tiles[n] == 0)
                         {
                             candidates.Add(n);
                             done[n] = true;

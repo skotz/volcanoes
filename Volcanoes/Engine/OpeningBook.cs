@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Volcano.Game;
 using Volcano.Interface;
+using Volcano.Search;
 using static System.Environment;
 
 namespace Volcano.Engine
@@ -412,7 +413,7 @@ namespace Volcano.Engine
 
             // use iterations instead of time so we can run in parallel without starving a thread and getting bad results
             // on my machine a 60 second search resulted in just over 1,000,000 mcts playouts, so roughly 15,000 per second
-            var engine = new MonteCarloTreeSearchEngine(MCTSVersion.V2); // new AlphaZeroEngine(VolcanoZeroVersion.V2);
+            var engine = new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _moveFilter = new NearbyMoveFilter() }; // new AlphaZeroEngine(VolcanoZeroVersion.V2);
             //engine.simplifyFirstMove = true;
             engine.forcedIterations = iterations;
             //engine.forcedGap = gap;

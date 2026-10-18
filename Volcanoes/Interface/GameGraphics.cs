@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Volcano.Engine;
 using Volcano.Game;
+using Volcano.Search;
 
 namespace Volcano.Interface
 {

@@ -59,6 +59,7 @@ namespace Volcano.Engine
         public bool _persistableFull;
         public bool _puct;
         public IRolloutStrategy _rolloutStrategy;
+        public IMoveFilter _moveFilter;
         public bool _rave;
         public double _raveEquiv;
         public bool _solver;
@@ -238,7 +239,7 @@ namespace Volcano.Engine
                 }
             }
 
-            var rootNode = new MonteCarloTreeSearchNode(rootState, GetMoves, _fixedLastPlayer, _persistable, _store);
+            var rootNode = new MonteCarloTreeSearchNode(rootState, _moveFilter != null ? _moveFilter.GetMoves : GetMoves, _fixedLastPlayer, _persistable, _store);
 
             if (_persistable && originalRootNode == null)
             {
