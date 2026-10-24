@@ -261,7 +261,7 @@ namespace Volcano.Engine
                 iterations = (int)rootNode.Children.Sum(x => x.Visits);
             }
 
-            while (forcedIterations == -1 ? (!cancel.Cancelled && !forceWin) : (iterations < forcedIterations))
+            while (forcedIterations == -1 ? (!cancel.Cancelled && !forceWin && (!_solver || rootNode.Status == ProofState.Unproven)) : (iterations < forcedIterations))
             {
                 iterations++;
 
@@ -283,7 +283,7 @@ namespace Volcano.Engine
                 simulationCount++;
 
                 // Select
-                while (node.Untried.Count == 0 && node.Children.Count > 0)
+                while (node.Untried.Count == 0 && node.Children.Count > 0 && (!_solver || node.Status == ProofState.Unproven))
                 {
                     if (forceExpand && node.hash == rootState.GetFullHash())
                     {
@@ -301,11 +301,6 @@ namespace Volcano.Engine
                         }
                         else if (_solver)
                         {
-                            //if (node.Status != ProofState.Unproven)
-                            //{
-                            //    break;
-                            //}
-
                             node = node.SelectChildSolver(_ucbFactor);
                         }
                         else
@@ -320,6 +315,8 @@ namespace Volcano.Engine
                     }
                     visitedNodes++;
                 }
+
+                var solved = _solver && node.Status != ProofState.Unproven;
 
                 var movesPlayed = _rave ? new HashSet<int>() : null;
 
@@ -338,7 +335,7 @@ namespace Volcano.Engine
                 }
 
                 // Expand
-                if (node.Untried.Count > 0)
+                if (!solved && node.Untried.Count > 0)
                 {
                     var move = node.Untried[random.Next(node.Untried.Count)];
                     var player = state.Player;
@@ -364,7 +361,7 @@ namespace Volcano.Engine
                 }
 
                 // Simulate
-                while (state.Winner == Player.Empty && state.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns)
+                while (!solved && state.Winner == Player.Empty && state.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns)
                 {
                     if (_rolloutStrategy != null && _rolloutStrategy.UseStrategy())
                     {
@@ -398,9 +395,13 @@ namespace Volcano.Engine
                 }
 
                 // Backpropagate
+                var winner = solved
+                    ? (node.Status == ProofState.ProvenWin ? node.ToMove : (node.ToMove == Player.One ? Player.Two : Player.One))
+                    : state.Winner;
+
                 while (node != null)
                 {
-                    var final = _countDraws ? (state.Winner == Player.Draw ? 0.5 : (state.Winner == node.LastToMove ? 1.0 : 0.0)) : (state.Winner == node.LastToMove ? 1.0 : 0.0);
+                    var final = _countDraws ? (winner == Player.Draw ? 0.5 : (winner == node.LastToMove ? 1.0 : 0.0)) : (winner == node.LastToMove ? 1.0 : 0.0);
                     if (_rave)
                     {
                         node.UpdateRAVE(final, movesPlayed);
@@ -433,7 +434,7 @@ namespace Volcano.Engine
 
                                     foreach (var child in parent.Children)
                                     {
-                                        if (turnChanged)
+                                        if (child.ToMove != parent.ToMove)
                                         {
                                             // If turn changes, a ProvenWin for the child means a Loss for the parent
                                             if (child.Status != ProofState.ProvenWin)
@@ -485,51 +486,7 @@ namespace Volcano.Engine
                 // Update Status
                 if ((statusUpdate.ElapsedMilliseconds > millisecondsBetweenUpdates || forceWin) && OnStatus != null)
                 {
-                    EngineStatus status = new EngineStatus();
-                    var max = rootNode.Children.Count > 0 ? rootNode.Children.Max(x => x.Visits) : 1;
-                    foreach (var child in rootNode.Children)
-                    {
-                        double eval = Math.Round((child.Visits > 0 ? 200.0 * child.Wins / child.Visits : 0) - 100.0, 2);
-                        double sort = child.Visits;
-                        string pv = "";
-                        if (_puct)
-                        {
-                            pv += $"[{child.Prior.ToString("0.000000")}]   ";
-                        }
-                        var c = child;
-                        while (c != null && c.Move >= 0 && c.Move <= 80)
-                        {
-                            if (_solver)
-                            {
-                                sort /= (max != 0 ? max : 1);
-
-                                if (c.MoverStatus == ProofState.ProvenWin)
-                                {
-                                    pv += Constants.TileNames[c.Move] + " (W " + c.Wins + "/" + c.Visits + ")   ";
-                                    sort += 3;
-                                }
-                                else if (c.MoverStatus == ProofState.ProvenLoss)
-                                {
-                                    pv += Constants.TileNames[c.Move] + " (L " + c.Wins + "/" + c.Visits + ")   ";
-                                    sort += 1;
-                                }
-                                else
-                                {
-                                    pv += Constants.TileNames[c.Move] + " (" + c.Wins + "/" + c.Visits + ")   ";
-                                    sort += 2;
-                                }
-                            }
-                            else
-                            {
-                                pv += Constants.TileNames[c.Move] + " (" + c.Wins + "/" + c.Visits + ")   ";
-                            }
-                            c = c.Children?.OrderBy(x => x.Visits)?.ThenBy(x => x.Wins)?.LastOrDefault();
-                        }
-                        status.Add(child?.Move ?? 80, eval, pv, sort);
-                    }
-                    status.Sort();
-                    OnStatus?.Invoke(this, status);
-                    statusUpdate = Stopwatch.StartNew();
+                    ReportStatus(rootNode);
                 }
 
                 // Cut Short (for book gen)
@@ -548,6 +505,11 @@ namespace Volcano.Engine
                 }
             }
 
+            if (OnStatus != null)
+            {
+                ReportStatus(rootNode);
+            }
+
             if (_solver)
             {
                 return rootNode.Children
@@ -560,6 +522,57 @@ namespace Volcano.Engine
             {
                 return rootNode.Children.OrderBy(x => x.Visits).LastOrDefault().Move;
             }
+        }
+
+        private void ReportStatus(MonteCarloTreeSearchNode rootNode)
+        {
+            EngineStatus status = new EngineStatus();
+            var max = rootNode.Children.Count > 0 ? rootNode.Children.Max(x => x.Visits) : 1;
+            foreach (var child in rootNode.Children)
+            {
+                double eval = Math.Round((child.Visits > 0 ? 200.0 * child.Wins / child.Visits : 0) - 100.0, 2);
+                double sort = child.Visits;
+                string pv = "";
+                if (_puct)
+                {
+                    pv += $"[{child.Prior.ToString("0.000000")}]   ";
+                }
+                var c = child;
+                while (c != null && c.Move >= 0 && c.Move <= 80)
+                {
+                    if (_solver)
+                    {
+                        sort /= (max != 0 ? max : 1);
+
+                        if (c.MoverStatus == ProofState.ProvenWin)
+                        {
+                            pv += Constants.TileNames[c.Move] + " (W " + c.Wins + "/" + c.Visits + ")   ";
+                            sort += 3;
+                            eval = 100;
+                        }
+                        else if (c.MoverStatus == ProofState.ProvenLoss)
+                        {
+                            pv += Constants.TileNames[c.Move] + " (L " + c.Wins + "/" + c.Visits + ")   ";
+                            sort += 1;
+                            eval = -100;
+                        }
+                        else
+                        {
+                            pv += Constants.TileNames[c.Move] + " (" + c.Wins + "/" + c.Visits + ")   ";
+                            sort += 2;
+                        }
+                    }
+                    else
+                    {
+                        pv += Constants.TileNames[c.Move] + " (" + c.Wins + "/" + c.Visits + ")   ";
+                    }
+                    c = c.Children?.OrderBy(x => x.Visits)?.ThenBy(x => x.Wins)?.LastOrDefault();
+                }
+                status.Add(child?.Move ?? 80, eval, pv, sort);
+            }
+            status.Sort();
+            OnStatus?.Invoke(this, status);
+            statusUpdate = Stopwatch.StartNew();
         }
 
         public class MonteCarloTreeSearchNode

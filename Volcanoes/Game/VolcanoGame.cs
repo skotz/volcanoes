@@ -52,6 +52,8 @@ namespace Volcano.Game
 
         public int TimeoutGrace { get; set; } = 250;
 
+        public bool OverlayMode { get; set; } = false;
+
         public VolcanoGame()
         {
             CurrentState = new Board();
@@ -325,7 +327,7 @@ namespace Volcano.Game
                     {
                         OnGameOver?.Invoke(CurrentState.Winner, CurrentState.Winner == Player.Draw ? VictoryType.InfiniteEruption : VictoryType.AntipodePathCreation);
                     }
-                    else
+                    else if (!OverlayMode)
                     {
                         ComputerPlay();
                     }
