@@ -351,9 +351,9 @@ namespace Volcano.Engine
                     visitedNodes++;
                 }
 
-                if (state.Winner != Player.Empty)
+                if (state.Winner != Player.Empty && state.Winner != Player.Draw)
                 {
-                    if (state.Winner == node.LastToMove)
+                    if (state.Winner == node.ToMove)
                     {
                         node.Status = ProofState.ProvenWin;
                     }
@@ -414,7 +414,7 @@ namespace Volcano.Engine
                             var parent = node.Parent;
                             if (parent.Status == ProofState.Unproven)
                             {
-                                bool turnChanged = node.LastToMove != parent.LastToMove;
+                                bool turnChanged = node.ToMove != parent.ToMove;
 
                                 // Rule 1: A player can prove a win early if they find just ONE path that destroys the opponent.
                                 // Turn changed: if child is ProvenLoss, it means parent player wins.
@@ -499,11 +499,11 @@ namespace Volcano.Engine
                         {
                             if (_solver)
                             {
-                                if (c.Status == ProofState.ProvenWin)
+                                if (c.MoverStatus == ProofState.ProvenWin)
                                 {
                                     pv += Constants.TileNames[c.Move] + " (W " + c.Wins + "/" + c.Visits + ")   ";
                                 }
-                                else if (c.Status == ProofState.ProvenLoss)
+                                else if (c.MoverStatus == ProofState.ProvenLoss)
                                 {
                                     pv += Constants.TileNames[c.Move] + " (L " + c.Wins + "/" + c.Visits + ")   ";
                                 }
@@ -544,9 +544,9 @@ namespace Volcano.Engine
             if (_solver)
             {
                 return rootNode.Children
-                    .OrderBy(x => x.Status == ProofState.ProvenWin ? 1 : (x.Status == ProofState.Unproven ? 2 : 3))
-                    .ThenBy(x => x.Visits)
-                    .LastOrDefault()
+                    .OrderByDescending(x => x.MoverStatus == ProofState.ProvenWin ? 3 : (x.MoverStatus == ProofState.Unproven ? 2 : 1))
+                    .ThenByDescending(x => x.Visits)
+                    .FirstOrDefault()
                     .Move;
             }
             else
@@ -563,6 +563,7 @@ namespace Volcano.Engine
             public double Visits;
             public MonteCarloTreeSearchNode Parent;
             public Player LastToMove;
+            public Player ToMove;
             public bool IsFirstOfTwoMoves;
             public int Move;
             public List<MonteCarloTreeSearchNode> Children;
@@ -573,6 +574,19 @@ namespace Volcano.Engine
             public int Interesting;
 
             public ProofState Status = ProofState.Unproven;
+
+            public ProofState MoverStatus
+            {
+                get
+                {
+                    if (Parent == null || Parent.ToMove == ToMove || Status == ProofState.Unproven)
+                    {
+                        return Status;
+                    }
+
+                    return Status == ProofState.ProvenWin ? ProofState.ProvenLoss : ProofState.ProvenWin;
+                }
+            }
 
             public Dictionary<int, int> AmafVisits;
             public Dictionary<int, double> AmafScore;
@@ -640,6 +654,7 @@ namespace Volcano.Engine
                         LastToMove = state.GetPlayerForPreviousTurn();
                     }
 
+                    ToMove = state.Player;
                     IsFirstOfTwoMoves = state.GetMoveTypeForTurn(state.Turn + 1) == MoveType.AllGrow;
                 }
                 else
@@ -742,7 +757,7 @@ namespace Volcano.Engine
 
                 foreach (var child in Children)
                 {
-                    if (child.LastToMove != LastToMove)
+                    if (child.ToMove == ToMove)
                     {
                         // Consecutive turn (e.g., Move 1 to Move 2 of a double turn):
                         // A win at the child is a win for the parent.

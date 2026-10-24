@@ -102,7 +102,7 @@ namespace Volcano
 
             engines.Add("MCTS v2 PUCT", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _puct = true, _ucbFactor = 0.6, _temperature = 0.75 });
 
-            engines.Add("MCTS v2 Solver", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _solver = true });
+            engines.Add("MCTS v2 Solver", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false, _solver = true });
 
             engines.Add("MCTS v2 Store", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _store = true });
 

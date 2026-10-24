@@ -566,8 +566,8 @@ namespace Volcano.Interface
                     analysisMove = gameState.Turn;
                     analysisEngine = new VolcanoGame();
                     analysisEngine.SecondsPerEngineMove = 1000000;
-                    analysisEngine.RegisterEngine(Player.One, new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false }); // new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128)));
-                    analysisEngine.RegisterEngine(Player.Two, new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false }); // new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128)));
+                    analysisEngine.RegisterEngine(Player.One, new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false, _solver = true }); // new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128)));
+                    analysisEngine.RegisterEngine(Player.Two, new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false, _solver = true }); // new AlphaZeroEngine(VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128)));
                     analysisEngine.OnEngineStatus += AnalysisEngine_OnEngineStatus;
                     analysisEngine.CurrentState = new Board(gameState);
                     analysisEngine.ComputerPlay();
@@ -670,7 +670,8 @@ namespace Volcano.Interface
                         var details = analysisStatus?.Details?.FirstOrDefault(x => x.MoveIndex == boardIndexFromTileIndex[i]);
                         if (details != null)
                         {
-                            var best = analysisStatus.Details.Max(x => x.Evaluation);
+                            var bestEval = analysisStatus.Details.Max(x => x.Evaluation);
+                            var bestSort = analysisStatus.Details.Max(x => x.Sort); // sort == visits
 
                             var min = -100; // analysisStatus.Details.Min(x => x.Evaluation);
                             var max = 100; // analysisStatus.Details.Max(x => x.Evaluation);
@@ -679,9 +680,21 @@ namespace Volcano.Interface
                             {
                                 scale = (details.Evaluation - min) / (max - min);
                             }
-                            var isBest = details.Evaluation == best;
+
+                            //var minSort = analysisStatus.Details.Min(x => x.Sort);
+                            //var maxSort = analysisStatus.Details.Max(x => x.Sort);
+                            //var scaleSort = 100.0;
+                            //if (maxSort - minSort > 0)
+                            //{
+                            //    scaleSort *= (details.Sort - minSort) / (maxSort - minSort);
+                            //}
+
+                            // best is highest visits, not just best eval
+                            var isBest = details.Sort == bestSort;
+
                             FillRoundedRectangle(g, i, scale, isBest);
                             DrawTileText(g, i, details.Evaluation.ToString(), 3, GraphicsSettings.SubTextFontSize, false, Color.Black);
+                            //DrawTileText(g, i, scaleSort.ToString("0.00"), 3, GraphicsSettings.SubTextFontSize, false, Color.Black);
                         }
                     }
                     else if (GraphicsSettings.ShowTileNames)
