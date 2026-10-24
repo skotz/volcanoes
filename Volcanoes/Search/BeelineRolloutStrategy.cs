@@ -8,14 +8,12 @@ namespace Volcano.Search
     internal class BeelineRolloutStrategy : IRolloutStrategy
     {
         private double _rate;
-        private int _count;
         private TotalPathFinder _pathFinder;
         private Dictionary<long, TotalPathFinderResult> _cache;
 
-        public BeelineRolloutStrategy(double rate, int count)
+        public BeelineRolloutStrategy()
         {
-            _rate = rate;
-            _count = count;
+            _rate = 0.75;
             _pathFinder = new TotalPathFinder();
             _cache = new Dictionary<long, TotalPathFinderResult>();
         }
@@ -36,58 +34,49 @@ namespace Volcano.Search
                 _cache.TryAdd(hash, paths);
             }
 
-            var scores = new double[80];
+            var candidates = new List<int>();
+            var done = new bool[80];
+            var p1 = state.Player == Player.One;
 
             var bestPath = paths.MyPaths.OrderBy(x => x.Distance).FirstOrDefault();
             var bestOppPath = paths.OpponentPaths.OrderBy(x => x.Distance).FirstOrDefault();
 
             if (bestPath != null)
             {
-                var filled = bestPath.Path.Count(x => state.Tiles[x] != 0);
-                var empty = bestPath.Path.Count(x => state.Tiles[x] == 0);
-                var progress = (double)filled / (filled + empty);
-
                 foreach (var tile in bestPath.Path)
                 {
-                    var neighbors = 0;
-                    foreach (var n in Constants.AdjacentIndexes[tile])
+                    if (!done[tile])
                     {
-                        if (state.Tiles[n] > 0 && state.Tiles[tile] > 0)
+                        if (state.Tiles[tile] == 0 || (p1 && state.Tiles[tile] > 0 && state.Tiles[tile] < 4) || (!p1 && state.Tiles[tile] < 0 && state.Tiles[tile] > -4))
                         {
-                            neighbors++;
-                        }
-                        else if (state.Tiles[n] < 0 && state.Tiles[tile] < 0)
-                        {
-                            neighbors++;
+                            candidates.Add(tile);
+                            done[tile] = true;
                         }
                     }
-
-                    scores[tile] += state.Tiles[tile] == 0 ? progress : 0.01;
-                    scores[tile] -= neighbors / 6.0;
                 }
             }
 
             if (bestOppPath != null)
             {
-                var filled = bestOppPath.Path.Count(x => state.Tiles[x] != 0);
-                var empty = bestOppPath.Path.Count(x => state.Tiles[x] == 0);
-                var progress = (double)filled / (filled + empty);
-
                 foreach (var tile in bestOppPath.Path)
                 {
-                    scores[tile] += state.Tiles[tile] == 0 ? progress : 0.01;
+                    if (!done[tile])
+                    {
+                        if (state.Tiles[tile] == 0 || (p1 && state.Tiles[tile] > 0 && state.Tiles[tile] < 4) || (!p1 && state.Tiles[tile] < 0 && state.Tiles[tile] > -4))
+                        {
+                            candidates.Add(tile);
+                            done[tile] = true;
+                        }
+                    }
                 }
             }
 
-            return state
-                .GetMoves()
-                .OrderByDescending(x => scores[x])
-                .ToList();
+            return candidates;
         }
 
         public int GetNextMove(Board state)
         {
-            var candidates = GetAllMoves(state).Take(_count).ToList();
+            var candidates = GetAllMoves(state);
 
             if (candidates.Count == 0)
             {

@@ -11,23 +11,39 @@ namespace Volcano.Search
 
             for (int i = 0; i < 40; i++)
             {
-                if (state.Tiles[i] != 0)
+                for (var p = 1; p <= 2; p++)
                 {
-                    for (var p = 1; p <= 2; p++)
-                    {
-                        var player = p == 1 ? Player.One : Player.Two;
-                        var path = FindPath(state, i, Constants.Antipodes[i], true, player);
+                    var player = p == 1 ? Player.One : Player.Two;
 
-                        if (path.Path.Count > 0)
+                    var antipode = Constants.Antipodes[i];
+                    if ((state.Tiles[i] > 0 && p == 2) || (state.Tiles[i] < 0 && p == 1))
+                    {
+                        continue;
+                    }
+                    else if ((state.Tiles[i] > 0 && p == 2) || (state.Tiles[i] < 0 && p == 1))
+                    {
+                        continue;
+                    }
+                    else if ((state.Tiles[antipode] > 0 && p == 2) || (state.Tiles[antipode] < 0 && p == 1))
+                    {
+                        continue;
+                    }
+                    else if ((state.Tiles[antipode] > 0 && p == 2) || (state.Tiles[antipode] < 0 && p == 1))
+                    {
+                        continue;
+                    }
+
+                    var path = FindPath(state, i, antipode, true, player);
+
+                    if (path.Path.Count > 0)
+                    {
+                        if (player == state.Player)
                         {
-                            if (player == state.Player)
-                            {
-                                paths.MyPaths.Add(path);
-                            }
-                            else
-                            {
-                                paths.OpponentPaths.Add(path);
-                            }
+                            paths.MyPaths.Add(path);
+                        }
+                        else
+                        {
+                            paths.OpponentPaths.Add(path);
                         }
                     }
                 }

@@ -486,9 +486,11 @@ namespace Volcano.Engine
                 if ((statusUpdate.ElapsedMilliseconds > millisecondsBetweenUpdates || forceWin) && OnStatus != null)
                 {
                     EngineStatus status = new EngineStatus();
+                    var max = rootNode.Children.Count > 0 ? rootNode.Children.Max(x => x.Visits) : 1;
                     foreach (var child in rootNode.Children)
                     {
                         double eval = Math.Round((child.Visits > 0 ? 200.0 * child.Wins / child.Visits : 0) - 100.0, 2);
+                        double sort = child.Visits;
                         string pv = "";
                         if (_puct)
                         {
@@ -499,17 +501,22 @@ namespace Volcano.Engine
                         {
                             if (_solver)
                             {
+                                sort /= (max != 0 ? max : 1);
+
                                 if (c.MoverStatus == ProofState.ProvenWin)
                                 {
                                     pv += Constants.TileNames[c.Move] + " (W " + c.Wins + "/" + c.Visits + ")   ";
+                                    sort += 3;
                                 }
                                 else if (c.MoverStatus == ProofState.ProvenLoss)
                                 {
                                     pv += Constants.TileNames[c.Move] + " (L " + c.Wins + "/" + c.Visits + ")   ";
+                                    sort += 1;
                                 }
                                 else
                                 {
                                     pv += Constants.TileNames[c.Move] + " (" + c.Wins + "/" + c.Visits + ")   ";
+                                    sort += 2;
                                 }
                             }
                             else
@@ -518,7 +525,7 @@ namespace Volcano.Engine
                             }
                             c = c.Children?.OrderBy(x => x.Visits)?.ThenBy(x => x.Wins)?.LastOrDefault();
                         }
-                        status.Add(child?.Move ?? 80, eval, pv, child.Visits);
+                        status.Add(child?.Move ?? 80, eval, pv, sort);
                     }
                     status.Sort();
                     OnStatus?.Invoke(this, status);
