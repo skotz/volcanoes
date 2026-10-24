@@ -282,6 +282,8 @@ namespace Volcano.Engine
 
                 simulationCount++;
 
+                var played = _rave ? new List<(int Move, Player Mover)>() : null;
+
                 // Select
                 while (node.Untried.Count == 0 && node.Children.Count > 0 && (!_solver || node.Status == ProofState.Unproven))
                 {
@@ -313,12 +315,15 @@ namespace Volcano.Engine
                     {
                         state.MakeMove(node.Move);
                     }
+                    if (_rave)
+                    {
+                        node.RaveIndex = played.Count;
+                        played.Add((node.Move, node.LastToMove));
+                    }
                     visitedNodes++;
                 }
 
                 var solved = _solver && node.Status != ProofState.Unproven;
-
-                var movesPlayed = _rave ? new HashSet<int>() : null;
 
                 if (_store)
                 {
@@ -340,11 +345,12 @@ namespace Volcano.Engine
                     var move = node.Untried[random.Next(node.Untried.Count)];
                     var player = state.Player;
                     state.MakeMove(move);
+                    node = node.AddChild(state, move, player, _persistable, _store);
                     if (_rave)
                     {
-                        movesPlayed.Add(move);
+                        node.RaveIndex = played.Count;
+                        played.Add((move, player));
                     }
-                    node = node.AddChild(state, move, player, _persistable, _store);
                     visitedNodes++;
                 }
 
@@ -370,10 +376,11 @@ namespace Volcano.Engine
                         {
                             break;
                         }
+                        var mover = state.Player;
                         state.MakeMove(move);
                         if (_rave)
                         {
-                            movesPlayed.Add(move);
+                            played.Add((move, mover));
                         }
                     }
                     else
@@ -384,10 +391,11 @@ namespace Volcano.Engine
                             break;
                         }
                         var move = moves[random.Next(moves.Count)];
+                        var mover = state.Player;
                         state.MakeMove(move);
                         if (_rave)
                         {
-                            movesPlayed.Add(move);
+                            played.Add((move, mover));
                         }
                     }
 
@@ -401,10 +409,10 @@ namespace Volcano.Engine
 
                 while (node != null)
                 {
-                    var final = _countDraws ? (winner == Player.Draw ? 0.5 : (winner == node.LastToMove ? 1.0 : 0.0)) : (winner == node.LastToMove ? 1.0 : 0.0);
+                    var final = winner == Player.Empty ? 0.5 : (_countDraws ? (winner == Player.Draw ? 0.5 : (winner == node.LastToMove ? 1.0 : 0.0)) : (winner == node.LastToMove ? 1.0 : 0.0));
                     if (_rave)
                     {
-                        node.UpdateRAVE(final, movesPlayed);
+                        node.UpdateRAVE(final, played);
                     }
                     else if (_solver)
                     {
@@ -592,6 +600,7 @@ namespace Volcano.Engine
             public double Prior;
             public bool SetPrior;
             public int Interesting;
+            public int RaveIndex;
 
             public ProofState Status = ProofState.Unproven;
 
@@ -727,12 +736,12 @@ namespace Volcano.Engine
                 return bestChild;
             }
 
-            public void UpdateRAVE(double result, HashSet<int> movesPlayedInRollout)
+            public void UpdateRAVE(double result, List<(int Move, Player Mover)> played)
             {
                 Visits++;
                 Wins += result;
 
-                // Update AMAF statistics for any sibling moves that occurred during simulation
+                // Update AMAF statistics for moves played after this node by the side that moved into it
                 if (Parent != null)
                 {
                     if (Parent.AmafVisits == null)
@@ -741,7 +750,16 @@ namespace Volcano.Engine
                         Parent.AmafScore = new();
                     }
 
-                    foreach (var moveId in movesPlayedInRollout)
+                    var movesPlayed = new HashSet<int>();
+                    for (int i = RaveIndex; i < played.Count; i++)
+                    {
+                        if (played[i].Mover == LastToMove)
+                        {
+                            movesPlayed.Add(played[i].Move);
+                        }
+                    }
+
+                    foreach (var moveId in movesPlayed)
                     {
                         if (!Parent.AmafVisits.ContainsKey(moveId))
                         {
