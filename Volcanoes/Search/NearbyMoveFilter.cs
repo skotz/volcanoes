@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Volcano.Game;
 
 namespace Volcano.Search
@@ -83,12 +82,22 @@ namespace Volcano.Search
 
                 for (var i = 0; i < 80; i++)
                 {
-                    // point neighbor of opponent that's also 3 away from our first tile
+                    // point neighbor of opponent that's at least 3 away from our first tile and not directly adjacent to any other tile
                     if (state.Tiles[i] < 0)
                     {
                         foreach (var m in Constants.PointNeighbors[i])
                         {
-                            if (Constants.Distances[m][first] == 3 && state.Tiles[m] == 0 && !done[m])
+                            var ok = true;
+                            foreach (var n in Constants.AdjacentIndexes[m])
+                            {
+                                if (state.Tiles[n] != 0)
+                                {
+                                    ok = false;
+                                    break;
+                                }
+                            }
+
+                            if (ok && Constants.Distances[m][first] >= 3 && state.Tiles[m] == 0 && !done[m])
                             {
                                 candidates.Add(m);
                                 done[m] = true;
@@ -98,18 +107,71 @@ namespace Volcano.Search
                 }
             }
 
-            if (candidates.Count == 0 && state.Turn <= 12)
+            if (candidates.Count == 0 && state.Turn <= 18)
             {
+                var distance = 3;
+                var avoid = true;
+
+                if (state.Turn >= 13)
+                {
+                    distance = 2;
+                }
+                if (state.Turn >= 19)
+                {
+                    distance = 1;
+                    avoid = false;
+                }
+
+                // my tiles
+                var mine = new List<int>();
                 for (var i = 0; i < 80; i++)
                 {
-                    // point neighbor of opponent that's not an immediate neighbor of any other tile
-                    if ((state.Tiles[i] < 0 && state.Player == Player.One) || (state.Tiles[i] > 0 && state.Player == Player.Two))
+                    if (state.Player == Player.One && state.Tiles[i] > 0)
+                    {
+                        mine.Add(i);
+                    }
+                    else if (state.Player == Player.Two && state.Tiles[i] < 0)
+                    {
+                        mine.Add(i);
+                    }
+                }
+
+                for (var i = 0; i < 80; i++)
+                {
+                    // point neighbor of opponent that's at least 3 away from our first tile and not directly adjacent to any other tile
+                    if ((state.Player == Player.One && state.Tiles[i] < 0) || (state.Player == Player.Two && state.Tiles[i] > 0))
                     {
                         foreach (var m in Constants.PointNeighbors[i])
                         {
-                            foreach (var a in Constants.AdjacentIndexes[m])
+                            if (!done[m])
                             {
-                                if (state.Tiles[a] == 0 && state.Tiles[m] == 0 && !done[m])
+                                var ok = true;
+
+                                if (avoid)
+                                {
+                                    foreach (var n in Constants.AdjacentIndexes[m])
+                                    {
+                                        if (state.Tiles[n] != 0)
+                                        {
+                                            ok = false;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (ok && distance > 1)
+                                {
+                                    foreach (var t in mine)
+                                    {
+                                        if (Constants.Distances[m][t] < distance)
+                                        {
+                                            ok = false;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (ok && state.Tiles[m] == 0)
                                 {
                                     candidates.Add(m);
                                     done[m] = true;
@@ -119,6 +181,28 @@ namespace Volcano.Search
                     }
                 }
             }
+
+            //if (candidates.Count == 0 && state.Turn <= 12)
+            //{
+            //    for (var i = 0; i < 80; i++)
+            //    {
+            //        // point neighbor of opponent that's not an immediate neighbor of any other tile
+            //        if ((state.Tiles[i] < 0 && state.Player == Player.One) || (state.Tiles[i] > 0 && state.Player == Player.Two))
+            //        {
+            //            foreach (var m in Constants.PointNeighbors[i])
+            //            {
+            //                foreach (var a in Constants.AdjacentIndexes[m])
+            //                {
+            //                    if (state.Tiles[a] == 0 && state.Tiles[m] == 0 && !done[m])
+            //                    {
+            //                        candidates.Add(m);
+            //                        done[m] = true;
+            //                    }
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
 
             //if (candidates.Count == 0 && state.Turn <= 12)
             //{
