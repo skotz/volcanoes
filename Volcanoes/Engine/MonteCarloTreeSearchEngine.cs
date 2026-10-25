@@ -540,41 +540,59 @@ namespace Volcano.Engine
             {
                 double eval = Math.Round((child.Visits > 0 ? 200.0 * child.Wins / child.Visits : 0) - 100.0, 2);
                 double sort = child.Visits;
+                if (_solver)
+                {
+                    sort /= (max != 0 ? max : 1);
+                }
                 string pv = "";
                 if (_puct)
                 {
                     pv += $"[{child.Prior.ToString("0.000000")}]   ";
                 }
                 var c = child;
+                var top = true;
                 while (c != null && c.Move >= 0 && c.Move <= 80)
                 {
                     if (_solver)
                     {
-                        sort /= (max != 0 ? max : 1);
-
                         if (c.MoverStatus == ProofState.ProvenWin)
                         {
                             pv += Constants.TileNames[c.Move] + " (W " + c.Wins + "/" + c.Visits + ")   ";
-                            sort += 3;
-                            eval = 100;
+                            if (top)
+                            {
+                                sort += 3;
+                                eval = 100;
+                            }
                         }
                         else if (c.MoverStatus == ProofState.ProvenLoss)
                         {
                             pv += Constants.TileNames[c.Move] + " (L " + c.Wins + "/" + c.Visits + ")   ";
-                            sort += 1;
-                            eval = -100;
+                            if (top)
+                            {
+                                sort += 1;
+                                eval = -100;
+                            }
                         }
                         else
                         {
                             pv += Constants.TileNames[c.Move] + " (" + c.Wins + "/" + c.Visits + ")   ";
-                            sort += 2;
+                            if (top)
+                            {
+                                sort += 2;
+                            }
                         }
+                        c = c.Children
+                            ?.OrderByDescending(x => x.MoverStatus == ProofState.ProvenWin ? 3 : (x.MoverStatus == ProofState.Unproven ? 2 : 1))
+                            ?.ThenByDescending(x => x.Visits)
+                            ?.FirstOrDefault();
+
+                        top = false;
                     }
                     else
                     {
                         pv += Constants.TileNames[c.Move] + " (" + c.Wins + "/" + c.Visits + ")   ";
+                        c = c.Children?.OrderBy(x => x.Visits)?.ThenBy(x => x.Wins)?.LastOrDefault();
                     }
-                    c = c.Children?.OrderBy(x => x.Visits)?.ThenBy(x => x.Wins)?.LastOrDefault();
                 }
                 status.Add(child?.Move ?? 80, eval, pv, sort);
             }

@@ -104,9 +104,11 @@ namespace Volcano
 
             engines.Add("MCTS v2 Solver", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false, _solver = true });
 
+            engines.Add("MCTS v2 Solver UCB 0.5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false, _solver = true, _ucbFactor = 0.5 });
+
             engines.Add("MCTS v2 Store", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _store = true });
 
-            engines.Add("MCTS v2 RAVE", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true });
+            engines.Add("MCTS v2 RAVE", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true, _raveEquiv = 1000 });
             //engines.Add("MCTS v2 RAVE 100", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true, _raveEquiv = 100 });
             //engines.Add("MCTS v2 RAVE 500", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true, _raveEquiv = 500 });
             //engines.Add("MCTS v2 RAVE 1000", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true, _raveEquiv = 1000 });
