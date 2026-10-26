@@ -176,7 +176,7 @@ namespace Volcano.Engine
             var maxstreak = 100;
             var winstreak = 0;
             var failstreak = 0;
-            var first = true;
+            //var first = true;
 
             //var redo = _book.Select(x => x.Key).ToList();
             //_book.Clear();
@@ -193,11 +193,11 @@ namespace Volcano.Engine
 
                 if (!string.IsNullOrEmpty(bot))
                 {
-                    if (!first)
-                    {
-                        break;
-                    }
-                    first = false;
+                    //if (!first)
+                    //{
+                    //    break;
+                    //}
+                    //first = false;
 
                     var gameFolder = $"{Environment.GetFolderPath(SpecialFolder.MyDocuments)}\\My Games\\Volcanoes\\";
                     foreach (var tf in Directory.GetFiles(gameFolder, "*.csv"))
@@ -266,6 +266,19 @@ namespace Volcano.Engine
                                 OnStatusUpdate?.Invoke(_book.Count, _book.Count, $"{_book.Count} positions");
                                 break;
                             }
+                            else if (i + 1 < moves.Length)
+                            {
+                                // this is an index, not a take(n) so it's one less
+                                var future = moves[i + extra];
+                                if (future == "G" && i + extra + 1 < moves.Length)
+                                {
+                                    future = moves[i + extra + 1];
+                                }
+                                if (Constants.TileNames[next] != future)
+                                {
+                                    break;
+                                }
+                            }
                         }
                     }
                 };
@@ -282,6 +295,12 @@ namespace Volcano.Engine
                 // was anything added
                 if (count == _book.Count)
                 {
+                    if (!string.IsNullOrEmpty(bot))
+                    {
+                        OnStatusUpdate?.Invoke(_book.Count, _book.Count, $"{transcripts.Count} positions");
+                        break;
+                    }
+
                     failstreak += batch;
                     OnStatusUpdate?.Invoke(_book.Count, _book.Count, $"{_book.Count} positions (fail streak {failstreak})");
                     continue;
@@ -413,7 +432,7 @@ namespace Volcano.Engine
 
             // use iterations instead of time so we can run in parallel without starving a thread and getting bad results
             // on my machine a 60 second search resulted in just over 1,000,000 mcts playouts, so roughly 15,000 per second
-            var engine = new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false, _solver = true }; // new AlphaZeroEngine(VolcanoZeroVersion.V2);
+            var engine = new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false, _solver = true, _moveFilter = new NearbyMoveFilter(), _rolloutStrategy = new NearbyRolloutStrategy() }; // new AlphaZeroEngine(VolcanoZeroVersion.V2);
             //engine.simplifyFirstMove = true;
             engine.forcedIterations = iterations;
             //engine.forcedGap = gap;

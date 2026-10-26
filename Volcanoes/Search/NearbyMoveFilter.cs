@@ -107,7 +107,7 @@ namespace Volcano.Search
                 }
             }
 
-            if (candidates.Count == 0 && state.Turn <= 18)
+            if (candidates.Count == 0 && state.Turn <= 14)
             {
                 var distance = 3;
                 var avoid = true;
