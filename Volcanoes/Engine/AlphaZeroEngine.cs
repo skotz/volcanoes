@@ -27,6 +27,11 @@ namespace Volcano.Engine
         /// 10r 192f 204800g
         /// </summary>
         V3,
+
+        /// <summary>
+        /// 8r 32f ?g
+        /// </summary>
+        V4,
     }
 
     internal class VolcanoZeroConfig
@@ -52,9 +57,9 @@ namespace Volcano.Engine
 
     internal class AlphaZeroEngine : IEngine, IStatus, ILearn
     {
-        private const string _defaultModel = "Models\\volcanozero-v1-6r-128f-102400g.dat";
-        private const int _resBlocks = 10;
-        private const int _resFeatures = 192;
+        private const string _defaultModel = "Models\\volcanozero-v1-8r-32f-102400g.dat";
+        private const int _resBlocks = 8;
+        private const int _resFeatures = 32;
 
         private VolcanoZeroConfig _settings;
         private AlphaZeroConfig _config;
@@ -125,6 +130,9 @@ namespace Volcano.Engine
 
                 case VolcanoZeroVersion.V3:
                     return VolcanoZeroConfig.FromFile("models\\volcanozero-v1-10r-192f-204800g.dat", 10, 192);
+
+                //case VolcanoZeroVersion.V4:
+                //    return VolcanoZeroConfig.FromFile("models\\volcanozero-v1-8r-32f-204800g.dat", 8, 32);
 
                 default:
                     throw new ArgumentException("Invalid VolcanoZero Version");
