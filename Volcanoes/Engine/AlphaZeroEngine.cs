@@ -57,9 +57,9 @@ namespace Volcano.Engine
 
     internal class AlphaZeroEngine : IEngine, IStatus, ILearn
     {
-        private const string _defaultModel = "Models\\volcanozero-v1-8r-32f-102400g.dat";
-        private const int _resBlocks = 8;
-        private const int _resFeatures = 32;
+        private const string _defaultModel = "x";
+        private const int _resBlocks = 10;
+        private const int _resFeatures = 192;
 
         private VolcanoZeroConfig _settings;
         private AlphaZeroConfig _config;

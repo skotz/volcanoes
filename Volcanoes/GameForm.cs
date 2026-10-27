@@ -63,7 +63,8 @@ namespace Volcano
             //engines.Add<MonteCarloTreeSearchFixedEngine>("MCTS Alt");
             //engines.Add<MiniMaxAlphaBetaEngine>("MiniMax Alpha-Beta");
 
-            engines.Add<BeamSearchEngine>("Beam Search");
+            //engines.Add<BeamSearchEngine>("Beam Search");
+            //engines.Add<MiniMaxPlusEngine>("MiniMax Plus");
 
             engines.Add("MCTS Book v1", () => new MonteCarloTreeSearchEngine(true, false, false, false, openingBook));
             engines.Add("MCTS Book v2", () => new MonteCarloTreeSearchEngine(true, false, false, false, "Books\\openings-v2-100000i.dat"));
@@ -141,7 +142,7 @@ namespace Volcano
 
             engines.Add("VolcanoZero v1 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V1) { _policyOnly = true }); //VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-102400g.dat", 6, 128)) { _policyOnly = true });
             engines.Add("VolcanoZero v2 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V2) { _policyOnly = true }); //VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128)) { _policyOnly = true });
-            engines.Add("VolcanoZero v2 PB", () => new AlphaZeroEngine(VolcanoZeroVersion.V2, "new-book.dat") { _policyOnly = true });
+            //engines.Add("VolcanoZero v2 PB", () => new AlphaZeroEngine(VolcanoZeroVersion.V2, "new-book.dat") { _policyOnly = true });
             engines.Add("VolcanoZero v3 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V3) { _policyOnly = true }); //VolcanoZeroConfig.FromFile("models\\volcanozero-v1-10r-192f-204800g.dat", 10, 192)) { _policyOnly = true });
 
             if (File.Exists("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat"))
