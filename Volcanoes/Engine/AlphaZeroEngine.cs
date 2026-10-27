@@ -166,6 +166,14 @@ namespace Volcano.Engine
                 if (File.Exists(optimizerPath))
                 {
                     _optimizer.load_state_dict(optimizerPath);
+                    //foreach (var group in _optimizer.ParamGroups)
+                    //{
+                    //    if (group.LearningRate < _config.MinLearningRate)
+                    //    {
+                    //        group.LearningRate = Math.Max(Math.Pow(_config.LearningRateDecay, 200) * _config.InitialLearningRate, _config.MinLearningRate);
+                    //        Debug($"fix lr = {group.LearningRate}");
+                    //    }
+                    //}
                     Debug($"loaded checkpoint optimizer {optimizerPath}");
                 }
             }

@@ -246,6 +246,10 @@ namespace Volcano.Neural
                 }
 
                 scheduler.step();
+                foreach (var group in optimizer.ParamGroups)
+                {
+                    group.LearningRate = Math.Max(group.LearningRate, config.MinLearningRate);
+                }
                 var lr = scheduler.get_last_lr();
                 AlphaZeroEngine.WriteLine($"Current LR: {string.Join(",", lr)}");
 

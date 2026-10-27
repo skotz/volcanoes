@@ -24,7 +24,7 @@
         //public int NumHidden { get; init; } = 128;
 
         /// <summary>Outer self-play -> train iterations.</summary>
-        public int NumIterations { get; init; } = 50;
+        public int NumIterations { get; init; } = 300;
 
         /// <summary>Self-play games per iteration.</summary>
         public int NumSelfPlayIterations { get; init; } = 2048;
@@ -86,6 +86,9 @@
         /// Learning rate decay factor (gamma) applied by the scheduler after each iteration.
         /// e.g. 0.95 means the LR drops by 5% each macro-iteration.
         /// </summary>
-        public double LearningRateDecay { get; init; } = 0.95;
+        public double LearningRateDecay { get; init; } = 0.9924; // 9924 = 300 iterations // 0.95;
+
+        /// <summary>Floor for the learning rate. The scheduler will not decay the LR below this value.</summary>
+        public double MinLearningRate { get; init; } = 0.0001;
     }
 }
