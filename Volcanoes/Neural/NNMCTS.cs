@@ -41,6 +41,16 @@ namespace Volcano.Neural
             }
         }
 
+        public AlphaZeroEval EvaluateState(Board state)
+        {
+            (float[] policy, float value) = Evaluate(state);
+            return new AlphaZeroEval
+            {
+                Policy = policy,
+                Value = value,
+            };
+        }
+
         public double[] Search(Board state, int seconds, int forcedIterations, bool policyOnly, EngineCancellationToken token)
         {
             // visitCount starts at 1 so the sqrt(parent visits) term in PUCT is non-zero on the

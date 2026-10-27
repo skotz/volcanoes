@@ -54,5 +54,11 @@ namespace Volcano.Neural
 
             return (action, nnmcts.simulations);
         }
+
+        public AlphaZeroEval Evaluate(Board state)
+        {
+            var neutral = game.ChangePerspective(state, Player.One);
+            return nnmcts.EvaluateState(neutral);
+        }
     }
 }

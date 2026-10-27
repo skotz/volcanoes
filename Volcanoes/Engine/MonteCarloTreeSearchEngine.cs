@@ -162,6 +162,8 @@ namespace Volcano.Engine
                 }
             }
 
+            var test = new AlphaZeroEngine(VolcanoZeroVersion.V2).Evaluate(state);
+
             timer = Stopwatch.StartNew();
             statusUpdate = Stopwatch.StartNew();
             visitedNodes = 0;

@@ -280,5 +280,10 @@ namespace Volcano.Engine
                 Console.WriteLine(status);
             }
         }
+
+        public AlphaZeroEval Evaluate(Board state)
+        {
+            return _alphaZero.Evaluate(state);
+        }
     }
 }
