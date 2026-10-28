@@ -255,7 +255,7 @@ namespace Volcano.Neural
 
                 string format = "0.##################################################";
 
-                var winRate = GetWinRate(10, 2000);
+                var winRate = GetWinRate(10, 2000, 1000, 1000);
 
                 string status = Path.Combine(savePath, "status.csv");
                 if (!File.Exists(status))
@@ -281,13 +281,14 @@ namespace Volcano.Neural
             }
         }
 
-        private double GetWinRate(int rounds, int simulations)
+        private double GetWinRate(int rounds, int alphasims, int benchsimstart, int benchsiminc)
         {
             var wins = 0;
             var games = new List<Action>();
 
             for (var i = 0; i < rounds; i++)
             {
+                var sims = benchsimstart + benchsiminc * i;
                 games.Add(() =>
                 {
                     try
@@ -297,8 +298,8 @@ namespace Volcano.Neural
                         var victory = VictoryType.None;
                         game.OnGameOver += (p, v) => victory = v;
 
-                        var opponent = new MonteCarloTreeSearchEngine(MCTSVersion.V2) { forcedIterations = simulations };
-                        var model = new AlphaZeroEngine(VolcanoZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat", 10, 192)) { forcedIterations = simulations };
+                        var opponent = new MonteCarloTreeSearchEngine(MCTSVersion.V2) { forcedIterations = sims };
+                        var model = new AlphaZeroEngine(VolcanoZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat", 10, 192)) { forcedIterations = alphasims };
 
                         game.RegisterEngine(Player.One, i % 2 == 0 ? model : opponent, true);
                         game.RegisterEngine(Player.Two, i % 2 == 0 ? opponent : model, true);
