@@ -9,7 +9,6 @@ using System.Windows.Forms;
 using Volcano.Engine;
 using Volcano.Game;
 using Volcano.Interface;
-using Volcano.Neural;
 using Volcano.Search;
 using static System.Environment;
 
@@ -189,6 +188,7 @@ namespace Volcano
             graphicsSettingsFsw.Changed += GraphicsSettingsFsw_Changed;
 
             //new Canonical(new Board().Tiles).Generate(graphics);
+            //SymmetryGenerator.Generate();
         }
 
         private void Game_OnMoveMade(bool growthHappened)
@@ -646,9 +646,21 @@ namespace Volcano
         private void canonicalizeBoardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var canonical = new Canonical();
-            var state = new GameRule().ChangePerspective(game.CurrentState, Player.One);
-            canonical.SetIndex(state);
-            game.CurrentState = canonical.Canonicalize(state);
+            //var state = new GameRule().ChangePerspective(game.CurrentState, Player.One);
+            canonical.SetIndex(game.CurrentState);
+            game.CurrentState = canonical.Canonicalize(game.CurrentState);
+
+            //var test = SymmetryGenerator.GeneratePermutations();
+            //if (o == null)
+            //{
+            //    o = (int[])game.CurrentState.Tiles.Clone();
+            //}
+
+            //for (var i = 0; i < 80; i++)
+            //{
+            //    game.CurrentState.Tiles[i] = o[test[x][i]];
+            //}
+            //x = (x + 1) % test.Count;
 
             //game.CurrentState = new GameRule().ChangePerspective(game.CurrentState, Player.One);
 

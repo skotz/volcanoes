@@ -83,7 +83,7 @@ namespace Volcano.Game
 
             for (var i = 0; i < 80; i++)
             {
-                var canonical = new Canonical();
+                var canonical = new CanonicalTile();
                 canonical.SetIndex(i);
 
                 var type = canonical.BoardToCanonical(i);
@@ -91,7 +91,7 @@ namespace Volcano.Game
                 {
                     // N07 x20
                     neighbors[i] = new int[n07.Length];
-                    for (var x =  0; x < n07.Length; x++)
+                    for (var x = 0; x < n07.Length; x++)
                     {
                         neighbors[i][x] = canonical.CanonicalToBoard(n07[x]);
                     }
