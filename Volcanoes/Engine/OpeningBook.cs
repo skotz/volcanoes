@@ -65,7 +65,8 @@ namespace Volcano.Engine
                                 var transcript = r.ReadLine();
                                 var move = Constants.TileIndexes[r.ReadLine()];
 
-                                _book[transcript] = move;
+                                var (canonical, ctranscript) = GetCanonicalTranscript(transcript);
+                                _book.TryAdd(ctranscript, canonical.BoardToCanonical(move));
                             }
                         }
                         break;
@@ -95,7 +96,9 @@ namespace Volcano.Engine
                                 Depth = Math.Max(Depth, numMoves + 1);
 
                                 var bestMove = (int)reader.ReadByte();
-                                _book[transcript] = bestMove;
+
+                                var (canonical, ctranscript) = GetCanonicalTranscript(transcript);
+                                _book.TryAdd(ctranscript, canonical.BoardToCanonical(bestMove));
                             }
                         }
                         break;
