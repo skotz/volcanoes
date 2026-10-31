@@ -140,14 +140,18 @@ namespace Volcano
             engines.Add("VolcanoZero v2", () => new AlphaZeroEngine(VolcanoZeroVersion.V2));
             engines.Add("VolcanoZero v3", () => new AlphaZeroEngine(VolcanoZeroVersion.V3));
 
-            engines.Add("VolcanoZero v1 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V1) { _policyOnly = true }); //VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-102400g.dat", 6, 128)) { _policyOnly = true });
-            engines.Add("VolcanoZero v2 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V2) { _policyOnly = true }); //VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128)) { _policyOnly = true });
+            engines.Add("VolcanoZero v1 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V1) { _policyOnly = true });
+            engines.Add("VolcanoZero v2 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V2) { _policyOnly = true });
             //engines.Add("VolcanoZero v2 PB", () => new AlphaZeroEngine(VolcanoZeroVersion.V2, "new-book.dat") { _policyOnly = true });
-            engines.Add("VolcanoZero v3 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V3) { _policyOnly = true }); //VolcanoZeroConfig.FromFile("models\\volcanozero-v1-10r-192f-204800g.dat", 10, 192)) { _policyOnly = true });
+            engines.Add("VolcanoZero v3 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V3) { _policyOnly = true });
 
             if (File.Exists("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat"))
             {
                 engines.Add("VolcanoZero TRAINING", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat", 10, 192)));
+            }
+            if (File.Exists("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Debug\\net10.0-windows\\new-book.dat"))
+            {
+                engines.Add("MCTS v2 Book TRAINING", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2, "C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Debug\\net10.0-windows\\new-book.dat"));
             }
 
             //engines.Add<DeepQNetworkEngine>("Deep Q-Network");

@@ -126,10 +126,10 @@ namespace Volcano.Engine
                     return VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-102400g.dat", 6, 128);
 
                 case VolcanoZeroVersion.V2:
-                    return VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-233472g.dat", 6, 128);
+                    return VolcanoZeroConfig.FromFile("models\\volcanozero-v2-6r-128f-233472g.dat", 6, 128);
 
                 case VolcanoZeroVersion.V3:
-                    return VolcanoZeroConfig.FromFile("models\\volcanozero-v1-10r-192f-204800g.dat", 10, 192);
+                    return VolcanoZeroConfig.FromFile("models\\volcanozero-v3-10r-192f-1028096g.dat", 10, 192);
 
                 //case VolcanoZeroVersion.V4:
                 //    return VolcanoZeroConfig.FromFile("models\\volcanozero-v1-8r-32f-204800g.dat", 8, 32);

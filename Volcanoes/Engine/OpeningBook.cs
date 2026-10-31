@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Volcano.Game;
 using Volcano.Interface;
-using Volcano.Search;
 using static System.Environment;
 
 namespace Volcano.Engine
@@ -38,6 +37,8 @@ namespace Volcano.Engine
         private const string _fileHeader = "volcanoes-opening-book";
 
         private bool _stop;
+
+        private bool _record = false;
 
         public OpeningBook(string file)
         {
@@ -150,6 +151,11 @@ namespace Volcano.Engine
 
         public int GetMove(string transcript)
         {
+            return GetMoveInternal(transcript).move;
+        }
+
+        private (Canonical canonical, int move) GetMoveInternal(string transcript)
+        {
             var (canonical, canonicalTranscript) = GetCanonicalTranscript(transcript);
 
             if (_book.ContainsKey(canonicalTranscript))
@@ -157,14 +163,21 @@ namespace Volcano.Engine
                 if (canonicalTranscript == "" && _book[canonicalTranscript] == 0)
                 {
                     // future moves will also be canonicalized, so for aethetic purposes just pick a more centralized identical tile
-                    return Constants.TileIndexes["N26"];
+                    return (null, Constants.TileIndexes["N26"]);
                 }
 
-                return canonical.CanonicalToBoard(_book[canonicalTranscript]);
+                return (canonical, canonical.CanonicalToBoard(_book[canonicalTranscript]));
             }
             else
             {
-                return -1;
+#if DEBUG
+                if (transcript == "")
+                {
+                    return (null, Constants.TileIndexes["N26"]);
+                }
+#endif
+
+                return (null, -1);
             }
         }
 
@@ -211,13 +224,29 @@ namespace Volcano.Engine
                             foreach (var result in records)
                             {
                                 var cols = result.Split(",");
-                                if (cols[0] == bot && cols[2] != "One")
+                                if (_record)
                                 {
-                                    transcripts.Add((Player.One, cols[7]));
+                                    // process wins
+                                    if (cols[0] == bot && cols[2] == "One")
+                                    {
+                                        transcripts.Add((Player.One, cols[7]));
+                                    }
+                                    else if (cols[1] == bot && cols[2] == "Two")
+                                    {
+                                        transcripts.Add((Player.Two, cols[7]));
+                                    }
                                 }
-                                else if (cols[1] == bot && cols[2] != "Two")
+                                else
                                 {
-                                    transcripts.Add((Player.Two, cols[7]));
+                                    // process losses
+                                    if (cols[0] == bot && cols[2] == "One")
+                                    {
+                                        transcripts.Add((Player.One, cols[7]));
+                                    }
+                                    else if (cols[1] == bot && cols[2] == "Two")
+                                    {
+                                        transcripts.Add((Player.Two, cols[7]));
+                                    }
                                 }
                             }
                         }
@@ -252,6 +281,11 @@ namespace Volcano.Engine
 
                     var (_, canonicalTranscript) = GetCanonicalTranscript(loss.Item2);
 
+                    //if (canonicalTranscript == "N22 N07 G N24 N05 G N09" || loss.Item2 == "N10 N13 N01 N31 N04 N27 N15 S36 S38 N34 S26 S33 S27 N40 N11 S33")
+                    //{
+                    //    var test = 1;
+                    //}
+
                     // find the first non-book move
                     var player = loss.Item1;
                     var moves = canonicalTranscript.Split(" ");
@@ -261,23 +295,35 @@ namespace Volcano.Engine
                         var partial = string.Join(" ", moves.Take(i + extra));
                         if (GetPlayerToMove(partial) == player)
                         {
-                            var next = GetMove(partial);
-                            if (next == -1)
+                            var next = GetMoveInternal(partial);
+                            if (next.move == -1)
                             {
-                                // update the book with a better move
-                                GenerateBookForPosition(depth, iterations, partial, true, gap);
+                                if (_record)
+                                {
+                                    // record move
+                                    SaveBookForPosition(partial, moves, depth, iterations, gap);
+                                }
+                                else
+                                {
+                                    // update the book with a better move
+                                    GenerateBookForPosition(depth, iterations, partial, true, gap);
+                                }
+
                                 OnStatusUpdate?.Invoke(_book.Count, _book.Count, $"{_book.Count} positions");
                                 break;
                             }
-                            else if (i + 1 < moves.Length)
+                            else if (i + 1 < moves.Length && !_record)
                             {
-                                // this is an index, not a take(n) so it's one less
-                                var future = moves[i + extra];
-                                if (future == "G" && i + extra + 1 < moves.Length)
+                                // it's my move and i have a book entry, but it differs from the line played in this transcript
+                                // since we'll never actually hit the position we can skip it and not generate moves
+                                var actual = string.Join(" ", moves.Take(i + extra + 1));
+                                if (actual == "G" && i + extra + 2 < moves.Length)
                                 {
-                                    future = moves[i + extra + 1];
+                                    actual = string.Join(" ", moves.Take(i + extra + 2));
                                 }
-                                if (Constants.TileNames[next] != future)
+                                var proposed = partial + " " + Constants.TileNames[next.move];
+
+                                if (!CanonicallyIdentical(actual, proposed))
                                 {
                                     break;
                                 }
@@ -313,6 +359,35 @@ namespace Volcano.Engine
                     failstreak = 0;
                 }
             }
+        }
+
+        private bool CanonicallyIdentical(string transcript1, string transcript2)
+        {
+            var a = GetCanonicalBoard(transcript1);
+            var b = GetCanonicalBoard(transcript2);
+
+            for (var i = 0; i < 80; i++)
+            {
+                if (a[i] != b[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private int[] GetCanonicalBoard(string transcript)
+        {
+            var game = new VolcanoGame();
+            game.LoadTranscript(transcript);
+
+            var canonical = new Canonical();
+            canonical.SetIndex(game);
+
+            game.CurrentState = canonical.Canonicalize(game.CurrentState);
+
+            return game.CurrentState.Tiles;
         }
 
         public void Generate(int depth, int iterations, int gap, bool parallel, bool resume)
@@ -414,6 +489,51 @@ namespace Volcano.Engine
             }
         }
 
+        private void SaveBookForPosition(string partial, string[] moves, int depth, int iterations, int gap)
+        {
+            var game = new VolcanoGame();
+            game.LoadTranscript(partial);
+
+            var canonical = new Canonical();
+            canonical.SetIndex(game);
+
+            game.CurrentState = canonical.Canonicalize(game.CurrentState);
+
+            var t = "";
+            if (game.MoveHistory.Count > 0)
+            {
+                t = game.MoveHistory
+                    .Select(canonical.BoardToCanonical)
+                    .Select(x => Constants.TileNames[x])
+                    .Aggregate((c, n) => c + " " + n);
+            }
+
+            var num = partial.Split(' ').Count();
+            if (num < moves.Length)
+            {
+                var best = moves[num];
+                if (best == "G" && num + 1 < moves.Length)
+                {
+                    best = moves[num + 1];
+                }
+
+                if (best != "G")
+                {
+                    if (!_book.ContainsKey(t) && game.CurrentState.GetMoves().Count > 0)
+                    {
+                        var b = canonical.BoardToCanonical(Constants.TileIndexes[best]);
+
+                        lock (_book)
+                        {
+                            _book[t] = b;
+                        }
+
+                        UpdateBook(depth, iterations, gap);
+                    }
+                }
+            }
+        }
+
         private string GenerateBookForPosition(int depth, int iterations, string transcript, bool singleOnly, int gap)
         {
             var bestTranscript = "";
@@ -423,6 +543,8 @@ namespace Volcano.Engine
 
             var canonical = new Canonical();
             canonical.SetIndex(game);
+
+            game.CurrentState = canonical.Canonicalize(game.CurrentState);
 
             var t = "";
             if (game.MoveHistory.Count > 0)
@@ -435,7 +557,7 @@ namespace Volcano.Engine
 
             // use iterations instead of time so we can run in parallel without starving a thread and getting bad results
             // on my machine a 60 second search resulted in just over 1,000,000 mcts playouts, so roughly 15,000 per second
-            var engine = new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false, _solver = true, _moveFilter = new NearbyMoveFilter(), _rolloutStrategy = new NearbyRolloutStrategy() }; // new AlphaZeroEngine(VolcanoZeroVersion.V2);
+            var engine = new AlphaZeroEngine(VolcanoZeroVersion.V3); // new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false, _solver = true, _moveFilter = new NearbyMoveFilter(), _rolloutStrategy = new NearbyRolloutStrategy() }; // new AlphaZeroEngine(VolcanoZeroVersion.V2);
             //engine.simplifyFirstMove = true;
             engine.forcedIterations = iterations;
             //engine.forcedGap = gap;
@@ -729,6 +851,21 @@ namespace Volcano.Engine
                 var s = new CGS().Serialize(ms.ToArray());
                 File.WriteAllText("cgs.txt", s);
             }
+
+            //using (var ms = new MemoryStream())
+            //using (var bw = new BinaryWriter(ms))
+            //{
+            //    for (var i = 0; i < 120; i++)
+            //    {
+            //        for (var j = 0; j < 80; j++)
+            //        {
+            //            bw.Write((byte)Canonical._indexToCanonical[i, j]);
+            //            // bw.Write((byte)Canonical._canonicalToIndex[i, j]);
+            //        }
+            //    }
+            //    var s = new CGS().Serialize(ms.ToArray());
+            //    File.WriteAllText("canonical.txt", s);
+            //}
         }
 
         internal class CGS
