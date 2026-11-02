@@ -715,35 +715,29 @@ namespace Volcano.Engine
             public MonteCarloTreeSearchNode SelectChildRAVE(double ucbFactor, double equivalence = 1000.0)
             {
                 var exploreConstant = Math.Sqrt(ucbFactor);
+                var parentVisits = Math.Max(1.0, Visits);
+
+                AmafVisits ??= new();
+                AmafScore ??= new();
 
                 MonteCarloTreeSearchNode bestChild = null;
                 double bestValue = double.MinValue;
 
                 foreach (var child in Children)
                 {
-                    int moveId = child.Move;
+                    double n = child.Visits;
+                    double uctWinRate = n > 0 ? child.Wins / n : 0.5;
 
-                    // Extract UCT components
-                    double uctWinRate = child.Visits > 0 ? child.Wins / child.Visits : 0.5;
+                    AmafVisits.TryGetValue(child.Move, out int nAmaf);
+                    AmafScore.TryGetValue(child.Move, out double amafScore);
+                    double amafWinRate = nAmaf > 0 ? amafScore / nAmaf : 0.5;
 
-                    if (AmafVisits == null)
-                    {
-                        AmafVisits = new();
-                        AmafScore = new();
-                    }
+                    // Gelly & Silver weighting: beta = nAmaf / (n + nAmaf + n * nAmaf / equivalence)
+                    double denom = n + nAmaf + (equivalence > 0 ? n * nAmaf / equivalence : 0.0);
+                    double beta = denom > 0 ? nAmaf / denom : 0.0;
 
-                    // Extract AMAF components
-                    int amafCount = AmafVisits.ContainsKey(moveId) ? AmafVisits[moveId] : 0;
-                    double amafWinRate = amafCount > 0 ? AmafScore[moveId] / amafCount : 0.5;
+                    double exploration = n == 0 ? double.MaxValue : exploreConstant * Math.Sqrt(Math.Log(parentVisits) / n);
 
-                    // Calculate Beta (Blending Weight)
-                    // Beta approaches 1 when child visits are low; approaches 0 when high.
-                    double beta = amafCount + child.Visits == 0 ? 0.0 : (double)amafCount / (amafCount + child.Visits + (child.Visits * child.Visits / equivalence));
-
-                    // Standard UCT Exploration Term
-                    double exploration = child.Visits == 0 ? double.MaxValue : exploreConstant * Math.Sqrt(Math.Log(Visits) / child.Visits);
-
-                    // Combined RAVE Value Formula
                     double raveValue = (1.0 - beta) * uctWinRate + beta * amafWinRate + exploration;
 
                     if (raveValue > bestValue)
@@ -753,7 +747,7 @@ namespace Volcano.Engine
                     }
                 }
 
-                return bestChild;
+                return bestChild ?? Children[0];
             }
 
             public void UpdateRAVE(double result, List<(int Move, Player Mover)> played)

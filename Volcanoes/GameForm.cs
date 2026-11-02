@@ -194,6 +194,7 @@ namespace Volcano
 
             //new Canonical(new Board().Tiles).Generate(graphics);
             //SymmetryGenerator.Generate();
+            //CanonicalCounter.Run();
         }
 
         private void Game_OnMoveMade(bool growthHappened)

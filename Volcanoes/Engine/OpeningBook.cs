@@ -40,6 +40,9 @@ namespace Volcano.Engine
 
         private bool _record = false;
 
+        private int _done;
+        private int _total;
+
         public OpeningBook(string file)
         {
             _file = file;
@@ -252,12 +255,17 @@ namespace Volcano.Engine
                         }
                     }
 
-                    OnStatusUpdate?.Invoke(_book.Count, _book.Count, $"Processing {transcripts.Count} tournament losses");
+                    transcripts = transcripts.Where(x => new VolcanoGame().LoadTranscript(x.Item2)).ToList();
+
+                    OnStatusUpdate?.Invoke(0, _book.Count, $"Processing {transcripts.Count} tournament losses");
                 }
                 else
                 {
                     transcripts = GenerateLosingTranscripts(batch);
                 }
+
+                _done = 0;
+                _total = transcripts.Count;
 
                 if (transcripts.Count == 0)
                 {
@@ -268,6 +276,7 @@ namespace Volcano.Engine
                 else
                 {
                     winstreak = 0;
+                    OnStatusUpdate?.Invoke(_done, Math.Max(_done, _total), $"{_done}/{_total} lines, {_book.Count} positions");
                 }
 
                 var count = _book.Count;
@@ -309,7 +318,7 @@ namespace Volcano.Engine
                                     GenerateBookForPosition(depth, iterations, partial, true, gap);
                                 }
 
-                                OnStatusUpdate?.Invoke(_book.Count, _book.Count, $"{_book.Count} positions");
+                                OnStatusUpdate?.Invoke(_done, Math.Max(_done, _total), $"{_done}/{_total} lines, {_book.Count} positions");
                                 break;
                             }
                             else if (i + 1 < moves.Length && !_record)
@@ -330,6 +339,9 @@ namespace Volcano.Engine
                             }
                         }
                     }
+
+                    _done++;
+                    OnStatusUpdate?.Invoke(_done, Math.Max(_done, _total), $"{_done}/{_total} lines, {_book.Count} positions");
                 };
 
                 if (parallel)
