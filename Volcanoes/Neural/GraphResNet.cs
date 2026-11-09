@@ -75,7 +75,7 @@ namespace Volcano.Neural
             this.to(device);
         }
 
-        private static Tensor BuildNormalizedAdjacency()
+        internal static Tensor BuildNormalizedAdjacency()
         {
             var size = GraphEncoder.nodes;
             var adjacent = new float[size * size];
