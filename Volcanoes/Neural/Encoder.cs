@@ -4,7 +4,7 @@ using Volcano.Game;
 
 namespace Volcano.Neural
 {
-    internal class Encoder
+    internal class Encoder : IBoardEncoder
     {
         /// <summary>
         /// 9 one-hot channels for each value in [-4,4]

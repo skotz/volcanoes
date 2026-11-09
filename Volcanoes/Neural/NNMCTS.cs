@@ -9,21 +9,23 @@ namespace Volcano.Neural
 {
     internal class NNMCTS
     {
-        private readonly ResNet model;
+        private readonly torch.nn.Module<torch.Tensor, Tuple<torch.Tensor, torch.Tensor>> model;
         private readonly GameRule game;
         private readonly AlphaZeroConfig config;
-        private readonly Encoder encoder;
+        private readonly IBoardEncoder encoder;
+        private readonly torch.Device device;
 
         public int simulations;
 
         public event EventHandler<EngineStatus> OnStatus;
 
-        public NNMCTS(GameRule game, AlphaZeroConfig config, ResNet model, Encoder encoder)
+        public NNMCTS(GameRule game, AlphaZeroConfig config, torch.nn.Module<torch.Tensor, Tuple<torch.Tensor, torch.Tensor>> model, IBoardEncoder encoder, torch.Device device)
         {
             this.game = game;
             this.config = config;
             this.model = model;
             this.encoder = encoder;
+            this.device = device;
         }
 
         /// <summary>One network call for one position. Returns the softmaxed priors and the value.</summary>
@@ -32,7 +34,7 @@ namespace Volcano.Neural
             using var scope = torch.NewDisposeScope();
             using (torch.no_grad())
             {
-                var output = model.forward(encoder.Encode(state, model.Device));
+                var output = model.forward(encoder.Encode(state, device));
                 float[] policy = torch.softmax(output.Item1, 1).cpu().data<float>().ToArray();
                 float value = output.Item2.cpu().data<float>()[0];
                 //policy = new float[80]; // TEMP: TEST

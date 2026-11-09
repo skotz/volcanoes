@@ -14,16 +14,18 @@ namespace Volcano.Neural
 {
     internal abstract class AlphaZeroBase
     {
-        protected readonly ResNet model;
+        protected readonly torch.nn.Module<torch.Tensor, Tuple<torch.Tensor, torch.Tensor>> model;
+        protected readonly torch.Device device;
         protected readonly Adam optimizer;
         protected readonly torch.optim.lr_scheduler.LRScheduler scheduler;
         protected readonly GameRule game;
         protected readonly AlphaZeroConfig config;
-        protected readonly Encoder encoder;
+        protected readonly IBoardEncoder encoder;
 
-        protected AlphaZeroBase(ResNet model, Adam optimizer, torch.optim.lr_scheduler.LRScheduler scheduler, Encoder encoder, GameRule game, AlphaZeroConfig config)
+        protected AlphaZeroBase(torch.nn.Module<torch.Tensor, Tuple<torch.Tensor, torch.Tensor>> model, torch.Device device, Adam optimizer, torch.optim.lr_scheduler.LRScheduler scheduler, IBoardEncoder encoder, GameRule game, AlphaZeroConfig config)
         {
             this.model = model;
+            this.device = device;
             this.optimizer = optimizer;
             this.scheduler = scheduler;
             this.encoder = encoder;
@@ -33,6 +35,9 @@ namespace Volcano.Neural
 
         /// <summary>Plays out games and returns the positions gathered.</summary>
         protected abstract TrainingData SelfPlay();
+
+        /// <summary>Creates the engine for the model being trained, used to benchmark win rate.</summary>
+        protected abstract IEngine CreateBenchmarkEngine(int forcedIterations);
 
         /// <summary>How many times <see cref="SelfPlay"/> is called per training iteration.</summary>
         protected abstract int SelfPlayCallsPerIteration { get; }
@@ -140,9 +145,9 @@ namespace Volcano.Neural
 
                 using var scope = torch.NewDisposeScope();
 
-                torch.Tensor input = encoder.Encode(states, model.Device);
-                torch.Tensor policyTarget = torch.tensor(flatPolicy, new long[] { size, actions }).to(model.Device);
-                torch.Tensor valueTarget = torch.tensor(values, new long[] { size, 1 }).to(model.Device);
+                torch.Tensor input = encoder.Encode(states, device);
+                torch.Tensor policyTarget = torch.tensor(flatPolicy, new long[] { size, actions }).to(device);
+                torch.Tensor valueTarget = torch.tensor(values, new long[] { size, 1 }).to(device);
 
                 var output = model.forward(input);
                 torch.Tensor policyLoss = torch.nn.functional.cross_entropy(output.Item1, policyTarget);
@@ -173,9 +178,9 @@ namespace Volcano.Neural
                 lastLoss = loss.item<float>();
             }
 
-            AlphaZeroEngine.WriteLine($"Loss policy: {lastPolicyLoss}");
-            AlphaZeroEngine.WriteLine($"Loss value: {lastValueLoss}");
-            AlphaZeroEngine.WriteLine($"Loss: {lastLoss}");
+            AlphaZeroLog.WriteLine($"Loss policy: {lastPolicyLoss}");
+            AlphaZeroLog.WriteLine($"Loss value: {lastValueLoss}");
+            AlphaZeroLog.WriteLine($"Loss: {lastLoss}");
 
             return (lastPolicyLoss, lastValueLoss, lastLoss);
         }
@@ -202,18 +207,18 @@ namespace Volcano.Neural
                     replayBuffer.Enqueue(JsonConvert.DeserializeObject<TrainingData>(replay));
                 }
                 var count = replayBuffer.Sum(x => x.Count);
-                AlphaZeroEngine.WriteLine($"loaded {count} positions into replay buffer from {replays.Length} iteration(s)");
+                AlphaZeroLog.WriteLine($"loaded {count} positions into replay buffer from {replays.Length} iteration(s)");
             }
 
             for (int iteration = 0; iteration < config.NumIterations; iteration++)
             {
-                AlphaZeroEngine.WriteLine($"iteration {iteration}");
+                AlphaZeroLog.WriteLine($"iteration {iteration}");
 
                 TrainingData fresh = new TrainingData();
                 model.eval();
                 for (int j = 0; j < SelfPlayCallsPerIteration; j++)
                 {
-                    AlphaZeroEngine.WriteLine($"Self-play {j + 1}");
+                    AlphaZeroLog.WriteLine($"Self-play {j + 1}");
                     fresh.Add(SelfPlay());
                 }
 
@@ -235,13 +240,12 @@ namespace Volcano.Neural
                 {
                     data.Add(batch);
                 }
-                AlphaZeroEngine.WriteLine($"training on {data.Count} positions ({fresh.Count} fresh) from {replayBuffer.Count} iteration(s)");
-
+                AlphaZeroLog.WriteLine($"training on {data.Count} positions ({fresh.Count} fresh) from {replayBuffer.Count} iteration(s)");
                 model.train();
                 var lastLoss = (0.0, 0.0, 0.0);
                 for (int epoch = 0; epoch < config.NumEpochs; epoch++)
                 {
-                    AlphaZeroEngine.WriteLine($"epoch {epoch}");
+                    AlphaZeroLog.WriteLine($"epoch {epoch}");
                     lastLoss = Train(data);
                 }
 
@@ -251,7 +255,7 @@ namespace Volcano.Neural
                     group.LearningRate = Math.Max(group.LearningRate, config.MinLearningRate);
                 }
                 var lr = scheduler.get_last_lr();
-                AlphaZeroEngine.WriteLine($"Current LR: {string.Join(",", lr)}");
+                AlphaZeroLog.WriteLine($"Current LR: {string.Join(",", lr)}");
 
                 string format = "0.##################################################";
 
@@ -275,7 +279,7 @@ namespace Volcano.Neural
                 }
                 catch
                 {
-                    AlphaZeroEngine.WriteLine($"Failed to save optimizer state dictionary!");
+                    AlphaZeroLog.WriteLine($"Failed to save optimizer state dictionary!");
                 }
                 File.WriteAllLines(replayBufferPath, replayBuffer.Select(x => JsonConvert.SerializeObject(x)));
             }
@@ -299,7 +303,7 @@ namespace Volcano.Neural
                         game.OnGameOver += (p, v) => victory = v;
 
                         var opponent = new MonteCarloTreeSearchEngine(MCTSVersion.V2) { forcedIterations = sims };
-                        var model = new AlphaZeroEngine(VolcanoZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat", 10, 192)) { forcedIterations = alphasims };
+                        var model = CreateBenchmarkEngine(alphasims);
 
                         game.RegisterEngine(Player.One, i % 2 == 0 ? model : opponent, true);
                         game.RegisterEngine(Player.Two, i % 2 == 0 ? opponent : model, true);
@@ -346,7 +350,7 @@ namespace Volcano.Neural
 
             Parallel.ForEach(games, g => g());
 
-            AlphaZeroEngine.WriteLine($"Won {wins} of {rounds} games");
+            AlphaZeroLog.WriteLine($"Won {wins} of {rounds} games");
 
             return (double)wins / rounds;
         }

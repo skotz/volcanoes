@@ -78,7 +78,11 @@ namespace Volcano.Engine
 
         private List<string> _debug = new List<string>();
 
-        public static Action<string> WriteLine;
+        public static Action<string> WriteLine
+        {
+            get => AlphaZeroLog.WriteLine;
+            set => AlphaZeroLog.WriteLine = value;
+        }
 
         private string _savePath = "models/";
         internal bool _policyOnly;
@@ -184,7 +188,7 @@ namespace Volcano.Engine
 
             if (!forTraining)
             {
-                _alphaZero = new AlphaZero(_model, _optimizer, _scheduler, _encoder, _game, _config, _settings);
+                _alphaZero = new AlphaZero(_model, _device, _optimizer, _scheduler, _encoder, _game, _config, _settings.ModelPath);
                 _alphaZero.OnStatus += alphaZero_OnStatus;
             }
         }
@@ -250,7 +254,7 @@ namespace Volcano.Engine
         {
             WriteLine = Debug;
 
-            var alphaZero = new AlphaZeroParallel(_model, _optimizer, _scheduler, _encoder, _game, _config);
+            var alphaZero = new AlphaZeroParallel(_model, _device, _optimizer, _scheduler, _encoder, _game, _config);
 
             Debug($"Model: {_settings.ResidualBlocks} blocks, {_settings.ResidualFeatures} features");
 

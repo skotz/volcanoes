@@ -8,17 +8,19 @@ namespace Volcano.Neural
 {
     internal class NNMCTSParallel
     {
-        private readonly ResNet model;
+        private readonly torch.nn.Module<torch.Tensor, Tuple<torch.Tensor, torch.Tensor>> model;
         private readonly GameRule game;
         private readonly AlphaZeroConfig config;
-        private readonly Encoder encoder;
+        private readonly IBoardEncoder encoder;
+        private readonly torch.Device device;
 
-        public NNMCTSParallel(GameRule game, AlphaZeroConfig config, ResNet model, Encoder encoder)
+        public NNMCTSParallel(GameRule game, AlphaZeroConfig config, torch.nn.Module<torch.Tensor, Tuple<torch.Tensor, torch.Tensor>> model, IBoardEncoder encoder, torch.Device device)
         {
             this.game = game;
             this.config = config;
             this.model = model;
             this.encoder = encoder;
+            this.device = device;
         }
 
         /// <summary>
@@ -30,7 +32,7 @@ namespace Volcano.Neural
             using var scope = torch.NewDisposeScope();
             using (torch.no_grad())
             {
-                var output = model.forward(encoder.Encode(states, model.Device));
+                var output = model.forward(encoder.Encode(states, device));
                 float[] flatPolicy = torch.softmax(output.Item1, 1).cpu().data<float>().ToArray();
                 float[] flatValue = output.Item2.cpu().data<float>().ToArray();
 

@@ -14,13 +14,18 @@ namespace Volcano.Neural
     {
         private readonly NNMCTSParallel nnmcts;
 
-        public AlphaZeroParallel(ResNet model, Adam optimizer, torch.optim.lr_scheduler.LRScheduler scheduler, Encoder encoder, GameRule game, AlphaZeroConfig config)
-            : base(model, optimizer, scheduler, encoder, game, config)
+        public AlphaZeroParallel(torch.nn.Module<torch.Tensor, Tuple<torch.Tensor, torch.Tensor>> model, torch.Device device, Adam optimizer, torch.optim.lr_scheduler.LRScheduler scheduler, IBoardEncoder encoder, GameRule game, AlphaZeroConfig config)
+            : base(model, device, optimizer, scheduler, encoder, game, config)
         {
-            this.nnmcts = new NNMCTSParallel(game, config, model, encoder);
+            this.nnmcts = new NNMCTSParallel(game, config, model, encoder, device);
         }
 
         protected override int SelfPlayCallsPerIteration => Math.Max(1, config.NumSelfPlayIterations / config.NumParallelGames);
+
+        protected override IEngine CreateBenchmarkEngine(int forcedIterations)
+        {
+            return new ModelBenchmarkEngine(new AlphaZero(model, device, optimizer, scheduler, encoder, game, config, null), forcedIterations);
+        }
 
         protected override TrainingData SelfPlay()
         {
@@ -46,11 +51,11 @@ namespace Volcano.Neural
 
                 double temperature = TemperatureForMove(moveCount);
 
-                AlphaZeroEngine.WriteLine($"SPG move {moveCount + 1} for {active.Length} games");
+                AlphaZeroLog.WriteLine($"SPG move {moveCount + 1} for {active.Length} games");
 
                 if (moveCount + 1 >= 200)
                 {
-                    AlphaZeroEngine.WriteLine($"weird infinite game bug");
+                    AlphaZeroLog.WriteLine($"weird infinite game bug");
                     File.WriteAllLines($"infinite-{DateTime.Now.ToString("yyyyMMddHHmmss")}.txt", active.Select(x => JsonConvert.SerializeObject(x.State)));
                     break;
                 }
