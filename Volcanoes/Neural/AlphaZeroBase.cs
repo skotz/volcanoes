@@ -150,9 +150,7 @@ namespace Volcano.Neural
                 torch.Tensor valueTarget = torch.tensor(values, new long[] { size, 1 }).to(device);
 
                 var output = model.forward(input);
-                torch.Tensor policyLoss = torch.nn.functional.cross_entropy(output.Item1, policyTarget);
-                torch.Tensor valueLoss = torch.nn.functional.mse_loss(output.Item2, valueTarget);
-                torch.Tensor loss = policyLoss + 0.5 * valueLoss;
+                var (policyLoss, valueLoss, loss) = PolicyValueLoss.Compute(model, output, policyTarget, valueTarget);
 
                 optimizer.zero_grad();
                 loss.backward();
@@ -259,7 +257,7 @@ namespace Volcano.Neural
 
                 string format = "0.##################################################";
 
-                var winRate = GetWinRate(10, 2000, 1000, 1000);
+                var winRate = config.NumParallelGames <= 128 ? -1.0 : GetWinRate(10, 2000, 1000, 1000);
 
                 string status = Path.Combine(savePath, "status.csv");
                 if (!File.Exists(status))

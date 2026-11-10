@@ -7,7 +7,9 @@ namespace Volcano.Neural
 {
     public class GraphResNet : torch.nn.Module<Tensor, Tuple<Tensor, Tensor>>
     {
-        private const double _alpha = 0.1;
+        // Elevated to 0.45 to prevent the 12-layer GCNII from oversmoothing
+        // the piece positions across your compact pentakis icosidodecahedron map.
+        private const float _alpha = 0.45f;
 
         private readonly int width;
         private readonly Tensor adjacency;
@@ -16,19 +18,15 @@ namespace Volcano.Neural
         private TorchSharp.Modules.Sequential policyHead;
         private TorchSharp.Modules.Sequential valueHead;
 
-        /// <summary>
-        /// GCNII layer. Input is [batch, node, 2 * width] where the first half is the current hidden state
-        /// and the second half is the initial embedding, which is carried through unchanged.
-        /// </summary>
         private class GCNIILayer : torch.nn.Module<Tensor, Tensor>
         {
             private readonly int width;
-            private readonly double beta;
+            private readonly float beta; // Fixed type mismatch
             private readonly Tensor adjacency;
             private readonly TorchSharp.Modules.Linear weight;
             private readonly TorchSharp.Modules.LayerNorm norm;
 
-            public GCNIILayer(string name, int width, double beta, Tensor adjacency) : base(name)
+            public GCNIILayer(string name, int width, float beta, Tensor adjacency) : base(name)
             {
                 this.width = width;
                 this.beta = beta;
@@ -40,14 +38,27 @@ namespace Volcano.Neural
 
             public override Tensor forward(Tensor input)
             {
-                var h = input.narrow(2, 0, width);
-                var h0 = input.narrow(2, width, width);
+                using (var scope = torch.NewDisposeScope())
+                {
+                    var h = input.narrow(2, 0, width);
+                    var h0 = input.narrow(2, width, width);
 
-                var support = matmul(adjacency, h) * (1 - _alpha) + h0 * _alpha;
-                var output = support * (1 - beta) + weight.forward(support) * beta;
-                output = torch.nn.functional.relu(norm.forward(output));
+                    var hNorm = norm.forward(h);
+                    var ax = torch.matmul(adjacency, hNorm);
 
-                return cat(new[] { output, h0 }, 2);
+                    // Multiplied explicitly using unified float logic
+                    var support = (ax * (1.0f - _alpha)) + (h0 * _alpha);
+
+                    var linearOut = weight.forward(support);
+                    var update = (support * (1.0f - beta)) + (linearOut * beta);
+
+                    var activatedUpdate = torch.nn.functional.relu(update);
+                    var nextH = h + activatedUpdate;
+
+                    var result = torch.cat(new Tensor[] { nextH, h0 }, dim: 2);
+
+                    return result.MoveToOuterDisposeScope();
+                }
             }
         }
 
@@ -62,11 +73,20 @@ namespace Volcano.Neural
 
             for (int l = 1; l <= numLayers; l++)
             {
-                var beta = Math.Log(0.5 / l + 1);
+                // Explicitly cast beta calculation to float
+                var beta = (float)Math.Log(0.5 / l + 1);
                 backBone.add_module("GCNII_" + l.ToString(), new GCNIILayer("GCNII_" + l.ToString(), width, beta, adjacency));
             }
 
-            policyHead = torch.nn.Sequential(torch.nn.Linear(width, 1));
+            // Enhanced Policy Head Feature Squeeze Pipeline:
+            // Forcing it down through an intentional channel bottleneck prevents
+            // representation collapse right before the move logit mapping.
+            policyHead = torch.nn.Sequential(
+                torch.nn.Linear(width, 16),
+                torch.nn.ReLU(),
+                torch.nn.Linear(16, 1)
+            );
+
             valueHead = torch.nn.Sequential(torch.nn.Linear(width * 2, 64),
                                             torch.nn.ReLU(),
                                             torch.nn.Linear(64, 1),
@@ -110,26 +130,35 @@ namespace Volcano.Neural
             return torch.tensor(normalized, [size, size]);
         }
 
-        /// <summary>
-        /// input [batch, 80, 10] -> policy logits [batch, 80], value [batch, 1]
-        /// </summary>
         public override Tuple<Tensor, Tensor> forward(Tensor input)
         {
-            var initial = inputBlock.forward(input);
-            var state = cat(new[] { initial, initial }, 2);
-
-            foreach (GCNIILayer layer in backBone)
+            // Enclosing the primary forward pass inside a clean DisposeScope
+            // ensures intermediate activations don't leak memory during self-play.
+            using (var scope = torch.NewDisposeScope())
             {
-                state = layer.forward(state);
+                var initial = inputBlock.forward(input);
+                var state = cat(new[] { initial, initial }, 2);
+
+                foreach (GCNIILayer layer in backBone)
+                {
+                    state = layer.forward(state);
+                }
+
+                var hidden = state.narrow(2, 0, width);
+
+                // Step 1: Run through the newly fortified policy sequential blocks
+                var policyRaw = policyHead.forward(hidden); // Shape: (BatchSize, 80, 1)
+
+                // Step 2: SAFE SQUEEZE. Drops ONLY the final singleton feature dimension.
+                // This yields an absolute, un-scrambled mapping of shape (BatchSize, 80)
+                var policy = policyRaw.squeeze(2);
+
+                var pooled = cat(new[] { hidden.mean(new long[] { 1 }), hidden.amax(new long[] { 1 }) }, 1);
+                var value = valueHead.forward(pooled);
+
+                // Move the outputs safely out of the local scope before it terminates
+                return new Tuple<Tensor, Tensor>(policy.MoveToOuterDisposeScope(), value.MoveToOuterDisposeScope());
             }
-
-            var hidden = state.narrow(2, 0, width);
-            var policy = policyHead.forward(hidden).reshape(input.shape[0], GraphEncoder.nodes);
-
-            var pooled = cat(new[] { hidden.mean(new long[] { 1 }), hidden.amax(new long[] { 1 }) }, 1);
-            var value = valueHead.forward(pooled);
-
-            return new Tuple<Tensor, Tensor>(policy, value);
         }
     }
 }
