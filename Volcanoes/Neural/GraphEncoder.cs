@@ -9,8 +9,9 @@ namespace Volcano.Neural
         /// <summary>
         /// 9 one-hot channels for each value in [-4,4]
         /// 1 channel for move type (all nodes are 1 if next turn is AllGrow)
+        /// 1 channel for triangle type (1 for the equilateral tiles)
         /// </summary>
-        public const int features = 10;
+        public const int features = 11;
 
         public const int nodes = 80;
 
@@ -21,6 +22,7 @@ namespace Volcano.Neural
         {
             var batchSize = states.Count;
             var data = new float[batchSize * nodes * features];
+            var equilateral = new HashSet<int>(Constants.EquilateralIndexes);
 
             for (var b = 0; b < batchSize; b++)
             {
@@ -38,6 +40,11 @@ namespace Volcano.Neural
                     {
                         data[baseIndex + 9] = 1.0f;
                     }
+
+                    if (equilateral.Contains(tileIdx))
+                    {
+                        data[baseIndex + 10] = 1.0f;
+                    }
                 }
             }
 
@@ -45,7 +52,7 @@ namespace Volcano.Neural
         }
 
         /// <summary>
-        /// [1, 80, 10]
+        /// [1, 80, 11]
         /// </summary>
         public torch.Tensor Encode(Board state, torch.Device device) => Encode([state], device);
     }
