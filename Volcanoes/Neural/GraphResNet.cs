@@ -7,13 +7,15 @@ namespace Volcano.Neural
 {
     public class GraphResNet : torch.nn.Module<Tensor, Tuple<Tensor, Tensor>>
     {
-        // Elevated to 0.45 to prevent the 12-layer GCNII from oversmoothing
-        // the piece positions across your compact pentakis icosidodecahedron map.
-        private const float _alpha = 0.45f;
+        // GCNII paper range is 0.1-0.2. Higher values let h0 (which has no neighborhood
+        // information) dominate every layer and make depth nearly useless.
+        private const float _alpha = 0.15f;
 
         private readonly int width;
         private readonly Tensor adjacency;
         private TorchSharp.Modules.Sequential inputBlock;
+        private TorchSharp.Modules.LayerNorm finalNorm;
+        private TorchSharp.Modules.Parameter positionEmbedding;
         private TorchSharp.Modules.ModuleList<GCNIILayer> backBone;
         private TorchSharp.Modules.Sequential policyHead;
         private TorchSharp.Modules.Sequential valueHead;
@@ -21,15 +23,17 @@ namespace Volcano.Neural
         private class GCNIILayer : torch.nn.Module<Tensor, Tensor>
         {
             private readonly int width;
-            private readonly float beta; // Fixed type mismatch
+            private readonly float beta;
+            private readonly float alpha;
             private readonly Tensor adjacency;
             private readonly TorchSharp.Modules.Linear weight;
             private readonly TorchSharp.Modules.LayerNorm norm;
 
-            public GCNIILayer(string name, int width, float beta, Tensor adjacency) : base(name)
+            public GCNIILayer(string name, int width, float beta, float alpha, Tensor adjacency) : base(name)
             {
                 this.width = width;
                 this.beta = beta;
+                this.alpha = alpha;
                 this.adjacency = adjacency;
                 weight = torch.nn.Linear(width, width, hasBias: false);
                 norm = torch.nn.LayerNorm(new long[] { width });
@@ -47,7 +51,7 @@ namespace Volcano.Neural
                     var ax = torch.matmul(adjacency, hNorm);
 
                     // Multiplied explicitly using unified float logic
-                    var support = (ax * (1.0f - _alpha)) + (h0 * _alpha);
+                    var support = (ax * (1.0f - alpha)) + (h0 * alpha);
 
                     var linearOut = weight.forward(support);
                     var update = (support * (1.0f - beta)) + (linearOut * beta);
@@ -67,24 +71,33 @@ namespace Volcano.Neural
             this.width = width;
             adjacency = BuildNormalizedAdjacency().to(device);
 
+            // LayerNorm keeps h and h0 at a consistent scale across the residual stack.
             inputBlock = torch.nn.Sequential(torch.nn.Linear(GraphEncoder.features, width),
+                                             torch.nn.LayerNorm(new long[] { width }),
                                              torch.nn.ReLU());
+            finalNorm = torch.nn.LayerNorm(new long[] { width });
+
+            // Learned per-node embedding, shape [1, nodes, width], broadcast over the batch.
+            positionEmbedding = torch.nn.Parameter(torch.randn(new long[] { 1, GraphEncoder.nodes, width }) * 0.1);
+            register_parameter(nameof(positionEmbedding), positionEmbedding);
             backBone = torch.nn.ModuleList<GCNIILayer>();
 
             for (int l = 1; l <= numLayers; l++)
             {
                 // Explicitly cast beta calculation to float
                 var beta = (float)Math.Log(0.5 / l + 1);
-                backBone.add_module("GCNII_" + l.ToString(), new GCNIILayer("GCNII_" + l.ToString(), width, beta, adjacency));
+                backBone.add_module("GCNII_" + l.ToString(), new GCNIILayer("GCNII_" + l.ToString(), width, beta, _alpha, adjacency));
             }
 
             // Enhanced Policy Head Feature Squeeze Pipeline:
             // Forcing it down through an intentional channel bottleneck prevents
             // representation collapse right before the move logit mapping.
+            // Input is each node's features concatenated with the global mean, so every
+            // move logit can see whole-board context.
             policyHead = torch.nn.Sequential(
-                torch.nn.Linear(width, 16),
+                torch.nn.Linear(width * 2, width),
                 torch.nn.ReLU(),
-                torch.nn.Linear(16, 1)
+                torch.nn.Linear(width, 1)
             );
 
             valueHead = torch.nn.Sequential(torch.nn.Linear(width * 2, 64),
@@ -136,7 +149,7 @@ namespace Volcano.Neural
             // ensures intermediate activations don't leak memory during self-play.
             using (var scope = torch.NewDisposeScope())
             {
-                var initial = inputBlock.forward(input);
+                var initial = inputBlock.forward(input) + positionEmbedding;
                 var state = cat(new[] { initial, initial }, 2);
 
                 foreach (GCNIILayer layer in backBone)
@@ -144,10 +157,11 @@ namespace Volcano.Neural
                     state = layer.forward(state);
                 }
 
-                var hidden = state.narrow(2, 0, width);
+                var hidden = finalNorm.forward(state.narrow(2, 0, width));
+                var globalContext = hidden.mean(new long[] { 1 }, keepdim: true).expand_as(hidden);
 
                 // Step 1: Run through the newly fortified policy sequential blocks
-                var policyRaw = policyHead.forward(hidden); // Shape: (BatchSize, 80, 1)
+                var policyRaw = policyHead.forward(cat(new[] { hidden, globalContext }, 2));
 
                 // Step 2: SAFE SQUEEZE. Drops ONLY the final singleton feature dimension.
                 // This yields an absolute, un-scrambled mapping of shape (BatchSize, 80)

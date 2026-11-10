@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -121,7 +121,7 @@ namespace Volcano.Neural
             }
 
             int actions = game.ActionSize;
-            float lastPolicyLoss = 0, lastValueLoss = 0, lastLoss = 0;
+            float lastPolicyLoss = 0, lastValueLoss = 0, lastLoss = 0, lastPolicyEntropy = 0, lastTargetEntropy = 0;
 
             for (int start = 0; start < n; start += config.BatchSize)
             {
@@ -154,7 +154,15 @@ namespace Volcano.Neural
 
                 optimizer.zero_grad();
                 loss.backward();
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0);
                 optimizer.step();
+
+                using (torch.no_grad())
+                {
+                    var logP = torch.nn.functional.log_softmax(output.Item1, dim: 1);
+                    lastPolicyEntropy = -(logP.exp() * logP).sum(new long[] { 1 }).mean().item<float>();
+                    lastTargetEntropy = -(policyTarget * (policyTarget + 1e-9f).log()).sum(new long[] { 1 }).mean().item<float>();
+                }
 
                 //// Print gradient magnitudes across your GCN layers
                 //foreach (var (pName, parameter) in model.named_parameters())
@@ -179,6 +187,7 @@ namespace Volcano.Neural
             AlphaZeroLog.WriteLine($"Loss policy: {lastPolicyLoss}");
             AlphaZeroLog.WriteLine($"Loss value: {lastValueLoss}");
             AlphaZeroLog.WriteLine($"Loss: {lastLoss}");
+            AlphaZeroLog.WriteLine($"Policy entropy: {lastPolicyEntropy} (target: {lastTargetEntropy}, uniform: {Math.Log(actions)})");
 
             return (lastPolicyLoss, lastValueLoss, lastLoss);
         }
@@ -192,7 +201,7 @@ namespace Volcano.Neural
             // newest games makes each iteration overfit a small, freshly-generated sample and
             // partially forget the previous one; mixing in recent history keeps the value
             // targets stable and stops rare tactical positions from vanishing after one round.
-            // Game outcomes are ground truth, so older entries stay valid targets — only their
+            // Game outcomes are ground truth, so older entries stay valid targets � only their
             // policy distributions are slightly stale, which is the intended trade.
             Queue<TrainingData> replayBuffer = new();
 
