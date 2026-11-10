@@ -52,6 +52,16 @@ namespace Volcano.Game
         public static ConcurrentDictionary<string, int> TileIndexes = GetTileIndexes();
 
         /// <summary>
+        /// The 20 equilateral triangle indexes
+        /// </summary>
+        public static int[] EquilateralIndexes = GetEquilateralIndexes();
+
+        /// <summary>
+        /// The 60 isosceles triangle indexes
+        /// </summary>
+        public static int[] IsoscelesIndexes = GetIsoscelesIndexes();
+
+        /// <summary>
         /// An array mapping each tile to a list of tiles 3 moves away
         /// </summary>
         public static int[][] ThreeAway = GetThreeAway();
@@ -259,6 +269,23 @@ namespace Volcano.Game
                 "S34", "N24", "S35", "S33", "S38", "N28", "S39", "S37", "S22", "N32", "S23", "S21", "S26", "N36", "S27", "S25", "S30", "N40", "S31", "S29", "S16", "S04", "S15", "S17", "S19", "S05", "S18", "S20", "S07", "S01", "S06", "S08", "S10", "S02", "S09", "S11", "S13", "S03", "S12", "S14",
                 "G",
             };
+        }
+
+        private static int[] GetEquilateralIndexes()
+        {
+            return new string[] { "N07", "N10", "N13", "N16", "N19", "N22", "N26", "N30", "N34", "N38", "S07", "S10", "S13", "S16", "S19", "S22", "S26", "S30", "S34", "S38" }
+                .Select(x => TileIndexes[x])
+                .OrderBy(x => x)
+                .ToArray();
+        }
+
+        private static int[] GetIsoscelesIndexes()
+        {
+            return GetTileNames()
+                .Select(x => TileIndexes[x])
+                .Where(x => x < 80 && !EquilateralIndexes.Contains(x))
+                .OrderBy(x => x)
+                .ToArray();
         }
 
         private static string[] GetOldTileNames()

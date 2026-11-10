@@ -57,5 +57,78 @@ namespace Volcanoes.Tests.Game
                 }
             }
         }
+
+        [Fact]
+        public void EquilateralIndexes_HasTwentyTiles()
+        {
+            Constants.EquilateralIndexes.Should().HaveCount(20);
+        }
+
+        [Fact]
+        public void IsoscelesIndexes_HasSixtyTiles()
+        {
+            Constants.IsoscelesIndexes.Should().HaveCount(60);
+        }
+
+        [Fact]
+        public void EquilateralIndexes_AreDistinctAndInRange()
+        {
+            Constants.EquilateralIndexes.Distinct().Should().HaveCount(20);
+            Constants.EquilateralIndexes.Should().OnlyContain(t => t >= 0 && t < Tiles);
+        }
+
+        [Fact]
+        public void IsoscelesIndexes_AreDistinctAndInRange()
+        {
+            Constants.IsoscelesIndexes.Distinct().Should().HaveCount(60);
+            Constants.IsoscelesIndexes.Should().OnlyContain(t => t >= 0 && t < Tiles);
+        }
+
+        [Fact]
+        public void TileCollections_TogetherContainEveryTileExactlyOnce()
+        {
+            var all = Constants.EquilateralIndexes.Concat(Constants.IsoscelesIndexes).OrderBy(t => t).ToArray();
+
+            all.Should().HaveCount(Tiles);
+            all.Should().BeEquivalentTo(Enumerable.Range(0, Tiles));
+        }
+
+        [Fact]
+        public void TileCollections_DoNotOverlap()
+        {
+            Constants.EquilateralIndexes.Intersect(Constants.IsoscelesIndexes).Should().BeEmpty();
+        }
+
+        [Fact]
+        public void EquilateralIndexes_SingleTileCanonicalizesToSameBoardForEveryTile()
+        {
+            AssertSingleTileCanonicalizesUniformly(Constants.EquilateralIndexes, "equilateral");
+        }
+
+        [Fact]
+        public void IsoscelesIndexes_SingleTileCanonicalizesToSameBoardForEveryTile()
+        {
+            AssertSingleTileCanonicalizesUniformly(Constants.IsoscelesIndexes, "isosceles");
+        }
+
+        private static void AssertSingleTileCanonicalizesUniformly(int[] collection, string name)
+        {
+            var reference = CanonicalizeSingleTile(collection[0]);
+
+            foreach (var tile in collection)
+            {
+                CanonicalizeSingleTile(tile).Should().Equal(reference, $"{name} tile {tile} should canonicalize like the others");
+            }
+        }
+
+        private static int[] CanonicalizeSingleTile(int tile)
+        {
+            var board = new int[Tiles];
+            board[tile] = 1;
+
+            var canonical = new Canonical();
+            canonical.SetIndex(board);
+            return canonical.Canonicalize(board);
+        }
     }
 }
