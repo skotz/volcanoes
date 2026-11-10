@@ -148,9 +148,9 @@ namespace Volcano
             engines.Add("VolcanoGraphZero v1", () => new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V1));
             engines.Add("VolcanoGraphZero v1 Policy", () => new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V1) { _policyOnly = true });
 
-            if (File.Exists("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Debug\\net10.0-windows\\models\\graph\\training-model.dat"))
+            if (File.Exists("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\graph\\training-model.dat"))
             {
-                engines.Add("VolcanoGraphZero TRAINING", () => new AlphaZeroGraphEngine(VolcanoGraphZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Debug\\net10.0-windows\\models\\graph\\training-model.dat", 12, 128)));
+                engines.Add("VolcanoGraphZero TRAINING", () => new AlphaZeroGraphEngine(VolcanoGraphZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\graph\\training-model.dat", 12, 128)));
             }
             if (File.Exists("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat"))
             {
