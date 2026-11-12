@@ -59,6 +59,55 @@ namespace Volcanoes.Tests.Game
         }
 
         [Fact]
+        public void CounterClockwiseNeighbors_EveryTileHasThreeDistinctNeighbors()
+        {
+            Constants.CounterClockwiseNeighbors.Should().HaveCount(Tiles);
+
+            for (int t = 0; t < Tiles; t++)
+            {
+                var neighbors = Constants.CounterClockwiseNeighbors[t];
+
+                neighbors.Should().NotBeNull($"tile {t} should have neighbors");
+                neighbors.Should().HaveCount(3, $"tile {t} should touch three tiles");
+                neighbors.Distinct().Should().HaveCount(3, $"tile {t} neighbors should be distinct");
+                neighbors.Should().OnlyContain(n => n >= 0 && n < Tiles && n != t, $"tile {t} neighbors should be valid tiles other than itself");
+            }
+        }
+
+        [Fact]
+        public void CounterClockwiseNeighbors_MatchAdjacentIndexesIgnoringOrder()
+        {
+            for (int t = 0; t < Tiles; t++)
+            {
+                Constants.CounterClockwiseNeighbors[t].OrderBy(x => x).Should().Equal(
+                    Constants.AdjacentIndexes[t].OrderBy(x => x),
+                    $"tile {t} should have the same neighbors in both lists");
+            }
+        }
+
+        [Fact]
+        public void CounterClockwiseNeighbors_IsoscelesIndexZeroIsEquilateral()
+        {
+            foreach (var t in Constants.IsoscelesIndexes)
+            {
+                Constants.EquilateralIndexes.Should().Contain(Constants.CounterClockwiseNeighbors[t][0], $"isosceles tile {t} index 0 should be the neighbor opposite the 5-fold vertex");
+            }
+        }
+
+        [Fact]
+        public void CounterClockwiseNeighbors_IsoscelesLegsAreConsistentAroundVertex()
+        {
+            foreach (var t in Constants.IsoscelesIndexes)
+            {
+                var u = Constants.CounterClockwiseNeighbors[t][1];
+                if (Constants.IsoscelesIndexes.Contains(u))
+                {
+                    Constants.CounterClockwiseNeighbors[u][2].Should().Be(t, $"tile {t} should be the counter-clockwise predecessor of its index 1 neighbor {u}");
+                }
+            }
+        }
+
+        [Fact]
         public void EquilateralIndexes_HasTwentyTiles()
         {
             Constants.EquilateralIndexes.Should().HaveCount(20);

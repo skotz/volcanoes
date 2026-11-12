@@ -62,6 +62,13 @@ namespace Volcano.Game
         public static int[] IsoscelesIndexes = GetIsoscelesIndexes();
 
         /// <summary>
+        /// Neighbors for every tile, ordered counter-clockwise.
+        /// For the 60 isosceles triangles, index 0 is the neighbor directly opposite the 5-fold vertex.
+        /// For the 20 equilateral triangles, index 0 is the North-East-most neighbor.
+        /// </summary>
+        public static int[][] CounterClockwiseNeighbors = GetCounterClockwiseNeighbors();
+
+        /// <summary>
         /// An array mapping each tile to a list of tiles 3 moves away
         /// </summary>
         public static int[][] ThreeAway = GetThreeAway();
@@ -260,6 +267,78 @@ namespace Volcano.Game
             }
 
             return connections;
+        }
+
+        private static int[][] GetCounterClockwiseNeighbors()
+        {
+            var neighbors = new Dictionary<string, string[]>();
+
+            neighbors.Add("N07", ["N01", "N06", "N08"]);
+            neighbors.Add("N10", ["N02", "N09", "N11"]);
+            neighbors.Add("N13", ["N03", "N12", "N14"]);
+            neighbors.Add("N16", ["N04", "N15", "N17"]);
+            neighbors.Add("N19", ["N05", "N18", "N20"]);
+
+            neighbors.Add("N01", ["N07", "N02", "N05"]);
+            neighbors.Add("N02", ["N10", "N03", "N01"]);
+            neighbors.Add("N03", ["N13", "N04", "N02"]);
+            neighbors.Add("N04", ["N16", "N05", "N03"]);
+            neighbors.Add("N05", ["N19", "N01", "N04"]);
+
+            neighbors.Add("N06", ["N07", "N20", "N21"]);
+            neighbors.Add("N09", ["N10", "N08", "N25"]);
+            neighbors.Add("N12", ["N13", "N11", "N29"]);
+            neighbors.Add("N15", ["N16", "N14", "N33"]);
+            neighbors.Add("N18", ["N19", "N17", "N37"]);
+
+            neighbors.Add("N08", ["N07", "N23", "N09"]);
+            neighbors.Add("N11", ["N10", "N27", "N12"]);
+            neighbors.Add("N14", ["N13", "N31", "N15"]);
+            neighbors.Add("N17", ["N16", "N35", "N18"]);
+            neighbors.Add("N20", ["N19", "N39", "N06"]);
+
+            neighbors.Add("N22", ["N23", "N21", "S32"]);
+            neighbors.Add("N26", ["N27", "N25", "S36"]);
+            neighbors.Add("N30", ["N31", "N29", "S40"]);
+            neighbors.Add("N34", ["N35", "N33", "S24"]);
+            neighbors.Add("N38", ["N39", "N37", "S28"]);
+
+            neighbors.Add("N23", ["N22", "N24", "N08"]);
+            neighbors.Add("N27", ["N26", "N28", "N11"]);
+            neighbors.Add("N31", ["N30", "N32", "N14"]);
+            neighbors.Add("N35", ["N34", "N36", "N17"]);
+            neighbors.Add("N39", ["N38", "N40", "N20"]);
+
+            neighbors.Add("N21", ["N22", "N06", "N40"]);
+            neighbors.Add("N25", ["N26", "N09", "N24"]);
+            neighbors.Add("N29", ["N30", "N12", "N28"]);
+            neighbors.Add("N33", ["N34", "N15", "N32"]);
+            neighbors.Add("N37", ["N38", "N18", "N36"]);
+
+            neighbors.Add("N24", ["S34", "N25", "N23"]);
+            neighbors.Add("N28", ["S38", "N29", "N27"]);
+            neighbors.Add("N32", ["S22", "N33", "N31"]);
+            neighbors.Add("N36", ["S26", "N37", "N35"]);
+            neighbors.Add("N40", ["S30", "N21", "N39"]);
+
+            var indexes = new int[80][];
+            foreach (var tile in neighbors)
+            {
+                var a = TileIndexes[tile.Key];
+                indexes[a] = tile.Value.Select(x => TileIndexes[x]).ToArray();
+
+                var b = TileIndexes[tile.Key.Replace("N", "!").Replace("S", "N").Replace("!", "S")];
+                var t = tile.Value.Select(x => TileIndexes[x.Replace("N", "!").Replace("S", "N").Replace("!", "S")]).ToArray();
+                if (EquilateralIndexes.Contains(b))
+                {
+                    indexes[b] = [t[2], t[1], t[0]];
+                }
+                else
+                {
+                    indexes[b] = [t[0], t[2], t[1]];
+                }
+            }
+            return indexes;
         }
 
         private static string[] GetTileNames()
