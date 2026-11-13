@@ -290,7 +290,7 @@ namespace Volcano.Neural
 
                 string format = "0.##################################################";
 
-                var winRate = config.NumParallelGames <= 128 ? -1.0 : GetWinRate(10, 2000, 1000, 1000);
+                var winRate = config.NumParallelGames <= 128 ? -1.0 : GetWinRate(savePath, 10, 2000, 1000, 1000);
 
                 string status = Path.Combine(savePath, "status.csv");
                 if (!File.Exists(status))
@@ -316,7 +316,30 @@ namespace Volcano.Neural
             }
         }
 
-        private double GetWinRate(int rounds, int alphasims, int benchsimstart, int benchsiminc)
+        private static readonly object lossLogLock = new();
+
+        private static void AppendLoss(string savePath, string one, string two, int onesims, int twosims, string winner, string transcript)
+        {
+            try
+            {
+                lock (lossLogLock)
+                {
+                    string path = Path.Combine(savePath, "losses.csv");
+                    if (!File.Exists(path))
+                    {
+                        File.AppendAllLines(path, ["time,one,two,onesims,twosims,winner,transcript"]);
+                    }
+                    string line = string.Join(",", DateTime.Now.ToString("yyyyMMddHHmmss"), one, two, onesims, twosims, winner, "\"" + transcript.Replace("\"", "\"\"") + "\"");
+                    File.AppendAllLines(path, [line]);
+                }
+            }
+            catch (Exception ex)
+            {
+                AlphaZeroLog.WriteLine($"Failed to append to losses.csv: {ex.Message}");
+            }
+        }
+
+        private double GetWinRate(string savePath, int rounds, int alphasims, int benchsimstart, int benchsiminc)
         {
             var wins = 0;
             var games = new List<Action>();
@@ -360,6 +383,17 @@ namespace Volcano.Neural
                         if (game.CurrentState.Winner == Player.Two && i % 2 == 1)
                         {
                             wins++;
+                        }
+                        if (game.CurrentState.Winner == (i % 2 == 0 ? Player.Two : Player.One))
+                        {
+                            AppendLoss(
+                                savePath,
+                                i % 2 == 0 ? "model" : "bench",
+                                i % 2 == 0 ? "bench" : "model",
+                                i % 2 == 0 ? alphasims : sims,
+                                i % 2 == 0 ? sims : alphasims,
+                                game.CurrentState.Winner == Player.One ? "one" : (game.CurrentState.Winner == Player.Two ? "two" : "draw"),
+                                game.GetTranscriptLine());
                         }
                     }
                     catch (Exception ex)
