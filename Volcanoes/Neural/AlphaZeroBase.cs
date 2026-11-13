@@ -242,12 +242,36 @@ namespace Volcano.Neural
                     replayBuffer.Dequeue();
                 }
 
-                TrainingData data = new TrainingData();
-                foreach (TrainingData batch in replayBuffer)
+                TrainingData previous = new TrainingData();
+                foreach (TrainingData batch in replayBuffer.SkipLast(1))
                 {
-                    data.Add(batch);
+                    previous.Add(batch);
                 }
-                AlphaZeroLog.WriteLine($"training on {data.Count} positions ({fresh.Count} fresh) from {replayBuffer.Count} iteration(s)");
+
+                int sampleLimit = config.BatchSize * config.BatchesPerIteration;
+                int historicalCount = Math.Max(0, Math.Min(previous.Count, sampleLimit - fresh.Count));
+                int[] historicalIndices = Enumerable.Range(0, previous.Count).ToArray();
+                Random.Shared.Shuffle(historicalIndices);
+
+                var samples = new List<(Board State, double[] Probs, float Value)>(fresh.Count + historicalCount);
+                for (int i = 0; i < fresh.Count; i++)
+                {
+                    samples.Add((fresh.States[i], fresh.Probs[i], fresh.Values[i]));
+                }
+                for (int k = 0; k < historicalCount; k++)
+                {
+                    int i = historicalIndices[k];
+                    samples.Add((previous.States[i], previous.Probs[i], previous.Values[i]));
+                }
+                var shuffled = samples.ToArray();
+                Random.Shared.Shuffle(shuffled);
+
+                TrainingData data = new TrainingData();
+                foreach (var (state, probs, value) in shuffled)
+                {
+                    data.Add(state, probs, value);
+                }
+                AlphaZeroLog.WriteLine($"training on {data.Count} positions ({fresh.Count} fresh + {historicalCount} historical) from {replayBuffer.Count} iteration{(replayBuffer.Count == 1 ? "" : "s")}");
                 model.train();
                 var lastLoss = (0.0, 0.0, 0.0);
                 for (int epoch = 0; epoch < config.NumEpochs; epoch++)

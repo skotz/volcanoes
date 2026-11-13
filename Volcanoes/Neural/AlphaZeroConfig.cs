@@ -47,10 +47,16 @@
         /// of N iterations every position is already revisited across N rounds, so a high epoch
         /// count re-fits the same data many times over.
         /// </summary>
-        public int NumEpochs { get; init; } = 5;
+        public int NumEpochs { get; init; } = 1;
 
         /// <summary>Mini-batch size for training.</summary>
         public int BatchSize { get; init; } = 512;
+
+        /// <summary>
+        /// Gradient steps per epoch. Each iteration trains on at most BatchSize * this many samples:
+        /// all of the newest self-play, topped up with random samples from earlier iterations.
+        /// </summary>
+        public int BatchesPerIteration { get; init; } = 200;
 
         /// <summary>
         /// Temperature applied to visit counts when sampling self-play moves. 1.0 samples in
@@ -86,7 +92,7 @@
         /// Learning rate decay factor (gamma) applied by the scheduler after each iteration.
         /// e.g. 0.95 means the LR drops by 5% each macro-iteration.
         /// </summary>
-        public double LearningRateDecay { get; init; } = 0.9924; // 9924 = 300 iterations // 0.95;
+        public double LearningRateDecay { get; init; } = 0.96235; // 0.1^(1/60): 0.001 -> 0.0001 in 60 iterations
 
         /// <summary>Floor for the learning rate. The scheduler will not decay the LR below this value.</summary>
         public double MinLearningRate { get; init; } = 0.0001;
