@@ -93,7 +93,7 @@ namespace Volcano.Engine
             switch (version)
             {
                 case VolcanoGraphZeroVersion.V1:
-                    return VolcanoGraphZeroConfig.FromFile("models\\graph\\volcanograph-v1-12l-128w.dat", 12, 128);
+                    return VolcanoGraphZeroConfig.FromFile("models\\volcanozero-gcnii-v1-12r-128w-204800.dat", 12, 128);
 
                 default:
                     throw new ArgumentException("Invalid VolcanoGraphZero Version");

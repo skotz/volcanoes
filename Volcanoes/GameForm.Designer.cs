@@ -257,7 +257,7 @@
             // newTournamentToolStripMenuItem
             // 
             newTournamentToolStripMenuItem.Name = "newTournamentToolStripMenuItem";
-            newTournamentToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            newTournamentToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             newTournamentToolStripMenuItem.Text = "&New Tournament";
             newTournamentToolStripMenuItem.Click += newTournamentToolStripMenuItem_Click;
             // 
@@ -424,6 +424,7 @@
             // cbPlayerOne
             // 
             cbPlayerOne.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cbPlayerOne.DropDownWidth = 250;
             cbPlayerOne.Name = "cbPlayerOne";
             cbPlayerOne.Size = new System.Drawing.Size(165, 25);
             // 
@@ -441,6 +442,7 @@
             // cbPlayerTwo
             // 
             cbPlayerTwo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cbPlayerTwo.DropDownWidth = 250;
             cbPlayerTwo.Name = "cbPlayerTwo";
             cbPlayerTwo.Size = new System.Drawing.Size(165, 25);
             // 

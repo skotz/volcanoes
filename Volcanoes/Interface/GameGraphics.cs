@@ -567,8 +567,8 @@ namespace Volcano.Interface
                     analysisEngine = new VolcanoGame();
                     analysisEngine.SecondsPerEngineMove = 1000000;
                     analysisEngine.OverlayMode = true;
-                    analysisEngine.RegisterEngine(Player.One, new AlphaZeroGraphEngine(VolcanoGraphZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\graph\\training-model.dat", 12, 128)) { forceFirstMove = false }); // new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false }); // new AlphaZeroEngine(VolcanoZeroVersion.V3));
-                    analysisEngine.RegisterEngine(Player.Two, new AlphaZeroGraphEngine(VolcanoGraphZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\graph\\training-model.dat", 12, 128)) { forceFirstMove = false }); // new AlphaZeroEngine(VolcanoZeroVersion.V3));
+                    analysisEngine.RegisterEngine(Player.One, new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V1) { forceFirstMove = false }); // new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false }); // new AlphaZeroEngine(VolcanoZeroVersion.V3));
+                    analysisEngine.RegisterEngine(Player.Two, new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V1) { forceFirstMove = false }); // new AlphaZeroEngine(VolcanoZeroVersion.V3));
                     analysisEngine.OnEngineStatus += AnalysisEngine_OnEngineStatus;
                     analysisEngine.CurrentState = new Board(gameState);
                     analysisEngine.ComputerPlay();
