@@ -30,9 +30,14 @@ namespace Volcano
 
         private string gameFolder = $"{Environment.GetFolderPath(SpecialFolder.MyDocuments)}\\My Games\\Volcanoes\\";
 
-        public GameForm()
+        public GameForm(string[] args = null)
         {
             InitializeComponent();
+
+            if (args != null && args.Any(a => a.Equals("train", StringComparison.OrdinalIgnoreCase)))
+            {
+                Shown += (s, e) => StartTraining();
+            }
 
             if (!Directory.Exists(gameFolder))
             {
@@ -640,6 +645,11 @@ namespace Volcano
         }
 
         private void trainQLearningToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            StartTraining();
+        }
+
+        private void StartTraining()
         {
             DisableGraphics();
 
