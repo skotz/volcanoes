@@ -242,11 +242,11 @@ namespace Volcano.Engine
                                 else
                                 {
                                     // process losses
-                                    if (cols[0] == bot && cols[2] == "One")
+                                    if (cols[0] == bot && cols[2] == "Two")
                                     {
                                         transcripts.Add((Player.One, cols[7]));
                                     }
-                                    else if (cols[1] == bot && cols[2] == "Two")
+                                    else if (cols[1] == bot && cols[2] == "One")
                                     {
                                         transcripts.Add((Player.Two, cols[7]));
                                     }
