@@ -22,11 +22,6 @@ namespace Volcano.Neural
 
         protected override int SelfPlayCallsPerIteration => Math.Max(1, config.NumSelfPlayIterations / config.NumParallelGames);
 
-        protected override IEngine CreateBenchmarkEngine(int forcedIterations)
-        {
-            return new ModelBenchmarkEngine(new AlphaZero(model, device, optimizer, scheduler, encoder, game, config, null), forcedIterations);
-        }
-
         protected override TrainingData SelfPlay()
         {
             TrainingData data = new TrainingData();

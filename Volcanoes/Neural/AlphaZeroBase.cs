@@ -36,8 +36,16 @@ namespace Volcano.Neural
         /// <summary>Plays out games and returns the positions gathered.</summary>
         protected abstract TrainingData SelfPlay();
 
-        /// <summary>Creates the engine for the model being trained, used to benchmark win rate.</summary>
-        protected abstract IEngine CreateBenchmarkEngine(int forcedIterations);
+        /// <summary>Creates a fresh engine for the model being trained, loading the current training checkpoint, used to benchmark win rate.</summary>
+        protected IEngine CreateBenchmarkEngine(string savePath, int forcedIterations)
+        {
+            string modelPath = Path.Combine(savePath, "training-model.dat");
+            if (model is GraphResNet)
+            {
+                return new AlphaZeroGraphEngine(VolcanoGraphZeroConfig.FromFile(modelPath, 12, 128)) { forcedIterations = forcedIterations };
+            }
+            return new AlphaZeroEngine(VolcanoZeroConfig.FromFile(modelPath, 10, 192)) { forcedIterations = forcedIterations };
+        }
 
         /// <summary>How many times <see cref="SelfPlay"/> is called per training iteration.</summary>
         protected abstract int SelfPlayCallsPerIteration { get; }
@@ -108,10 +116,10 @@ namespace Volcano.Neural
         }
 
         /// <summary>One pass over the data: shuffle, then fit policy (cross-entropy) and value (MSE).</summary>
-        public (double, double, double) Train(TrainingData data)
+        public (double, double, double, double) Train(TrainingData data)
         {
             int n = data.Count;
-            if (n == 0) return (0, 0, 0);
+            if (n == 0) return (0, 0, 0, 0);
 
             int[] order = Enumerable.Range(0, n).ToArray();
             for (int i = n - 1; i > 0; i--)      // Fisher-Yates shuffle
@@ -189,7 +197,7 @@ namespace Volcano.Neural
             AlphaZeroLog.WriteLine($"Loss: {lastLoss}");
             AlphaZeroLog.WriteLine($"Policy entropy: {lastPolicyEntropy} (target: {lastTargetEntropy}, uniform: {Math.Log(actions)})");
 
-            return (lastPolicyLoss, lastValueLoss, lastLoss);
+            return (lastPolicyLoss, lastValueLoss, lastLoss, lastPolicyEntropy);
         }
 
         /// <summary>The AlphaZero loop: self-play, train on the result, checkpoint, repeat.</summary>
@@ -217,7 +225,15 @@ namespace Volcano.Neural
                 AlphaZeroLog.WriteLine($"loaded {count} positions into replay buffer from {replays.Length} iteration(s)");
             }
 
-            for (int iteration = 0; iteration < config.NumIterations; iteration++)
+            string trainingStatePath = Path.Combine(savePath, "training.json");
+            int startIteration = 0;
+            if (File.Exists(trainingStatePath))
+            {
+                startIteration = JsonConvert.DeserializeObject<TrainingState>(File.ReadAllText(trainingStatePath)).Iteration + 1;
+                AlphaZeroLog.WriteLine($"resuming at iteration {startIteration}");
+            }
+
+            for (int iteration = startIteration; iteration < config.NumIterations; iteration++)
             {
                 AlphaZeroLog.WriteLine($"iteration {iteration}");
 
@@ -273,7 +289,7 @@ namespace Volcano.Neural
                 }
                 AlphaZeroLog.WriteLine($"training on {data.Count} positions ({fresh.Count} fresh + {historicalCount} historical) from {replayBuffer.Count} iteration{(replayBuffer.Count == 1 ? "" : "s")}");
                 model.train();
-                var lastLoss = (0.0, 0.0, 0.0);
+                var lastLoss = (0.0, 0.0, 0.0, 0.0);
                 for (int epoch = 0; epoch < config.NumEpochs; epoch++)
                 {
                     AlphaZeroLog.WriteLine($"epoch {epoch}");
@@ -290,20 +306,21 @@ namespace Volcano.Neural
 
                 string format = "0.##################################################";
 
-                var winRate = config.NumParallelGames <= 128 ? -1.0 : GetWinRate(savePath, 10, 2000, 1000, 1000);
+                string path2 = Path.Combine(savePath, "training-model.dat");
+                model.save(path2);
+
+                var winRate = config.NumParallelGames <= 128 ? -1.0 : GetWinRate(savePath, 10, 1000, 1000, 1000);
 
                 string status = Path.Combine(savePath, "status.csv");
                 if (!File.Exists(status))
                 {
-                    File.AppendAllLines(status, ["iteration,timestamp,games,policy loss,value loss,total loss,learning rate,win rate"]);
+                    File.AppendAllLines(status, ["iteration,timestamp,games,policy loss,value loss,total loss,entropy,learning rate,win rate"]);
                 }
-                File.AppendAllLines(status, [$"{iteration + 1},{DateTime.Now.ToString("yyyyMMddHHmmss")},{config.NumSelfPlayIterations * (iteration + 1)},{lastLoss.Item1.ToString(format)},{lastLoss.Item2.ToString(format)},{lastLoss.Item3.ToString(format)},{lr.First().ToString(format)},{winRate.ToString(format)}"]);
+                File.AppendAllLines(status, [$"{iteration + 1},{DateTime.Now.ToString("yyyyMMddHHmmss")},{config.NumSelfPlayIterations * (iteration + 1)},{lastLoss.Item1.ToString(format)},{lastLoss.Item2.ToString(format)},{lastLoss.Item3.ToString(format)},{lastLoss.Item4.ToString(format)},{lr.First().ToString(format)},{winRate.ToString(format)}"]);
                 string path1 = Path.Combine(savePath, $"model-{config.NumSelfPlayIterations * (iteration + 1)}-{DateTime.Now.ToString("yyyyMMddHHmmss")}.dat");
                 model.save(path1);
 
-                string path2 = Path.Combine(savePath, "training-model.dat");
                 string path3 = Path.Combine(savePath, "training-optimizer.dat");
-                model.save(path2);
                 try
                 {
                     optimizer.save_state_dict(path3);
@@ -313,12 +330,18 @@ namespace Volcano.Neural
                     AlphaZeroLog.WriteLine($"Failed to save optimizer state dictionary!");
                 }
                 File.WriteAllLines(replayBufferPath, replayBuffer.Select(x => JsonConvert.SerializeObject(x)));
+                File.WriteAllText(trainingStatePath, JsonConvert.SerializeObject(new TrainingState { Iteration = iteration }));
             }
+        }
+
+        private sealed class TrainingState
+        {
+            public int Iteration { get; set; }
         }
 
         private static readonly object lossLogLock = new();
 
-        private static void AppendLoss(string savePath, string one, string two, int onesims, int twosims, string winner, string transcript)
+        private static void AppendLoss(string savePath, string one, string two, int onesims, int twosims, string winner, string victory, string transcript)
         {
             try
             {
@@ -327,9 +350,9 @@ namespace Volcano.Neural
                     string path = Path.Combine(savePath, "losses.csv");
                     if (!File.Exists(path))
                     {
-                        File.AppendAllLines(path, ["time,one,two,onesims,twosims,winner,transcript"]);
+                        File.AppendAllLines(path, ["time,one,two,onesims,twosims,winner,victory,transcript"]);
                     }
-                    string line = string.Join(",", DateTime.Now.ToString("yyyyMMddHHmmss"), one, two, onesims, twosims, winner, "\"" + transcript.Replace("\"", "\"\"") + "\"");
+                    string line = string.Join(",", DateTime.Now.ToString("yyyyMMddHHmmss"), one, two, onesims, twosims, winner, victory, "\"" + transcript.Replace("\"", "\"\"") + "\"");
                     File.AppendAllLines(path, [line]);
                 }
             }
@@ -343,10 +366,12 @@ namespace Volcano.Neural
         {
             var wins = 0;
             var games = new List<Action>();
+            var timer = Stopwatch.StartNew();
 
             for (var i = 0; i < rounds; i++)
             {
-                var sims = benchsimstart + benchsiminc * i;
+                var round = i;
+                var sims = benchsimstart + benchsiminc * round;
                 games.Add(() =>
                 {
                     try
@@ -357,11 +382,11 @@ namespace Volcano.Neural
                         game.OnGameOver += (p, v) => victory = v;
 
                         var opponent = new MonteCarloTreeSearchEngine(MCTSVersion.V2) { forcedIterations = sims };
-                        var model = CreateBenchmarkEngine(alphasims);
+                        var model = CreateBenchmarkEngine(savePath, alphasims);
 
-                        game.RegisterEngine(Player.One, i % 2 == 0 ? model : opponent, true);
-                        game.RegisterEngine(Player.Two, i % 2 == 0 ? opponent : model, true);
-                        game.SecondsPerEngineMove = 60;
+                        game.RegisterEngine(Player.One, round % 2 == 0 ? model : opponent, true);
+                        game.RegisterEngine(Player.Two, round % 2 == 0 ? opponent : model, true);
+                        game.SecondsPerEngineMove = 120;
                         game.TimeoutGrace = 5000;
                         game.StartNewGame();
                         game.ComputerPlay();
@@ -376,23 +401,24 @@ namespace Volcano.Neural
 
                         game.ForceStop();
 
-                        if (game.CurrentState.Winner == Player.One && i % 2 == 0)
+                        if (game.CurrentState.Winner == Player.One && round % 2 == 0)
                         {
                             wins++;
                         }
-                        if (game.CurrentState.Winner == Player.Two && i % 2 == 1)
+                        if (game.CurrentState.Winner == Player.Two && round % 2 == 1)
                         {
                             wins++;
                         }
-                        if (game.CurrentState.Winner == (i % 2 == 0 ? Player.Two : Player.One))
+                        if (game.CurrentState.Winner == (round % 2 == 0 ? Player.Two : Player.One))
                         {
                             AppendLoss(
                                 savePath,
-                                i % 2 == 0 ? "model" : "bench",
-                                i % 2 == 0 ? "bench" : "model",
-                                i % 2 == 0 ? alphasims : sims,
-                                i % 2 == 0 ? sims : alphasims,
+                                round % 2 == 0 ? "model" : "bench",
+                                round % 2 == 0 ? "bench" : "model",
+                                round % 2 == 0 ? alphasims : sims,
+                                round % 2 == 0 ? sims : alphasims,
                                 game.CurrentState.Winner == Player.One ? "one" : (game.CurrentState.Winner == Player.Two ? "two" : "draw"),
+                                victory.ToString(),
                                 game.GetTranscriptLine());
                         }
                     }
@@ -415,7 +441,7 @@ namespace Volcano.Neural
 
             Parallel.ForEach(games, g => g());
 
-            AlphaZeroLog.WriteLine($"Won {wins} of {rounds} games");
+            AlphaZeroLog.WriteLine($"Won {wins} of {rounds} games in {timer.Elapsed.ToString(@"hh\:mm\:ss")}");
 
             return (double)wins / rounds;
         }

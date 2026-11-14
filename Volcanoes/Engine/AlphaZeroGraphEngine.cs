@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using TorchSharp.Modules;
 using Volcano.Game;
 using Volcano.Neural;
@@ -65,6 +66,7 @@ namespace Volcano.Engine
         private string _savePath = "models/graph/";
         internal bool _policyOnly;
         public int forcedIterations = -1;
+        public bool forceFirstMove = true;
 
         public AlphaZeroGraphEngine()
             : this(VolcanoGraphZeroConfig.FromFile(_defaultModel, _layers, _width))
@@ -148,6 +150,15 @@ namespace Volcano.Engine
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
             var timer = Stopwatch.StartNew();
+
+            if (forceFirstMove && state.Turn == 1 && state.Tiles.All(t => t == 0))
+            {
+                return new SearchResult
+                {
+                    BestMove = Constants.EquilateralIndexes[Random.Shared.Next(20)],
+                    Milliseconds = timer.ElapsedMilliseconds,
+                };
+            }
 
             var move = _alphaZero.GetBestMove(state, maxSeconds, forcedIterations, token, _policyOnly);
 
