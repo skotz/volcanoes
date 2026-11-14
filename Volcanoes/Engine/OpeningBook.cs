@@ -567,13 +567,6 @@ namespace Volcano.Engine
                     .Aggregate((c, n) => c + " " + n);
             }
 
-            // use iterations instead of time so we can run in parallel without starving a thread and getting bad results
-            // on my machine a 60 second search resulted in just over 1,000,000 mcts playouts, so roughly 15,000 per second
-            var engine = new AlphaZeroEngine(VolcanoZeroVersion.V3); // new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false, _solver = true, _moveFilter = new NearbyMoveFilter(), _rolloutStrategy = new NearbyRolloutStrategy() }; // new AlphaZeroEngine(VolcanoZeroVersion.V2);
-            //engine.simplifyFirstMove = true;
-            engine.forcedIterations = iterations;
-            //engine.forcedGap = gap;
-
             if (!_book.ContainsKey(t) && !_pending.ContainsKey(t) && game.CurrentState.GetMoves().Count > 0)
             {
                 _pending.TryAdd(t, true);
@@ -588,6 +581,13 @@ namespace Volcano.Engine
                 //    UpdateBook(depth, iterations, gap);
                 //    return "N26";
                 //}
+
+                // use iterations instead of time so we can run in parallel without starving a thread and getting bad results
+                //var engine = new AlphaZeroEngine(VolcanoZeroVersion.V3); // new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false, _solver = true, _moveFilter = new NearbyMoveFilter(), _rolloutStrategy = new NearbyRolloutStrategy() }; // new AlphaZeroEngine(VolcanoZeroVersion.V2);
+                var engine = new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V1);
+                //engine.simplifyFirstMove = true;
+                engine.forcedIterations = iterations;
+                //engine.forcedGap = gap;
 
                 var best = engine.GetBestMove(game.CurrentState, iterations, new EngineCancellationToken(() => false));
 
