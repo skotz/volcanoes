@@ -309,14 +309,18 @@ namespace Volcano.Neural
                 string path2 = Path.Combine(savePath, "training-model.dat");
                 model.save(path2);
 
-                var winRate = config.NumParallelGames <= 128 ? -1.0 : GetWinRate(savePath, 10, 1000, 1000, 1000);
+                var displayWinRate = "";
+                if ((iteration + 1) % 10 == 0 && config.NumParallelGames > 128)
+                {
+                    displayWinRate = GetWinRate(savePath, 10, 1000, 1000, 1000).ToString(format);
+                }
 
                 string status = Path.Combine(savePath, "status.csv");
                 if (!File.Exists(status))
                 {
                     File.AppendAllLines(status, ["iteration,timestamp,games,policy loss,value loss,total loss,entropy,learning rate,win rate"]);
                 }
-                File.AppendAllLines(status, [$"{iteration + 1},{DateTime.Now.ToString("yyyyMMddHHmmss")},{config.NumSelfPlayIterations * (iteration + 1)},{lastLoss.Item1.ToString(format)},{lastLoss.Item2.ToString(format)},{lastLoss.Item3.ToString(format)},{lastLoss.Item4.ToString(format)},{lr.First().ToString(format)},{winRate.ToString(format)}"]);
+                File.AppendAllLines(status, [$"{iteration + 1},{DateTime.Now.ToString("yyyyMMddHHmmss")},{config.NumSelfPlayIterations * (iteration + 1)},{lastLoss.Item1.ToString(format)},{lastLoss.Item2.ToString(format)},{lastLoss.Item3.ToString(format)},{lastLoss.Item4.ToString(format)},{lr.First().ToString(format)},{displayWinRate}"]);
                 string path1 = Path.Combine(savePath, $"model-{config.NumSelfPlayIterations * (iteration + 1)}-{DateTime.Now.ToString("yyyyMMddHHmmss")}.dat");
                 model.save(path1);
 
