@@ -32,12 +32,7 @@ namespace Volcano.Neural
 
             for (int i = 0; i < numResBlocks; i++)
             {
-                sb.Append("ResBlock_");
-                sb.Append(i.ToString());
-                backBone.add_module(sb.ToString(), new ResBlock(numHidden, sb.ToString()));
-
-                // this fixes a critical error, but also breaks existing models meaning they all have to be retrained
-                // backBone.append(new ResBlock(numHidden, "ResBlock_" + i.ToString()));
+                backBone.append(new ResBlock(numHidden, "ResBlock_" + i.ToString()));
             }
 
             policyHead = torch.nn.Sequential(skotz.nn.CylConv2d(numHidden, 256),

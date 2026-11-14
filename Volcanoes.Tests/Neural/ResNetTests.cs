@@ -7,7 +7,7 @@ namespace Volcanoes.Tests.Neural
 {
     public class ResNetTests
     {
-        [Fact(Skip = "temporarily skipping until i want to spend time retraining the cnn models")]
+        [Fact]
         public void Forward_EveryParameterReceivesGradient()
         {
             var model = new ResNet(2, 16, torch.CPU);
