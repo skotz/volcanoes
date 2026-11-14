@@ -125,7 +125,7 @@ namespace Volcano.Neural
                             pv += Constants.TileNames[c.ActionTaken] + " (" + c.VisitCount + ")   ";
                             c = c.Children?.OrderBy(x => x.VisitCount)?.LastOrDefault();
                         }
-                        status.Add(child?.ActionTaken ?? 80, eval, pv, child.VisitCount + rootPolicy[child.ActionTaken]);
+                        status.Add(child?.ActionTaken ?? 80, eval, pv, child.VisitCount + rootPolicy[child.ActionTaken], child.VisitCount == 0);
                     }
                     status.Sort();
                     OnStatus?.Invoke(this, status);

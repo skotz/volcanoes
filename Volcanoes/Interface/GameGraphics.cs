@@ -693,8 +693,10 @@ namespace Volcano.Interface
                             // best is highest visits, not just best eval
                             var isBest = details.Sort == bestSort;
 
+                            var label = details.Unevaluated ? "-" : details.Evaluation.ToString();
+
                             FillRoundedRectangle(g, i, scale, isBest);
-                            DrawTileText(g, i, details.Evaluation.ToString(), 3, GraphicsSettings.SubTextFontSize, false, Color.Black);
+                            DrawTileText(g, i, label, 3, GraphicsSettings.SubTextFontSize, false, Color.Black);
                             //DrawTileText(g, i, scaleSort.ToString("0.00"), 3, GraphicsSettings.SubTextFontSize, false, Color.Black);
                         }
                     }
