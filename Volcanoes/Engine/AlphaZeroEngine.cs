@@ -29,7 +29,7 @@ namespace Volcano.Engine
         V3,
 
         /// <summary>
-        /// 8r 32f ?g
+        /// 6r 64f
         /// </summary>
         V4,
     }

@@ -205,7 +205,9 @@ namespace Volcano.Neural
         {
             Directory.CreateDirectory(savePath);
 
-            // Replay buffer holding the last N iterations of self-play. Training on only the
+            AlphaZeroLog.WriteLine($"cuda.is_available: {torch.cuda.is_available()}, training device: {device}");
+
+            // Replay buffer holding
             // newest games makes each iteration overfit a small, freshly-generated sample and
             // partially forget the previous one; mixing in recent history keeps the value
             // targets stable and stops rare tactical positions from vanishing after one round.
