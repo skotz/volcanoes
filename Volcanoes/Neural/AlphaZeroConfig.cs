@@ -59,6 +59,12 @@
         public int BatchesPerIteration { get; init; } = 200;
 
         /// <summary>
+        /// Apply a random board symmetry to each sample drawn from the replay buffer. The policy
+        /// targets are transformed alongside the state; the value target is unchanged.
+        /// </summary>
+        public bool EnableSymmetryAugmentation { get; init; } = true;
+
+        /// <summary>
         /// Temperature applied to visit counts when sampling self-play moves. 1.0 samples in
         /// proportion to visits; above 1.0 flattens the distribution and adds randomness.
         /// </summary>

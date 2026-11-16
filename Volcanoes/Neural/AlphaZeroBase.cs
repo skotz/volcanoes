@@ -42,9 +42,9 @@ namespace Volcano.Neural
             string modelPath = Path.Combine(savePath, "training-model.dat");
             if (model is GraphResNet)
             {
-                return new AlphaZeroGraphEngine(VolcanoGraphZeroConfig.FromFile(modelPath, 12, 128)) { forcedIterations = forcedIterations };
+                return new AlphaZeroGraphEngine(VolcanoGraphZeroConfig.FromFile(modelPath, 12, 128, encoder)) { forcedIterations = forcedIterations };
             }
-            return new AlphaZeroEngine(VolcanoZeroConfig.FromFile(modelPath, 10, 192)) { forcedIterations = forcedIterations };
+            return new AlphaZeroEngine(VolcanoZeroConfig.FromFile(modelPath, 10, 192, encoder)) { forcedIterations = forcedIterations };
         }
 
         /// <summary>How many times <see cref="SelfPlay"/> is called per training iteration.</summary>
@@ -129,6 +129,7 @@ namespace Volcano.Neural
             }
 
             int actions = game.ActionSize;
+            var canonical = new Canonical();
             float lastPolicyLoss = 0, lastValueLoss = 0, lastLoss = 0, lastPolicyEntropy = 0, lastTargetEntropy = 0;
 
             for (int start = 0; start < n; start += config.BatchSize)
@@ -144,6 +145,12 @@ namespace Volcano.Neural
                     int idx = order[start + k];
                     states[k] = data.States[idx];
                     double[] p = data.Probs[idx];
+                    if (config.EnableSymmetryAugmentation)
+                    {
+                        canonical.SetRandomPermutation();
+                        states[k] = canonical.Canonicalize(states[k]);
+                        p = canonical.Canonicalize(p);
+                    }
                     for (int a = 0; a < actions; a++)
                     {
                         flatPolicy[k * actions + a] = (float)p[a];

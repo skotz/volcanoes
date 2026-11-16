@@ -1,9 +1,7 @@
-using System.Linq;
 using FluentAssertions;
 using TorchSharp;
 using Volcano.Game;
 using Volcano.Neural;
-using Xunit;
 
 namespace Volcanoes.Tests.Neural
 {
@@ -54,7 +52,7 @@ namespace Volcanoes.Tests.Neural
         [Fact]
         public void Forward_EveryParameterReceivesGradient()
         {
-            var model = new GraphResNet(2, 16, torch.CPU);
+            var model = new GraphResNet(2, 16, GraphEncoder.features, torch.CPU);
             var encoder = new GraphEncoder();
 
             var board = new Board();
@@ -77,10 +75,9 @@ namespace Volcanoes.Tests.Neural
         [Fact]
         public void Forward_ReturnsPolicyPerTileAndSingleValue()
         {
-            var model = new GraphResNet(2, 16, torch.CPU);
+            var model = new GraphResNet(2, 16, GraphEncoder.features, torch.CPU);
             var encoder = new GraphEncoder();
             var boards = new[] { new Board(), new Board() };
-
             using (torch.no_grad())
             {
                 var (policy, value) = model.forward(encoder.Encode(boards, torch.CPU));

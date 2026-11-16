@@ -29,9 +29,14 @@ namespace Volcano.Engine
         V3,
 
         /// <summary>
-        /// 6r 64f
+        /// 10r 192f 204800g (fixed)
         /// </summary>
         V4,
+
+        /// <summary>
+        /// 5r 64f
+        /// </summary>
+        V5,
     }
 
     internal class VolcanoZeroConfig
@@ -42,16 +47,19 @@ namespace Volcano.Engine
 
         public int ResidualFeatures { get; private set; }
 
-        public VolcanoZeroConfig(string modelPath, int residualBlocks, int residualFeatures)
+        public IBoardEncoder BoardEncoder { get; private set; }
+
+        public VolcanoZeroConfig(string modelPath, int residualBlocks, int residualFeatures, IBoardEncoder encoder = null)
         {
             ModelPath = modelPath;
             ResidualBlocks = residualBlocks;
             ResidualFeatures = residualFeatures;
+            BoardEncoder = encoder ?? new Encoder();
         }
 
-        public static VolcanoZeroConfig FromFile(string modelPath, int residualBlocks, int residualFeatures)
+        public static VolcanoZeroConfig FromFile(string modelPath, int residualBlocks, int residualFeatures, IBoardEncoder encoder = null)
         {
-            return new VolcanoZeroConfig(modelPath, residualBlocks, residualFeatures);
+            return new VolcanoZeroConfig(modelPath, residualBlocks, residualFeatures, encoder);
         }
     }
 
@@ -68,7 +76,7 @@ namespace Volcano.Engine
         private ResNet _model;
         private Adam _optimizer;
         private LRScheduler _scheduler;
-        private Encoder _encoder;
+        private IBoardEncoder _encoder;
         private Volcano.Neural.GameRule _game;
         private AlphaZero _alphaZero;
 
@@ -127,16 +135,16 @@ namespace Volcano.Engine
             switch (version)
             {
                 case VolcanoZeroVersion.V1:
-                    return VolcanoZeroConfig.FromFile("models\\volcanozero-v1-6r-128f-102400g.dat", 6, 128);
-
                 case VolcanoZeroVersion.V2:
-                    return VolcanoZeroConfig.FromFile("models\\volcanozero-v2-6r-128f-233472g.dat", 6, 128);
-
                 case VolcanoZeroVersion.V3:
-                    return VolcanoZeroConfig.FromFile("models\\volcanozero-v3-10r-192f-1028096g.dat", 10, 192);
+                    // these versions were trained with a bug that prevented the residual layers from actually learning
+                    throw new ArgumentException("Obsolete VolcanoZero Version");
 
-                //case VolcanoZeroVersion.V4:
-                //    return VolcanoZeroConfig.FromFile("models\\volcanozero-v1-8r-32f-204800g.dat", 8, 32);
+                case VolcanoZeroVersion.V4:
+                    return VolcanoZeroConfig.FromFile("models\\volcanozero-dcnn-v4-10r-192f-204800g.dat", 10, 192, new Encoder());
+
+                case VolcanoZeroVersion.V5:
+                    return VolcanoZeroConfig.FromFile("models\\volcanozero-dcnn-v5-5r-64f-204800g.dat", 5, 64, new SimpleEncoder());
 
                 default:
                     throw new ArgumentException("Invalid VolcanoZero Version");
@@ -148,7 +156,7 @@ namespace Volcano.Engine
             _settings = config;
             _config = new AlphaZeroConfig();
             _device = cuda.is_available() ? new Device("cuda") : new Device("cpu");
-            _model = new ResNet(_settings.ResidualBlocks, _settings.ResidualFeatures, _device);
+            _model = new ResNet(_settings.ResidualBlocks, _settings.ResidualFeatures, _settings.BoardEncoder.InputChannels, _device);
 
             string modelPath = Path.Combine(_savePath, "training-model.dat");
             string optimizerPath = Path.Combine(_savePath, "training-optimizer.dat");
@@ -183,7 +191,7 @@ namespace Volcano.Engine
             }
 
             _scheduler = lr_scheduler.ExponentialLR(_optimizer, _config.LearningRateDecay);
-            _encoder = new Volcano.Neural.Encoder();
+            _encoder = _settings.BoardEncoder;
             _game = new Volcano.Neural.GameRule();
 
             if (!forTraining)

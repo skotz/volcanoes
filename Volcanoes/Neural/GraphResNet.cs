@@ -80,13 +80,13 @@ namespace Volcano.Neural
             }
         }
 
-        public GraphResNet(int numLayers, int width, Device device) : base("GraphResNet")
+        public GraphResNet(int numLayers, int width, int inputFeatures, Device device) : base("GraphResNet")
         {
             this.width = width;
             adjacency = BuildTypedAdjacency().to(device);
 
             // LayerNorm keeps h and h0 at a consistent scale across the residual stack.
-            inputBlock = torch.nn.Sequential(torch.nn.Linear(GraphEncoder.features, width),
+            inputBlock = torch.nn.Sequential(torch.nn.Linear(inputFeatures, width),
                                              torch.nn.LayerNorm(new long[] { width }),
                                              torch.nn.ReLU());
             finalNorm = torch.nn.LayerNorm(new long[] { width });

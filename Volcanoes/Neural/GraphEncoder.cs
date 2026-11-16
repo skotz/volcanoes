@@ -12,6 +12,8 @@ namespace Volcano.Neural
         /// </summary>
         public const int features = 10;
 
+        public int InputChannels => features;
+
         public const int nodes = 80;
 
         /// <summary>

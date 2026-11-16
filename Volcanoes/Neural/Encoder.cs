@@ -14,6 +14,8 @@ namespace Volcano.Neural
         /// </summary>
         public const int channels = 38;
 
+        public int InputChannels => channels;
+
         private string[][] tileMapping = [
             [ "N06", "N01", "N09", "N02", "N12", "N03", "N15", "N04", "N18", "N05", ],
             [ "N21", "N07", "N25", "N10", "N29", "N13", "N33", "N16", "N37", "N19", ],

@@ -10,7 +10,7 @@ namespace Volcanoes.Tests.Neural
         [Fact]
         public void Forward_EveryParameterReceivesGradient()
         {
-            var model = new ResNet(2, 16, torch.CPU);
+            var model = new ResNet(2, 16, Encoder.channels, torch.CPU);
             var encoder = new Encoder();
             model.train();
 

@@ -293,6 +293,21 @@ namespace Volcano.Game
             SetIndex(board.Tiles);
         }
 
+        public void SetPermutation(int permutation)
+        {
+            if (permutation < 0 || permutation >= _canonicalToIndex.GetLength(0))
+            {
+                throw new ArgumentOutOfRangeException("index");
+            }
+
+            _permutation = permutation;
+        }
+
+        public void SetRandomPermutation()
+        {
+            _permutation = Random.Shared.Next(_canonicalToIndex.GetLength(0));
+        }
+
         private void VerifyIndex()
         {
             if (_permutation == -1)
@@ -339,6 +354,17 @@ namespace Volcano.Game
         public bool[] Canonicalize(bool[] board)
         {
             var newBoard = new bool[board.Length];
+            for (var i = 0; i < 80; i++)
+            {
+                newBoard[BoardToCanonical(i)] = board[i];
+            }
+
+            return newBoard;
+        }
+
+        public double[] Canonicalize(double[] board)
+        {
+            var newBoard = new double[board.Length];
             for (var i = 0; i < 80; i++)
             {
                 newBoard[BoardToCanonical(i)] = board[i];

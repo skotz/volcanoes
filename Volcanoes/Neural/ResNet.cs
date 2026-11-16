@@ -22,10 +22,10 @@ namespace Volcano.Neural
             }
         }
 
-        public ResNet(int numResBlocks, int numHidden, Device device) : base("ResNet")
+        public ResNet(int numResBlocks, int numHidden, int inputChannels, Device device) : base("ResNet")
         {
             this.device = device;
-            startBlock = torch.nn.Sequential(skotz.nn.CylConv2d(Encoder.channels, numHidden),
+            startBlock = torch.nn.Sequential(skotz.nn.CylConv2d(inputChannels, numHidden),
                                              torch.nn.BatchNorm2d(numHidden),
                                              torch.nn.ReLU());
             backBone = torch.nn.ModuleList<ResBlock>();

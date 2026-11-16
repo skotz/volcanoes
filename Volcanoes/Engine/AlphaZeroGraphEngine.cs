@@ -28,16 +28,19 @@ namespace Volcano.Engine
 
         public int Width { get; private set; }
 
-        public VolcanoGraphZeroConfig(string modelPath, int layers, int width)
+        public IBoardEncoder BoardEncoder { get; private set; }
+
+        public VolcanoGraphZeroConfig(string modelPath, int layers, int width, IBoardEncoder encoder = null)
         {
             ModelPath = modelPath;
             Layers = layers;
             Width = width;
+            BoardEncoder = encoder ?? new GraphEncoder();
         }
 
-        public static VolcanoGraphZeroConfig FromFile(string modelPath, int layers, int width)
+        public static VolcanoGraphZeroConfig FromFile(string modelPath, int layers, int width, IBoardEncoder encoder = null)
         {
-            return new VolcanoGraphZeroConfig(modelPath, layers, width);
+            return new VolcanoGraphZeroConfig(modelPath, layers, width, encoder);
         }
     }
 
@@ -53,7 +56,7 @@ namespace Volcano.Engine
         private GraphResNet _model;
         private Adam _optimizer;
         private LRScheduler _scheduler;
-        private GraphEncoder _encoder;
+        private IBoardEncoder _encoder;
         private GameRule _game;
         private AlphaZero _alphaZero;
 
@@ -93,7 +96,7 @@ namespace Volcano.Engine
             switch (version)
             {
                 case VolcanoGraphZeroVersion.V1:
-                    return VolcanoGraphZeroConfig.FromFile("models\\volcanozero-gcnii-v1-12r-128w-204800.dat", 12, 128);
+                    return VolcanoGraphZeroConfig.FromFile("models\\volcanozero-gcnii-v1-12r-128w-204800g.dat", 12, 128, new GraphEncoder());
 
                 default:
                     throw new ArgumentException("Invalid VolcanoGraphZero Version");
@@ -105,7 +108,7 @@ namespace Volcano.Engine
             _settings = config;
             _config = new AlphaZeroConfig();
             _device = cuda.is_available() ? new Device("cuda") : new Device("cpu");
-            _model = new GraphResNet(_settings.Layers, _settings.Width, _device);
+            _model = new GraphResNet(_settings.Layers, _settings.Width, _settings.BoardEncoder.InputChannels, _device);
 
             string modelPath = Path.Combine(_savePath, "training-model.dat");
             string optimizerPath = Path.Combine(_savePath, "training-optimizer.dat");
@@ -132,7 +135,7 @@ namespace Volcano.Engine
             }
 
             _scheduler = lr_scheduler.ExponentialLR(_optimizer, _config.LearningRateDecay);
-            _encoder = new GraphEncoder();
+            _encoder = _settings.BoardEncoder;
             _game = new GameRule();
 
             if (!forTraining)

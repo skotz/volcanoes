@@ -141,14 +141,17 @@ namespace Volcano
             //engines.Add("MCTS PUCT 1.0", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 1.0 });
             //engines.Add("MCTS PUCT 0.55 1.5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.55, _ucbFactor = 1.5 });
 
-            engines.Add("VolcanoZero v1", () => new AlphaZeroEngine(VolcanoZeroVersion.V1));
-            engines.Add("VolcanoZero v2", () => new AlphaZeroEngine(VolcanoZeroVersion.V2));
-            engines.Add("VolcanoZero v3", () => new AlphaZeroEngine(VolcanoZeroVersion.V3));
+            //engines.Add("VolcanoZero v1", () => new AlphaZeroEngine(VolcanoZeroVersion.V1));
+            //engines.Add("VolcanoZero v2", () => new AlphaZeroEngine(VolcanoZeroVersion.V2));
+            //engines.Add("VolcanoZero v3", () => new AlphaZeroEngine(VolcanoZeroVersion.V3));
+            engines.Add("VolcanoZero 2D v4", () => new AlphaZeroEngine(VolcanoZeroVersion.V4));
+            engines.Add("VolcanoZero 2D v5", () => new AlphaZeroEngine(VolcanoZeroVersion.V5));
 
-            engines.Add("VolcanoZero v1 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V1) { _policyOnly = true });
-            engines.Add("VolcanoZero v2 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V2) { _policyOnly = true });
-            //engines.Add("VolcanoZero v2 PB", () => new AlphaZeroEngine(VolcanoZeroVersion.V2, "new-book.dat") { _policyOnly = true });
-            engines.Add("VolcanoZero v3 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V3) { _policyOnly = true });
+            //engines.Add("VolcanoZero v1 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V1) { _policyOnly = true });
+            //engines.Add("VolcanoZero v2 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V2) { _policyOnly = true });
+            //engines.Add("VolcanoZero v3 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V3) { _policyOnly = true });
+            engines.Add("VolcanoZero v4 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V4) { _policyOnly = true });
+            engines.Add("VolcanoZero v5 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V5) { _policyOnly = true });
 
             engines.Add("VolcanoZero GCNII v1", () => new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V1));
             engines.Add("VolcanoZero GCNII v1 Policy", () => new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V1) { _policyOnly = true });
