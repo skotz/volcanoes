@@ -93,6 +93,7 @@
             saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             growthMoveTimer = new System.Windows.Forms.Timer(components);
+            benchmarkEncodersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             toolStripContainer1.ContentPanel.SuspendLayout();
             toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -270,7 +271,7 @@
             // 
             // dEBUGToolStripMenuItem
             // 
-            dEBUGToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { stressTestPathSearchToolStripMenuItem, stressTestEngineSearchToolStripMenuItem, toolStripSeparator11, loadCGStringFromClipboardToolStripMenuItem, toolStripSeparator7, exportRulesToolStripMenuItem1, resetRulesToolStripMenuItem, toolStripSeparator8, exportThemeToolStripMenuItem, resetThemeToolStripMenuItem, toolStripSeparator9, whiteboardModeToolStripMenuItem, toolStripSeparator10, generateOpeningBooksToolStripMenuItem, toolStripSeparator12, trainQLearningToolStripMenuItem, toolStripSeparator13, canonicalizeBoardToolStripMenuItem });
+            dEBUGToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { stressTestPathSearchToolStripMenuItem, stressTestEngineSearchToolStripMenuItem, toolStripSeparator11, loadCGStringFromClipboardToolStripMenuItem, toolStripSeparator7, exportRulesToolStripMenuItem1, resetRulesToolStripMenuItem, toolStripSeparator8, exportThemeToolStripMenuItem, resetThemeToolStripMenuItem, toolStripSeparator9, whiteboardModeToolStripMenuItem, toolStripSeparator10, generateOpeningBooksToolStripMenuItem, toolStripSeparator12, trainQLearningToolStripMenuItem, benchmarkEncodersToolStripMenuItem, toolStripSeparator13, canonicalizeBoardToolStripMenuItem });
             dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
             dEBUGToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
             dEBUGToolStripMenuItem.Text = "DEBUG";
@@ -565,6 +566,13 @@
             growthMoveTimer.Interval = 1000;
             growthMoveTimer.Tick += growthMoveTimer_Tick;
             // 
+            // benchmarkEncodersToolStripMenuItem
+            // 
+            benchmarkEncodersToolStripMenuItem.Name = "benchmarkEncodersToolStripMenuItem";
+            benchmarkEncodersToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
+            benchmarkEncodersToolStripMenuItem.Text = "Benchmark Encoders";
+            benchmarkEncodersToolStripMenuItem.Click += benchmarkEncodersToolStripMenuItem_Click;
+            // 
             // GameForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -661,6 +669,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator12;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
         private System.Windows.Forms.ToolStripMenuItem canonicalizeBoardToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem benchmarkEncodersToolStripMenuItem;
     }
 }
 

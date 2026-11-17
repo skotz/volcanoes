@@ -65,10 +65,6 @@ namespace Volcano.Engine
 
     internal class AlphaZeroEngine : IEngine, IStatus, ILearn
     {
-        private const string _defaultModel = "x";
-        private const int _resBlocks = 10;
-        private const int _resFeatures = 192;
-
         private VolcanoZeroConfig _settings;
         private AlphaZeroConfig _config;
         private Device _device;
@@ -98,11 +94,6 @@ namespace Volcano.Engine
 
         private OpeningBook _book;
 
-        public AlphaZeroEngine()
-            : this(VolcanoZeroConfig.FromFile(_defaultModel, _resBlocks, _resFeatures))
-        {
-        }
-
         public AlphaZeroEngine(VolcanoZeroVersion version)
             : this(GetConfig(version), false)
         {
@@ -126,8 +117,9 @@ namespace Volcano.Engine
         }
 
         public AlphaZeroEngine(bool forTraining)
-            : this(VolcanoZeroConfig.FromFile(_defaultModel, _resBlocks, _resFeatures), forTraining)
+            : this(VolcanoZeroConfig.FromFile("x", 5, 64, new SimpleEncoder()), forTraining)
         {
+            // These are the settings used for training
         }
 
         private static VolcanoZeroConfig GetConfig(VolcanoZeroVersion version)
@@ -144,7 +136,7 @@ namespace Volcano.Engine
                     return VolcanoZeroConfig.FromFile("models\\volcanozero-dcnn-v4-10r-192f-204800g.dat", 10, 192, new Encoder());
 
                 case VolcanoZeroVersion.V5:
-                    return VolcanoZeroConfig.FromFile("models\\volcanozero-dcnn-v5-5r-64f-204800g.dat", 5, 64, new SimpleEncoder());
+                    return VolcanoZeroConfig.FromFile("models\\x.dat", 5, 64, new SimpleEncoder());
 
                 default:
                     throw new ArgumentException("Invalid VolcanoZero Version");

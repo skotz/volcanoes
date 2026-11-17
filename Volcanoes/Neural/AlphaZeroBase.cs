@@ -44,7 +44,7 @@ namespace Volcano.Neural
             {
                 return new AlphaZeroGraphEngine(VolcanoGraphZeroConfig.FromFile(modelPath, 12, 128, encoder)) { forcedIterations = forcedIterations };
             }
-            return new AlphaZeroEngine(VolcanoZeroConfig.FromFile(modelPath, 10, 192, encoder)) { forcedIterations = forcedIterations };
+            return new AlphaZeroEngine(VolcanoZeroConfig.FromFile(modelPath, 5, 64, encoder)) { forcedIterations = forcedIterations };
         }
 
         /// <summary>How many times <see cref="SelfPlay"/> is called per training iteration.</summary>
@@ -443,6 +443,8 @@ namespace Volcano.Neural
                             {
                                 sw.WriteLine("Failed to run validation game: " + ex.ToString());
                             }
+
+                            AlphaZeroLog.WriteLine("Failed to run validation game: " + ex.Message);
                         }
                         catch
                         {

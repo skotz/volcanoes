@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using Volcano.Engine;
 using Volcano.Game;
 using Volcano.Interface;
+using Volcano.Neural;
 using Volcano.Search;
 using static System.Environment;
 
@@ -162,7 +163,7 @@ namespace Volcano
             }
             if (File.Exists("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat"))
             {
-                engines.Add("VolcanoZero TRAINING", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat", 10, 192)));
+                engines.Add("VolcanoZero TRAINING", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat", 5, 64, new SimpleEncoder())));
             }
             if (File.Exists("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Debug\\net10.0-windows\\new-book.dat"))
             {
@@ -693,6 +694,13 @@ namespace Volcano
             //game.CurrentState.MakeMove(Constants.AllGrowMove, false, false);
 
             //game.CurrentState = JsonConvert.DeserializeObject<Board>("{\"Tiles\":[0,4,-4,4,-3,4,-4,-4,4,4,4,0,4,4,4,4,4,4,4,4,-4,-4,0,-4,-4,-4,-4,-4,-4,-4,-4,0,4,4,4,4,4,4,4,4,-4,-4,-4,-4,-4,-4,-4,-4,4,4,4,0,4,4,4,4,0,4,-4,4,-4,-4,-4,-4,-4,-4,-4,-4,-3,-4,-4,4,0,-4,4,4,0,-4,4,-4],\"Dormant\":[false,true,true,true,false,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,false,true,true,true,false,true,true,true,false,true,true,true],\"Player\":0,\"Turn\":299,\"Winner\":2,\"WinningPathPlayerOne\":[],\"WinningPathPlayerTwo\":[],\"LastMoveIncreasedTile\":true,\"Transcript\":null,\"allowHash\":false,\"fastWinSearch\":false,\"Flipped\":false,\"winHashes\":null,\"State\":0}");
+        }
+
+        private void benchmarkEncodersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var path = Path.Combine(Environment.CurrentDirectory, "encoder-speed.csv");
+            Volcano.Neural.EncoderBenchmark.Run(path);
+            MessageBox.Show($"Encoder benchmark complete: {path}", "Benchmark Encoders");
         }
     }
 }
