@@ -409,7 +409,6 @@ namespace Volcano.Engine
             _stop = false;
             _pending = new ConcurrentDictionary<string, bool>();
 
-            var done = 0;
             var total = 1;
 
             // Blue's first move (hardcode to one of the 20 identical equilateral triangles since plenty of computational power says that's slightly better than one of the 60 identical isosceles triangles)

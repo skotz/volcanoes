@@ -68,7 +68,6 @@ namespace Volcano.Engine
         private VolcanoZeroConfig _settings;
         private AlphaZeroConfig _config;
         private Device _device;
-        private Tensor _topology;
         private ResNet _model;
         private Adam _optimizer;
         private LRScheduler _scheduler;
