@@ -46,10 +46,6 @@ namespace Volcano.Engine
 
     internal class AlphaZeroGraphEngine : IEngine, IStatus, ILearn
     {
-        private const string _defaultModel = "x";
-        private const int _layers = 12;
-        private const int _width = 128;
-
         private VolcanoGraphZeroConfig _settings;
         private AlphaZeroConfig _config;
         private Device _device;
@@ -71,11 +67,6 @@ namespace Volcano.Engine
         public int forcedIterations = -1;
         public bool forceFirstMove = true;
 
-        public AlphaZeroGraphEngine()
-            : this(VolcanoGraphZeroConfig.FromFile(_defaultModel, _layers, _width))
-        {
-        }
-
         public AlphaZeroGraphEngine(VolcanoGraphZeroVersion version)
             : this(GetConfig(version), false)
         {
@@ -87,7 +78,7 @@ namespace Volcano.Engine
         }
 
         public AlphaZeroGraphEngine(bool forTraining)
-            : this(VolcanoGraphZeroConfig.FromFile(_defaultModel, _layers, _width), forTraining)
+            : this(VolcanoGraphZeroConfig.FromFile("x", 12, 128, new PathGraphEncoder()), forTraining)
         {
         }
 

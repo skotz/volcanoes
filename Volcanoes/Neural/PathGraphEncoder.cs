@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TorchSharp;
@@ -13,12 +14,20 @@ namespace Volcano.Neural
         /// 1 channel for move type (all nodes are 1 if next turn is AllGrow)
         /// 1 channel for the state after one forced growth, dense encoded
         /// 1 channel for the state after two forced growths, dense encoded
+        /// 1 channel for the state after three forced growths, dense encoded
         /// 1 channel for the shortest path for the current player (1 on path tiles)
         /// 1 channel for the shortest path for the opponent (1 on path tiles)
         /// 1 channel for all current player paths, summed and scaled to [0,1]
         /// 1 channel for all opponent paths, summed and scaled to [0,1]
+        /// 1 channel for triangle type (1 for equilateral, 0 otherwise)
+        /// 1 channel for count of neighbors > 0, divided by 3
+        /// 1 channel for count of neighbors < 0, divided by 3
+        /// 1 channel for count of neighbors == 0, divided by 3
+        /// 1 channel for the dense encoded antipode value
+        /// 1 channel for count of empty tiles, divided by 80 (same for all nodes)
+        /// 1 channel for turn, divided by 40 and capped at 40 (same for all nodes)
         /// </summary>
-        public const int features = 16;
+        public const int features = 24;
 
         public int InputChannels => features;
 
@@ -42,6 +51,9 @@ namespace Volcano.Neural
 
                 var afterTwoGrowths = new Board(afterOneGrowth);
                 afterTwoGrowths.MakeMove(Constants.AllGrowMove, false, false);
+
+                var afterThreeGrowths = new Board(afterTwoGrowths);
+                afterThreeGrowths.MakeMove(Constants.AllGrowMove, false, false);
 
                 var allGrow = state.GetMoveTypeForTurn(state.Turn + 1) == MoveType.AllGrow;
 
@@ -82,6 +94,15 @@ namespace Volcano.Neural
                     oppBest[tile] = 1;
                 }
 
+                var equilateral = new bool[nodes];
+                foreach (var tile in Constants.EquilateralIndexes)
+                {
+                    equilateral[tile] = true;
+                }
+
+                var emptyFraction = board.Count(t => t == 0) / (float)nodes;
+                var turnFraction = Math.Min(state.Turn, 40) / 40.0f;
+
                 for (var tileIdx = 0; tileIdx < nodes; tileIdx++)
                 {
                     var baseIndex = (b * nodes + tileIdx) * features;
@@ -95,10 +116,38 @@ namespace Volcano.Neural
 
                     data[baseIndex + 10] = afterOneGrowth.Tiles[tileIdx] / 4.0f;
                     data[baseIndex + 11] = afterTwoGrowths.Tiles[tileIdx] / 4.0f;
-                    data[baseIndex + 12] = (float)myBest[tileIdx];
-                    data[baseIndex + 13] = (float)oppBest[tileIdx];
-                    data[baseIndex + 14] = (float)myAll[tileIdx];
-                    data[baseIndex + 15] = (float)oppAll[tileIdx];
+                    data[baseIndex + 12] = afterThreeGrowths.Tiles[tileIdx] / 4.0f;
+                    data[baseIndex + 13] = (float)myBest[tileIdx];
+                    data[baseIndex + 14] = (float)oppBest[tileIdx];
+                    data[baseIndex + 15] = (float)myAll[tileIdx];
+                    data[baseIndex + 16] = (float)oppAll[tileIdx];
+                    data[baseIndex + 17] = equilateral[tileIdx] ? 1.0f : 0.0f;
+
+                    var positive = 0;
+                    var negative = 0;
+                    var zero = 0;
+                    foreach (var neighbor in Constants.AdjacentIndexes[tileIdx])
+                    {
+                        if (board[neighbor] > 0)
+                        {
+                            positive++;
+                        }
+                        else if (board[neighbor] < 0)
+                        {
+                            negative++;
+                        }
+                        else
+                        {
+                            zero++;
+                        }
+                    }
+
+                    data[baseIndex + 18] = positive / 3.0f;
+                    data[baseIndex + 19] = negative / 3.0f;
+                    data[baseIndex + 20] = zero / 3.0f;
+                    data[baseIndex + 21] = board[Constants.Antipodes[tileIdx]] / 4.0f;
+                    data[baseIndex + 22] = emptyFraction;
+                    data[baseIndex + 23] = turnFraction;
                 }
             }
 
