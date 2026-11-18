@@ -53,8 +53,13 @@ namespace Volcano.Search
 
             // The set of currently discovered nodes that are not evaluated yet.
             // Initially, only the start node is known.
-            Queue<int> openSet = new Queue<int>();
-            openSet.Enqueue(startingIndex);
+            // Each node is enqueued at most once, so a fixed-size array with head/tail indices is sufficient.
+            int[] openSet = new int[80];
+            bool[] inOpenSet = new bool[80];
+            int head = 0;
+            int tail = 0;
+            openSet[tail++] = startingIndex;
+            inOpenSet[startingIndex] = true;
 
             // For each node, which node it can most efficiently be reached from.
             // If a node can be reached from many nodes, cameFrom will eventually contain the
@@ -84,10 +89,11 @@ namespace Volcano.Search
             //// For the first node, that value is completely heuristic. (All antipode paths are known to be 12 tiles long.)
             //fScore[startingIndex] = 12;
 
-            while (openSet.Count > 0)
+            while (head < tail)
             {
                 // Get the next item in the open set with the lowest fScore
-                int current = openSet.Dequeue();
+                int current = openSet[head++];
+                inOpenSet[current] = false;
                 //int best = fScore[current];
                 //foreach (int i in openSet)
                 //{
@@ -143,9 +149,10 @@ namespace Volcano.Search
                     int tentative_gScore = gScore[current] + GetDistance(state, player, current, neighbor);
 
                     // Discover a new node
-                    if (!openSet.Contains(neighbor))
+                    if (!inOpenSet[neighbor])
                     {
-                        openSet.Enqueue(neighbor);
+                        openSet[tail++] = neighbor;
+                        inOpenSet[neighbor] = true;
                     }
                     else if (tentative_gScore >= gScore[neighbor])
                     {
