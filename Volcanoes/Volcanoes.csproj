@@ -67,6 +67,9 @@
     <None Update="Models\volcanozero-dcnn-v4-10r-192f-204800g.dat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Models\volcanozero-dcnn-v5-5r-64f-204800g.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Models\volcanozero-gcnii-v1-12r-128w-204800g.dat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

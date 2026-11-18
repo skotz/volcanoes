@@ -136,7 +136,7 @@ namespace Volcano.Engine
                     return VolcanoZeroConfig.FromFile("models\\volcanozero-dcnn-v4-10r-192f-204800g.dat", 10, 192, new Encoder());
 
                 case VolcanoZeroVersion.V5:
-                    return VolcanoZeroConfig.FromFile("models\\x.dat", 5, 64, new SimpleEncoder());
+                    return VolcanoZeroConfig.FromFile("models\\volcanozero-dcnn-v5-5r-64f-204800g.dat", 5, 64, new SimpleEncoder());
 
                 default:
                     throw new ArgumentException("Invalid VolcanoZero Version");
