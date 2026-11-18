@@ -20,14 +20,6 @@ namespace Volcano.Search
                     {
                         continue;
                     }
-                    else if ((state.Tiles[i] > 0 && p == 2) || (state.Tiles[i] < 0 && p == 1))
-                    {
-                        continue;
-                    }
-                    else if ((state.Tiles[antipode] > 0 && p == 2) || (state.Tiles[antipode] < 0 && p == 1))
-                    {
-                        continue;
-                    }
                     else if ((state.Tiles[antipode] > 0 && p == 2) || (state.Tiles[antipode] < 0 && p == 1))
                     {
                         continue;
@@ -134,7 +126,7 @@ namespace Volcano.Search
                 //openSet.Remove(current);
                 closedSet[current] = true;
 
-                foreach (int neighbor in GetNeighborTiles(state, current))
+                foreach (int neighbor in Constants.AdjacentIndexes[current]) // GetNeighborTiles(state, current))
                 {
                     // Ignore the neighbor which is already evaluated.
                     if (closedSet[neighbor])
@@ -142,10 +134,10 @@ namespace Volcano.Search
                         continue;
                     }
 
-                    if (!IsTraversableTile(state, player, neighbor))
-                    {
-                        continue;
-                    }
+                    //if (!IsTraversableTile(state, player, neighbor))
+                    //{
+                    //    continue;
+                    //}
 
                     // The distance from start to a neighbor
                     int tentative_gScore = gScore[current] + GetDistance(state, player, current, neighbor);
@@ -170,7 +162,7 @@ namespace Volcano.Search
             return new PathResult();
         }
 
-        protected virtual int GetDistance(Board state, Player player, int first, int second)
+        private int GetDistance(Board state, Player player, int first, int second)
         {
             var tile = state.Tiles[second] == 0 ? Player.Empty : (state.Tiles[second] > 0 ? Player.One : Player.Two);
 
@@ -192,27 +184,27 @@ namespace Volcano.Search
             }
         }
 
-        protected int[] GetNeighborTiles(Board state, int tileIndex)
-        {
-            return Constants.AdjacentIndexes[tileIndex];
-        }
+        //private int[] GetNeighborTiles(Board state, int tileIndex)
+        //{
+        //    return Constants.AdjacentIndexes[tileIndex];
+        //}
 
-        protected bool IsTraversableTile(Board state, Player player, int tileIndex)
-        {
-            //// Ignore tiles that aren't the player's
-            //if ((state.Tiles[tileIndex] > 0 && player != Player.One) || (state.Tiles[tileIndex] < 0 && player != Player.Two))
-            //{
-            //    return false;
-            //}
+        //private bool IsTraversableTile(Board state, Player player, int tileIndex)
+        //{
+        //    //// Ignore tiles that aren't the player's
+        //    //if ((state.Tiles[tileIndex] > 0 && player != Player.One) || (state.Tiles[tileIndex] < 0 && player != Player.Two))
+        //    //{
+        //    //    return false;
+        //    //}
 
-            //// Ignore magma chambers
-            //if (Math.Abs(state.Tiles[tileIndex]) <= VolcanoGame.Settings.MaxMagmaChamberLevel)
-            //{
-            //    return false;
-            //}
+        //    //// Ignore magma chambers
+        //    //if (Math.Abs(state.Tiles[tileIndex]) <= VolcanoGame.Settings.MaxMagmaChamberLevel)
+        //    //{
+        //    //    return false;
+        //    //}
 
-            return true;
-        }
+        //    return true;
+        //}
     }
 
     internal class TotalPathFinderResult
