@@ -40,6 +40,8 @@
             comboType = new System.Windows.Forms.ComboBox();
             label4 = new System.Windows.Forms.Label();
             cbParallel = new System.Windows.Forms.CheckBox();
+            button2 = new System.Windows.Forms.Button();
+            button3 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numSecondsPerMove).BeginInit();
             SuspendLayout();
@@ -161,11 +163,33 @@
             cbParallel.UseVisualStyleBackColor = true;
             cbParallel.CheckedChanged += cbParallel_CheckedChanged;
             // 
+            // button2
+            // 
+            button2.Location = new System.Drawing.Point(14, 133);
+            button2.Name = "button2";
+            button2.Size = new System.Drawing.Size(121, 23);
+            button2.TabIndex = 10;
+            button2.Text = "Check All";
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += button2_Click;
+            // 
+            // button3
+            // 
+            button3.Location = new System.Drawing.Point(14, 162);
+            button3.Name = "button3";
+            button3.Size = new System.Drawing.Size(121, 23);
+            button3.TabIndex = 10;
+            button3.Text = "Check None";
+            button3.UseVisualStyleBackColor = true;
+            button3.Click += button3_Click;
+            // 
             // TournamentForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(481, 505);
+            Controls.Add(button3);
+            Controls.Add(button2);
             Controls.Add(cbParallel);
             Controls.Add(comboType);
             Controls.Add(cbSelfPlay);
@@ -205,5 +229,7 @@
         private System.Windows.Forms.ComboBox comboType;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.CheckBox cbParallel;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button button3;
     }
 }

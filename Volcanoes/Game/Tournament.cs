@@ -99,6 +99,8 @@ namespace Volcano.Game
                     }
                 }
 
+                games = games.OrderBy(x => Random.Shared.Next()).ToList();
+
                 for (int r = 0; r < _rounds; r++)
                 {
                     if (_runParallel)

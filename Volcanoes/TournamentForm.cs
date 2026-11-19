@@ -30,14 +30,17 @@ namespace Volcano
                 checkedListBox1.Items.Add(engine);
             }
 
-            for (int i = 0; i < checkedListBox1.Items.Count; i++)
-            {
-                checkedListBox1.SetItemChecked(i, true);
-            }
-
             DialogResult = DialogResult.Cancel;
 
             comboType.SelectedIndex = 0;
+        }
+
+        private void CheckAll(bool value)
+        {
+            for (int i = 0; i < checkedListBox1.Items.Count; i++)
+            {
+                checkedListBox1.SetItemChecked(i, value);
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -84,6 +87,16 @@ namespace Volcano
             {
                 MessageBox.Show("Parallel engines do not run well in parallel tournaments and will time out! Please unselect the parallel engines or run the tournament sequentially.", "Volcanoes", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            CheckAll(true);
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            CheckAll(false);
         }
     }
 }
