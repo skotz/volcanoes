@@ -316,7 +316,7 @@ namespace Volcano.Neural
                 string format = "0.##################################################";
 
                 string path2 = Path.Combine(savePath, "training-model.dat");
-                model.save(path2);
+                SaveWithBackup(path2, p => model.save(p));
 
                 var displayWinRate = "";
                 if ((iteration + 1) % 10 == 0 && config.NumParallelGames > 128)
@@ -325,26 +325,101 @@ namespace Volcano.Neural
                 }
 
                 string status = Path.Combine(savePath, "status.csv");
+                List<string> statusLines = new();
                 if (!File.Exists(status))
                 {
-                    File.AppendAllLines(status, ["iteration,timestamp,games,policy loss,value loss,total loss,entropy,learning rate,win rate"]);
+                    statusLines.Add("iteration,timestamp,games,policy loss,value loss,total loss,entropy,learning rate,win rate");
                 }
-                File.AppendAllLines(status, [$"{iteration + 1},{DateTime.Now.ToString("yyyyMMddHHmmss")},{config.NumSelfPlayIterations * (iteration + 1)},{lastLoss.Item1.ToString(format)},{lastLoss.Item2.ToString(format)},{lastLoss.Item3.ToString(format)},{lastLoss.Item4.ToString(format)},{lr.First().ToString(format)},{displayWinRate}"]);
+                statusLines.Add($"{iteration + 1},{DateTime.Now.ToString("yyyyMMddHHmmss")},{config.NumSelfPlayIterations * (iteration + 1)},{lastLoss.Item1.ToString(format)},{lastLoss.Item2.ToString(format)},{lastLoss.Item3.ToString(format)},{lastLoss.Item4.ToString(format)},{lr.First().ToString(format)},{displayWinRate}");
+                AppendWithBackup(status, statusLines);
                 string path1 = Path.Combine(savePath, $"model-{config.NumSelfPlayIterations * (iteration + 1)}-{DateTime.Now.ToString("yyyyMMddHHmmss")}.dat");
                 model.save(path1);
 
                 string path3 = Path.Combine(savePath, "training-optimizer.dat");
+                SaveWithBackup(path3, p => optimizer.save_state_dict(p));
+                SaveWithBackup(replayBufferPath, p => File.WriteAllLines(p, replayBuffer.Select(x => JsonConvert.SerializeObject(x))));
+                SaveWithBackup(trainingStatePath, p => File.WriteAllText(p, JsonConvert.SerializeObject(new TrainingState { Iteration = iteration })));
+            }
+        }
+
+        /// <summary>Renames an existing file to a single ".bak" copy, replacing any previous backup. Returns false if the rename failed.</summary>
+        private static bool TryBackupFile(string path)
+        {
+            if (!File.Exists(path))
+            {
+                return true;
+            }
+
+            string backupPath = path + ".bak";
+            try
+            {
+                if (File.Exists(backupPath))
+                {
+                    File.Delete(backupPath);
+                }
+                File.Move(path, backupPath);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                AlphaZeroLog.WriteLine($"Failed to back up {path}: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>Backs up an existing file, then writes the new file. If the backup failed, writes a timestamped copy of the path instead.</summary>
+        private static void SaveWithBackup(string path, Action<string> save)
+        {
+            string written = path;
+            if (!TryBackupFile(path))
+            {
+                written = UniqueTimestampedPath(path);
+                AlphaZeroLog.WriteLine($"Backup of {path} failed; saving to {written} instead.");
+            }
+            save(written);
+            CopyToBackupFolder(written);
+        }
+
+        /// <summary>Copies an existing file to a single ".bak" copy, then appends lines. If the copy failed, appends to a timestamped copy of the path instead.</summary>
+        private static void AppendWithBackup(string path, IEnumerable<string> lines)
+        {
+            string written = path;
+            if (File.Exists(path))
+            {
                 try
                 {
-                    optimizer.save_state_dict(path3);
+                    File.Copy(path, path + ".bak", true);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    AlphaZeroLog.WriteLine($"Failed to save optimizer state dictionary!");
+                    written = UniqueTimestampedPath(path);
+                    AlphaZeroLog.WriteLine($"Failed to back up {path}: {ex.Message}; appending to {written} instead.");
                 }
-                File.WriteAllLines(replayBufferPath, replayBuffer.Select(x => JsonConvert.SerializeObject(x)));
-                File.WriteAllText(trainingStatePath, JsonConvert.SerializeObject(new TrainingState { Iteration = iteration }));
             }
+            File.AppendAllLines(written, lines);
+            CopyToBackupFolder(written);
+        }
+
+        private static string UniqueTimestampedPath(string path)
+        {
+            return $"{path}.{DateTime.Now.ToString("yyyyMMddHHmmss")}.dat";
+        }
+
+        /// <summary>Copies a written file to the configured Linux folder. Only compiled for Linux builds.</summary>
+        private static void CopyToBackupFolder(string path)
+        {
+#if LINUX
+            const string folder = "/home/scott/volcanoes";
+            try
+            {
+                Directory.CreateDirectory(folder);
+                File.Copy(path, Path.Combine(folder, Path.GetFileName(path)), true);
+            }
+            catch (Exception ex)
+            {
+                AlphaZeroLog.WriteLine($"Failed to copy {path} to {folder}: {ex.Message}");
+            }
+#endif
         }
 
         private sealed class TrainingState
