@@ -62,7 +62,8 @@ namespace Volcano.Engine
 
         private List<string> _debug = new List<string>();
 
-        private string _savePath = "models/graph/";
+        private static readonly string _modelDirectory = Path.Combine(AppContext.BaseDirectory, "Models");
+        private string _savePath = Path.Combine(AppContext.BaseDirectory, "models", "graph");
         internal bool _policyOnly;
         public int forcedIterations = -1;
         public bool forceFirstMove = true;
@@ -87,7 +88,7 @@ namespace Volcano.Engine
             switch (version)
             {
                 case VolcanoGraphZeroVersion.V1:
-                    return VolcanoGraphZeroConfig.FromFile("models\\volcanozero-gcnii-v1-12r-128w-204800g.dat", 12, 128, new GraphEncoder());
+                    return VolcanoGraphZeroConfig.FromFile(Path.Combine(_modelDirectory, "volcanozero-gcnii-v1-12r-128w-204800g.dat"), 12, 128, new GraphEncoder());
 
                 default:
                     throw new ArgumentException("Invalid VolcanoGraphZero Version");

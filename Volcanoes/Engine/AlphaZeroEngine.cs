@@ -87,7 +87,8 @@ namespace Volcano.Engine
             set => AlphaZeroLog.WriteLine = value;
         }
 
-        private string _savePath = "models/";
+        private static readonly string _modelDirectory = Path.Combine(AppContext.BaseDirectory, "Models");
+        private string _savePath = Path.Combine(AppContext.BaseDirectory, "models");
         internal bool _policyOnly;
         public int forcedIterations = -1;
 
@@ -132,10 +133,10 @@ namespace Volcano.Engine
                     throw new ArgumentException("Obsolete VolcanoZero Version");
 
                 case VolcanoZeroVersion.V4:
-                    return VolcanoZeroConfig.FromFile("models\\volcanozero-dcnn-v4-10r-192f-204800g.dat", 10, 192, new Encoder());
+                    return VolcanoZeroConfig.FromFile(Path.Combine(_modelDirectory, "volcanozero-dcnn-v4-10r-192f-204800g.dat"), 10, 192, new Encoder());
 
                 case VolcanoZeroVersion.V5:
-                    return VolcanoZeroConfig.FromFile("models\\volcanozero-dcnn-v5-5r-64f-204800g.dat", 5, 64, new SimpleEncoder());
+                    return VolcanoZeroConfig.FromFile(Path.Combine(_modelDirectory, "volcanozero-dcnn-v5-5r-64f-204800g.dat"), 5, 64, new SimpleEncoder());
 
                 default:
                     throw new ArgumentException("Invalid VolcanoZero Version");

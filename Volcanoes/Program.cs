@@ -36,7 +36,7 @@ namespace Volcano
             StaticWinSearch.Enabled = true;
             StaticBoardSlim.Enabled = true;
 
-            var engine = new AlphaZeroEngine(true);
+            var engine = new AlphaZeroGraphEngine(true);
             engine.OnDebug += (sender, status) => Console.WriteLine(status?.Summary);
             engine.Train();
         }
