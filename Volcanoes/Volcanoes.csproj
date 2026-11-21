@@ -61,6 +61,9 @@
     <PackageReference Include="libtorch-cuda-12.8-win-x64-part9-primary" Version="2.10.0" />
     <PackageReference Include="TorchSharp-cuda-windows" Version="0.107.0" />
   </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)'=='net10.0-windows' And '$(Configuration)'=='Publish'">
+    <PackageReference Include="libtorch-cpu-win-x64" Version="2.10.0" />
+  </ItemGroup>
   <ItemGroup>
     <None Update="Books\openings-v1-60s.dat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
