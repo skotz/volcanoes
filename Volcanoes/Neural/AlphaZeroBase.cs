@@ -318,11 +318,11 @@ namespace Volcano.Neural
                 string path2 = Path.Combine(savePath, "training-model.dat");
                 SaveWithBackup(path2, p => model.save(p));
 
-                var displayWinRate = "";
-                if ((iteration + 1) % 10 == 0 && config.NumParallelGames > 128)
-                {
-                    displayWinRate = GetWinRate(savePath, 10, 1000, 1000, 1000).ToString(format);
-                }
+                var displayWinRate = "n/a";
+                //if ((iteration + 1) % 10 == 0 && config.NumParallelGames > 128)
+                //{
+                //    displayWinRate = GetWinRate(savePath, 10, 1000, 1000, 1000).ToString(format);
+                //}
 
                 string status = Path.Combine(savePath, "status.csv");
                 List<string> statusLines = new();
