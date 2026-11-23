@@ -117,7 +117,7 @@ namespace Volcano.Engine
         }
 
         public AlphaZeroEngine(bool forTraining)
-            : this(VolcanoZeroConfig.FromFile("x", 5, 64, new SimpleEncoder()), forTraining)
+            : this(VolcanoZeroConfig.FromFile("x", 10, 192, new Encoder()), forTraining)
         {
             // These are the settings used for training
         }

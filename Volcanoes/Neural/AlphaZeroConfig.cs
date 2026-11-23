@@ -24,7 +24,7 @@
         //public int NumHidden { get; init; } = 128;
 
         /// <summary>Outer self-play -> train iterations.</summary>
-        public int NumIterations { get; init; } = 100;
+        public int NumIterations { get; init; } = 200;
 
         /// <summary>Self-play games per iteration.</summary>
         public int NumSelfPlayIterations { get; init; } = 2048;

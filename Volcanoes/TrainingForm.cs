@@ -15,7 +15,7 @@ namespace Volcano
         {
             InitializeComponent();
 
-            _engine = new AlphaZeroGraphEngine(true); // new AlphaZeroEngine(true);
+            _engine = new AlphaZeroEngine(true); // new AlphaZeroGraphEngine(true);
             _engine.OnDebug += engineToTrain_OnDebug;
 
             _worker = new BackgroundWorker();
