@@ -44,7 +44,7 @@ namespace Volcano.Engine
         }
     }
 
-    internal class AlphaZeroGraphEngine : IEngine, IStatus, ILearn
+    internal class AlphaZeroGraphEngine : IEngine, IStatus, ILearn, ISimulate
     {
         private VolcanoGraphZeroConfig _settings;
         private AlphaZeroConfig _config;
@@ -65,7 +65,7 @@ namespace Volcano.Engine
         private static readonly string _modelDirectory = Path.Combine(AppContext.BaseDirectory, "Models");
         private string _savePath = Path.Combine(AppContext.BaseDirectory, "models", "graph");
         internal bool _policyOnly;
-        public int forcedIterations = -1;
+        public int ForcedSimulations { get; set; } = -1;
         public bool forceFirstMove = true;
 
         public AlphaZeroGraphEngine(VolcanoGraphZeroVersion version)
@@ -155,7 +155,7 @@ namespace Volcano.Engine
                 };
             }
 
-            var move = _alphaZero.GetBestMove(state, maxSeconds, forcedIterations, token, _policyOnly);
+            var move = _alphaZero.GetBestMove(state, maxSeconds, ForcedSimulations, token, _policyOnly);
 
             return new SearchResult
             {

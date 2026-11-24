@@ -356,7 +356,7 @@ namespace Volcano
 
         private void newTournamentToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = new TournamentForm(engines.EngineNames);
+            var form = new TournamentForm(engines);
             var dr = form.ShowDialog();
             if (dr == DialogResult.OK)
             {
@@ -367,7 +367,7 @@ namespace Volcano
 
                 string date = DateTime.Now.ToString("yyyyMMddhhmmss");
 
-                Tournament tourney = new Tournament(form.Rounds, form.SecondsPerMove, gameFolder + "tourney-table-" + date + ".csv", gameFolder + "tourney-data-" + date + ".csv", engines, form.Engines, form.SelfPlay || form.Engines.Count == 1, form.TournamentType, form.Parallel);
+                Tournament tourney = new Tournament(form.Rounds, form.SecondsPerMove, gameFolder + "tourney-table-" + date + ".csv", gameFolder + "tourney-data-" + date + ".csv", engines, form.Engines, form.SelfPlay || form.Engines.Count == 1, form.TournamentType, form.Parallel, form.ForceSimulations);
                 tourney.OnTournamentCompleted += Tourney_OnTournamentCompleted;
                 tourney.OnTournamentStatus += Tourney_OnTournamentStatus;
                 tourney.Start();

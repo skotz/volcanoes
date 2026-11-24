@@ -587,7 +587,7 @@ namespace Volcano.Engine
                 // var engine = new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V1);
                 var engine = new AlphaZeroGraphEngine(VolcanoGraphZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\graph\\training-model.dat", 12, 128, new PathGraphEncoder()));
                 //engine.simplifyFirstMove = true;
-                engine.forcedIterations = iterations;
+                engine.ForcedSimulations = iterations;
                 //engine.forcedGap = gap;
 
                 var best = engine.GetBestMove(game.CurrentState, iterations, new EngineCancellationToken(() => false));

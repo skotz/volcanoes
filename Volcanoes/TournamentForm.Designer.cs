@@ -42,6 +42,8 @@
             cbParallel = new System.Windows.Forms.CheckBox();
             button2 = new System.Windows.Forms.Button();
             button3 = new System.Windows.Forms.Button();
+            rbSeconds = new System.Windows.Forms.RadioButton();
+            rbSimulations = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numSecondsPerMove).BeginInit();
             SuspendLayout();
@@ -104,9 +106,9 @@
             label3.Location = new System.Drawing.Point(14, 44);
             label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label3.Name = "label3";
-            label3.Size = new System.Drawing.Size(104, 15);
+            label3.Size = new System.Drawing.Size(57, 15);
             label3.TabIndex = 3;
-            label3.Text = "Seconds Per Move";
+            label3.Text = "Per Move";
             // 
             // numSecondsPerMove
             // 
@@ -115,7 +117,7 @@
             numSecondsPerMove.Maximum = new decimal(new int[] { 1000000, 0, 0, 0 });
             numSecondsPerMove.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             numSecondsPerMove.Name = "numSecondsPerMove";
-            numSecondsPerMove.Size = new System.Drawing.Size(327, 23);
+            numSecondsPerMove.Size = new System.Drawing.Size(143, 23);
             numSecondsPerMove.TabIndex = 4;
             numSecondsPerMove.Value = new decimal(new int[] { 5, 0, 0, 0 });
             // 
@@ -161,7 +163,6 @@
             cbParallel.TabIndex = 9;
             cbParallel.Text = "Parallel";
             cbParallel.UseVisualStyleBackColor = true;
-            cbParallel.CheckedChanged += cbParallel_CheckedChanged;
             // 
             // button2
             // 
@@ -183,11 +184,37 @@
             button3.UseVisualStyleBackColor = true;
             button3.Click += button3_Click;
             // 
+            // rbSeconds
+            // 
+            rbSeconds.AutoSize = true;
+            rbSeconds.Checked = true;
+            rbSeconds.Location = new System.Drawing.Point(304, 44);
+            rbSeconds.Name = "rbSeconds";
+            rbSeconds.Size = new System.Drawing.Size(69, 19);
+            rbSeconds.TabIndex = 11;
+            rbSeconds.TabStop = true;
+            rbSeconds.Text = "Seconds";
+            rbSeconds.UseVisualStyleBackColor = true;
+            rbSeconds.CheckedChanged += rbSeconds_CheckedChanged;
+            // 
+            // rbSimulations
+            // 
+            rbSimulations.AutoSize = true;
+            rbSimulations.Location = new System.Drawing.Point(379, 44);
+            rbSimulations.Name = "rbSimulations";
+            rbSimulations.Size = new System.Drawing.Size(87, 19);
+            rbSimulations.TabIndex = 12;
+            rbSimulations.Text = "Simulations";
+            rbSimulations.UseVisualStyleBackColor = true;
+            rbSimulations.CheckedChanged += rbSimulations_CheckedChanged;
+            // 
             // TournamentForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(481, 505);
+            Controls.Add(rbSimulations);
+            Controls.Add(rbSeconds);
             Controls.Add(button3);
             Controls.Add(button2);
             Controls.Add(cbParallel);
@@ -231,5 +258,7 @@
         private System.Windows.Forms.CheckBox cbParallel;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.RadioButton rbSeconds;
+        private System.Windows.Forms.RadioButton rbSimulations;
     }
 }

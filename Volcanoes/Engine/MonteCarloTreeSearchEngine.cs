@@ -21,7 +21,7 @@ namespace Volcano.Engine
         V2,
     }
 
-    internal class MonteCarloTreeSearchEngine : IEngine, IStatus
+    internal class MonteCarloTreeSearchEngine : IEngine, IStatus, ISimulate
     {
         private Random random;
         private int simulationCount;
@@ -50,7 +50,7 @@ namespace Volcano.Engine
         public double _ucbFactor = 2.0;
         public double _temperature = 0.25;
         public bool simplifyFirstMove;
-        public int forcedIterations = -1;
+        public int ForcedSimulations { get; set; } = -1;
         public int forcedGap = -1;
 
         public MonteCarloTreeSearchNode originalRootNode;
@@ -257,13 +257,13 @@ namespace Volcano.Engine
             var iterations = 0;
 
             // Force tree expansion for openening book creation
-            var forceExpand = _persistable && forcedIterations == 80;
+            var forceExpand = _persistable && ForcedSimulations == 80;
             if (_persistable)
             {
                 iterations = (int)rootNode.Children.Sum(x => x.Visits);
             }
 
-            while (forcedIterations == -1 ? (!cancel.Cancelled && !forceWin && (!_solver || rootNode.Status == ProofState.Unproven)) : (iterations < forcedIterations))
+            while (ForcedSimulations == -1 ? (!cancel.Cancelled && !forceWin && (!_solver || rootNode.Status == ProofState.Unproven)) : (iterations < ForcedSimulations))
             {
                 iterations++;
 
@@ -297,7 +297,7 @@ namespace Volcano.Engine
                     {
                         if (_puct)
                         {
-                            node = node.SelectChildPUCT(state, _ucbFactor, _temperature, forcedIterations > 0 ? forcedIterations : (maxSeconds * 10000));
+                            node = node.SelectChildPUCT(state, _ucbFactor, _temperature, ForcedSimulations > 0 ? ForcedSimulations : (maxSeconds * 10000));
                         }
                         else if (_rave)
                         {

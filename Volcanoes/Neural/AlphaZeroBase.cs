@@ -42,9 +42,9 @@ namespace Volcano.Neural
             string modelPath = Path.Combine(savePath, "training-model.dat");
             if (model is GraphResNet)
             {
-                return new AlphaZeroGraphEngine(VolcanoGraphZeroConfig.FromFile(modelPath, 12, 128, encoder)) { forcedIterations = forcedIterations };
+                return new AlphaZeroGraphEngine(VolcanoGraphZeroConfig.FromFile(modelPath, 12, 128, encoder)) { ForcedSimulations = forcedIterations };
             }
-            return new AlphaZeroEngine(VolcanoZeroConfig.FromFile(modelPath, 5, 64, encoder)) { forcedIterations = forcedIterations };
+            return new AlphaZeroEngine(VolcanoZeroConfig.FromFile(modelPath, 5, 64, encoder)) { ForcedSimulations = forcedIterations };
         }
 
         /// <summary>How many times <see cref="SelfPlay"/> is called per training iteration.</summary>
@@ -469,7 +469,7 @@ namespace Volcano.Neural
                         var victory = VictoryType.None;
                         game.OnGameOver += (p, v) => victory = v;
 
-                        var opponent = new MonteCarloTreeSearchEngine(MCTSVersion.V2) { forcedIterations = sims };
+                        var opponent = new MonteCarloTreeSearchEngine(MCTSVersion.V2) { ForcedSimulations = sims };
                         var model = CreateBenchmarkEngine(savePath, alphasims);
 
                         game.RegisterEngine(Player.One, round % 2 == 0 ? model : opponent, true);

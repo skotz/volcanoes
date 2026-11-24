@@ -5,6 +5,6 @@
         /// <summary>
         /// Run an exact number of simulations
         /// </summary>
-        int ForcedSimulations { get; }
+        int ForcedSimulations { get; set; }
     }
 }

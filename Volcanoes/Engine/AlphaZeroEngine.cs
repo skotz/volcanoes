@@ -63,7 +63,7 @@ namespace Volcano.Engine
         }
     }
 
-    internal class AlphaZeroEngine : IEngine, IStatus, ILearn
+    internal class AlphaZeroEngine : IEngine, IStatus, ILearn, ISimulate
     {
         private VolcanoZeroConfig _settings;
         private AlphaZeroConfig _config;
@@ -90,7 +90,7 @@ namespace Volcano.Engine
         private static readonly string _modelDirectory = Path.Combine(AppContext.BaseDirectory, "Models");
         private string _savePath = Path.Combine(AppContext.BaseDirectory, "models");
         internal bool _policyOnly;
-        public int forcedIterations = -1;
+        public int ForcedSimulations { get; set; } = -1;
 
         private OpeningBook _book;
 
@@ -239,7 +239,7 @@ namespace Volcano.Engine
             //canonical.SetIndex(state);
             //var canonicalized = canonical.Canonicalize(state);
 
-            var move = _alphaZero.GetBestMove(state, maxSeconds, forcedIterations, token, _policyOnly);
+            var move = _alphaZero.GetBestMove(state, maxSeconds, ForcedSimulations, token, _policyOnly);
 
             return new SearchResult
             {

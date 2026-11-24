@@ -12,6 +12,7 @@ namespace Volcano.Game
 {
     internal class Tournament
     {
+        private const int _simulationModeSecondsPerMove = 3600;
         private int _rounds;
         private int _secondsPerMove;
         private string _crossTableFile;
@@ -20,6 +21,7 @@ namespace Volcano.Game
         private List<string> _players;
         private bool _allowSelfPlay;
         private bool _runParallel;
+        private bool _forceSimulations;
         private TournamentType _tournamentType;
 
         private List<Action> games;
@@ -39,7 +41,7 @@ namespace Volcano.Game
 
         public delegate void TournamentStatusHandler(TournamentStatus status);
 
-        public Tournament(int rounds, int secondsPerMove, string crossTableFile, string gameDataFile, EngineHelper engines, List<string> players, bool allowSelfPlay, TournamentType tournamentType, bool parallel)
+        public Tournament(int rounds, int secondsPerMove, string crossTableFile, string gameDataFile, EngineHelper engines, List<string> players, bool allowSelfPlay, TournamentType tournamentType, bool parallel, bool forceSimulations = false)
         {
             _rounds = rounds;
             _secondsPerMove = secondsPerMove;
@@ -49,6 +51,7 @@ namespace Volcano.Game
             _players = players;
             _allowSelfPlay = allowSelfPlay;
             _runParallel = parallel;
+            _forceSimulations = forceSimulations;
             _tournamentType = tournamentType;
 
             worker = new BackgroundWorker();
@@ -281,9 +284,25 @@ namespace Volcano.Game
 
                 try
                 {
-                    game.RegisterEngine(Player.One, _engines.GetEngine(engine1), true);
-                    game.RegisterEngine(Player.Two, _engines.GetEngine(engine2), true);
-                    game.SecondsPerEngineMove = _secondsPerMove;
+                    var player1 = _engines.GetEngine(engine1);
+                    var player2 = _engines.GetEngine(engine2);
+
+                    if (_forceSimulations)
+                    {
+                        if (player1 is ISimulate simulate1)
+                        {
+                            simulate1.ForcedSimulations = _secondsPerMove;
+                        }
+
+                        if (player2 is ISimulate simulate2)
+                        {
+                            simulate2.ForcedSimulations = _secondsPerMove;
+                        }
+                    }
+
+                    game.RegisterEngine(Player.One, player1, true);
+                    game.RegisterEngine(Player.Two, player2, true);
+                    game.SecondsPerEngineMove = _forceSimulations ? _simulationModeSecondsPerMove : _secondsPerMove;
                     game.TimeoutGrace = 1000;
                     game.StartNewGame();
                     game.ComputerPlay();
