@@ -148,8 +148,14 @@ namespace Volcano
             engines.Add("VolcanoZero DCNN v5", () => new AlphaZeroEngine(VolcanoZeroVersion.V5));
             engines.Add("VolcanoZero DCNN v5 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V5) { _policyOnly = true });
 
+            engines.Add("VolcanoZero DCNN v6", () => new AlphaZeroEngine(VolcanoZeroVersion.V6));
+            engines.Add("VolcanoZero DCNN v6 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V6) { _policyOnly = true });
+
             engines.Add("VolcanoZero GCNII v1", () => new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V1));
             engines.Add("VolcanoZero GCNII v1 Policy", () => new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V1) { _policyOnly = true });
+
+            engines.Add("VolcanoZero GCNII v2", () => new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V2));
+            engines.Add("VolcanoZero GCNII v2 Policy", () => new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V2) { _policyOnly = true });
 
             if (File.Exists("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\graph\\training-model.dat"))
             {

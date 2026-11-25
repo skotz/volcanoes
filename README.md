@@ -1,7 +1,7 @@
 # Volcanoes
-This is a prototype for a new board game concept being designed by Simon Dorfman and developed by Scott Clayton.
+This is a prototype for a new board game concept designed by Simon Dorfman and developed by Scott Clayton.
 
-![Screenshot](Concept/History/z-history-20261011b.png)
+![Gameplay](Concept/History/z-history-20261113a.gif)
 
 ## Rules
 The goal of the game is to create a line of adjacent volcanoes which connect tiles on 

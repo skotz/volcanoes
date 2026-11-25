@@ -585,7 +585,7 @@ namespace Volcano.Engine
                 // use iterations instead of time so we can run in parallel without starving a thread and getting bad results
                 //var engine = new AlphaZeroEngine(VolcanoZeroVersion.V3); // new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false, _solver = true, _moveFilter = new NearbyMoveFilter(), _rolloutStrategy = new NearbyRolloutStrategy() }; // new AlphaZeroEngine(VolcanoZeroVersion.V2);
                 // var engine = new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V1);
-                var engine = new AlphaZeroGraphEngine(VolcanoGraphZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\graph\\training-model.dat", 12, 128, new PathGraphEncoder()));
+                var engine = new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V2);
                 //engine.simplifyFirstMove = true;
                 engine.ForcedSimulations = iterations;
                 //engine.forcedGap = gap;

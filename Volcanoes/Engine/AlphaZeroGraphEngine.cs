@@ -15,9 +15,14 @@ namespace Volcano.Engine
     internal enum VolcanoGraphZeroVersion
     {
         /// <summary>
-        /// 12 GCNII layers 128 neurons
+        /// 12 layer, 128 width, graph encoder
         /// </summary>
         V1,
+
+        /// <summary>
+        /// 12 layer, 128 width, path graph encoder
+        /// </summary>
+        V2,
     }
 
     internal class VolcanoGraphZeroConfig
@@ -89,6 +94,9 @@ namespace Volcano.Engine
             {
                 case VolcanoGraphZeroVersion.V1:
                     return VolcanoGraphZeroConfig.FromFile(Path.Combine(_modelDirectory, "volcanozero-gcnii-v1-12r-128w-204800g.dat"), 12, 128, new GraphEncoder());
+
+                case VolcanoGraphZeroVersion.V2:
+                    return VolcanoGraphZeroConfig.FromFile(Path.Combine(_modelDirectory, "volcanozero-gcnii-v2-12r-128w-204800g.dat"), 12, 128, new PathGraphEncoder());
 
                 default:
                     throw new ArgumentException("Invalid VolcanoGraphZero Version");
