@@ -46,11 +46,11 @@ namespace Volcano
             {
                 if (resume)
                 {
-                    File.Copy(BookLocation, BookLocation + "." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".resume.bak.");
+                    File.Copy(BookLocation, BookLocation + "." + DateTime.Now.ToString("yyyyMMddHHmmss") + ".resume.bak.");
                 }
                 else
                 {
-                    File.Move(BookLocation, BookLocation + "." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak.");
+                    File.Move(BookLocation, BookLocation + "." + DateTime.Now.ToString("yyyyMMddHHmmss") + ".bak.");
                 }
             }
 
@@ -58,11 +58,11 @@ namespace Volcano
             {
                 if (resume)
                 {
-                    File.Copy("book.temp", "book.temp" + "." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".resume.bak.");
+                    File.Copy("book.temp", "book.temp" + "." + DateTime.Now.ToString("yyyyMMddHHmmss") + ".resume.bak.");
                 }
                 else
                 {
-                    File.Move("book.temp", "book.temp" + "." + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak.");
+                    File.Move("book.temp", "book.temp" + "." + DateTime.Now.ToString("yyyyMMddHHmmss") + ".bak.");
                 }
             }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 #if WINDOWS
 using System.Windows.Forms;
@@ -26,9 +27,15 @@ namespace Volcano
 #else
         private static void Main(string[] args)
         {
+            if (args.Any(a => string.Equals(a, "book", StringComparison.OrdinalIgnoreCase)))
+            {
+                BuildBook();
+                return;
+            }
+
             if (!args.Any(a => string.Equals(a, "train", StringComparison.OrdinalIgnoreCase)))
             {
-                Console.WriteLine("This headless build only supports training. Run with the 'train' argument.");
+                Console.WriteLine("This headless build only supports training. Run with the 'train' or 'book' argument.");
                 return;
             }
 
@@ -39,6 +46,29 @@ namespace Volcano
             var engine = new AlphaZeroGraphEngine(true);
             engine.OnDebug += (sender, status) => Console.WriteLine(status?.Summary);
             engine.Train();
+        }
+
+        private static void BuildBook()
+        {
+            const string bookLocation = "linux-book.dat";
+
+            AlphaZeroLog.WriteLine = Console.WriteLine;
+            StaticWinSearch.Enabled = true;
+            StaticBoardSlim.Enabled = true;
+
+            var book = new OpeningBook(bookLocation);
+            book.OnStatusUpdate += (completed, total, message) =>
+            {
+                Console.WriteLine(string.IsNullOrEmpty(message) ? completed + " / " + total : message);
+            };
+
+            book.Generate(50, 100000, 100000, false, true);
+
+            File.Copy(bookLocation, bookLocation + "." + DateTime.Now.ToString("yyyyMMddHHmmss") + ".bak");
+
+            book.Extend(50, 100000, 100000, false, true, null);
+
+            Console.WriteLine("done");
         }
 #endif
     }

@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Volcano.Game;
 using Volcano.Interface;
-using Volcano.Neural;
 using static System.Environment;
 
 namespace Volcano.Engine
@@ -187,7 +186,9 @@ namespace Volcano.Engine
 
         public void Extend(int depth, int iterations, int gap, bool parallel, bool resume, string bot)
         {
+#if WINDOWS
             ApplicationPriorityOptimizer.EnableMaximumPerformanceMode();
+#endif
 
             _stop = false;
             _pending = new ConcurrentDictionary<string, bool>();
@@ -405,7 +406,9 @@ namespace Volcano.Engine
 
         public void Generate(int depth, int iterations, int gap, bool parallel, bool resume)
         {
+#if WINDOWS
             ApplicationPriorityOptimizer.EnableMaximumPerformanceMode();
+#endif
 
             _stop = false;
             _pending = new ConcurrentDictionary<string, bool>();
