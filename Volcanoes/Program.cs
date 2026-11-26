@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+
 #if WINDOWS
 using System.Windows.Forms;
 #else
+
 using Volcano.Engine;
 using Volcano.Neural;
 using Volcano.Search;
+
 #endif
 
 namespace Volcano
@@ -25,6 +29,7 @@ namespace Volcano
             Application.Run(new GameForm(args));
         }
 #else
+
         private static void Main(string[] args)
         {
             if (args.Any(a => string.Equals(a, "book", StringComparison.OrdinalIgnoreCase)))
@@ -51,25 +56,29 @@ namespace Volcano
         private static void BuildBook()
         {
             const string bookLocation = "linux-book.dat";
+            const int simulations = 10000;
 
             AlphaZeroLog.WriteLine = Console.WriteLine;
             StaticWinSearch.Enabled = true;
             StaticBoardSlim.Enabled = true;
 
+            var timer = Stopwatch.StartNew();
+
             var book = new OpeningBook(bookLocation);
             book.OnStatusUpdate += (completed, total, message) =>
             {
-                Console.WriteLine(string.IsNullOrEmpty(message) ? completed + " / " + total : message);
+                Console.WriteLine("[" + DateTime.Now.ToString("M/d/yy HH:mm:ss") + "] " + (string.IsNullOrEmpty(message) ? completed + " / " + total : message) + $" ({timer.Elapsed.ToString(@"h\:mm\:ss")} elapsed)");
             };
 
-            book.Generate(50, 100000, 100000, false, true);
+            book.Generate(50, simulations, simulations, false, true);
 
             File.Copy(bookLocation, bookLocation + "." + DateTime.Now.ToString("yyyyMMddHHmmss") + ".bak");
 
-            book.Extend(50, 100000, 100000, false, true, null);
+            book.Extend(50, simulations, simulations, false, true, null);
 
             Console.WriteLine("done");
         }
+
 #endif
     }
 }
