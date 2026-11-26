@@ -34,16 +34,14 @@ When a volcano advances to level-four (via a player's turn or via a growth turn)
 ## Engines
 Several computer AIs are included with Volcanoes. Here are the current rankings from a recent round robin tournament:
 
-![Engine Cross Table](Concept/History/z-history-20261012a.png)
-
-Our goal is to learn strategies for this game through the analysis of games played by computer AIs.
+![Engine Cross Table](Concept/History/z-history-20261126a.png)
 
 More information about the last two columns:
 
 * CS = Cumulative Score (number of wins)
 * NS = [Neustadtl Score](https://en.wikipedia.org/wiki/Sonneborn%E2%80%93Berger_score) (tie break score; basically a score weighted by strength of opposition where a win against a stronger opponent is worth more)
 
-Several trained deep neural network models and precomputed opening books are included.
+Several trained deep neural network models and precomputed opening books are included. Some models are strong enough to beat vanilla MCTS (running 10,000+ simulations) on their policy output alone!
 
 ## Features
 Most engines report their progress while searching for the best move.
