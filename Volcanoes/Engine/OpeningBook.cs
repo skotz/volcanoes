@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Volcano.Game;
+using Volcano.Interface;
+using static System.Environment;
 
 namespace Volcano.Engine
 {
@@ -13,6 +17,8 @@ namespace Volcano.Engine
         private string _file;
 
         private ConcurrentDictionary<string, int> _book;
+
+        private ConcurrentDictionary<string, bool> _pending;
 
         private SemaphoreSlim _lock;
 
@@ -26,7 +32,16 @@ namespace Volcano.Engine
 
         public event BookGenerationHandler OnStatusUpdate;
 
-        public delegate void BookGenerationHandler(int completed, int total);
+        public delegate void BookGenerationHandler(int completed, int total, string message);
+
+        private const string _fileHeader = "volcanoes-opening-book";
+
+        private bool _stop;
+
+        private bool _record = false;
+
+        private int _done;
+        private int _total;
 
         public OpeningBook(string file)
         {
@@ -37,85 +52,549 @@ namespace Volcano.Engine
 
             if (File.Exists(_file))
             {
-                using (var r = new StreamReader(_file))
+                switch (DetectVersion(_file))
                 {
-                    Depth = int.Parse(r.ReadLine());
+                    case 1:
+                        // backwards compatible
+                        using (var r = new StreamReader(_file))
+                        {
+                            Depth = int.Parse(r.ReadLine());
 
-                    var count = int.Parse(r.ReadLine());
+                            var count = int.Parse(r.ReadLine());
 
-                    Seconds = int.Parse(r.ReadLine());
+                            Seconds = int.Parse(r.ReadLine());
 
-                    for (int i = 0; i < count; i++)
-                    {
-                        var transcript = r.ReadLine();
-                        var move = Constants.TileIndexes[r.ReadLine()];
+                            for (int i = 0; i < count; i++)
+                            {
+                                var transcript = r.ReadLine();
+                                var move = Constants.TileIndexes[r.ReadLine()];
 
-                        _book[transcript] = move;
-                    }
+                                var (canonical, ctranscript) = GetCanonicalTranscript(transcript);
+                                _book.TryAdd(ctranscript, canonical.BoardToCanonical(move));
+                            }
+                        }
+                        break;
+
+                    case 2:
+                        using (var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        using (var reader = new BinaryReader(stream))
+                        {
+                            Seconds = -1;
+                            Depth = 0;
+                            _ = reader.ReadString(); // header
+                            _ = reader.ReadString(); // engine
+                            _ = reader.ReadInt32(); // iterations
+                            _ = reader.ReadInt32(); // gap
+                            var numLines = reader.ReadInt32();
+                            for (var i = 0; i < numLines; i++)
+                            {
+                                var numMoves = (int)reader.ReadByte();
+                                var transcript = "";
+                                for (var m = 0; m < numMoves; m++)
+                                {
+                                    var transcriptMove = (int)reader.ReadByte();
+                                    transcript += Constants.TileNames[transcriptMove] + " ";
+                                }
+                                transcript = transcript.Trim();
+
+                                Depth = Math.Max(Depth, numMoves + 1);
+
+                                var bestMove = (int)reader.ReadByte();
+
+                                var (canonical, ctranscript) = GetCanonicalTranscript(transcript);
+                                _book.TryAdd(ctranscript, canonical.BoardToCanonical(bestMove));
+                            }
+                        }
+                        break;
                 }
 
                 Loaded = true;
             }
+            //else
+            //{
+            //    throw new ArgumentException($"Opening book \"{_file}\" does not exist");
+            //}
+        }
+
+        private int DetectVersion(string file)
+        {
+            try
+            {
+                using (var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (var reader = new BinaryReader(stream))
+                {
+                    return reader.ReadString() == _fileHeader ? 2 : 1;
+                }
+            }
+            catch
+            {
+                return 1;
+            }
+        }
+
+        private (Canonical, string) GetCanonicalTranscript(string transcript)
+        {
+            var game = new VolcanoGame();
+            game.LoadTranscript(transcript);
+
+            var canonical = new Canonical();
+            canonical.SetIndex(game);
+
+            var canonicalTranscript = "";
+            if (game.MoveHistory.Count > 0)
+            {
+                canonicalTranscript = game.MoveHistory
+                    .Select(canonical.BoardToCanonical)
+                    .Select(x => Constants.TileNames[x])
+                    .Aggregate((c, n) => c + " " + n);
+            }
+
+            return (canonical, canonicalTranscript);
         }
 
         public int GetMove(string transcript)
         {
-            if (_book.ContainsKey(transcript))
+            return GetMoveInternal(transcript).move;
+        }
+
+        private (Canonical canonical, int move) GetMoveInternal(string transcript)
+        {
+            var (canonical, canonicalTranscript) = GetCanonicalTranscript(transcript);
+
+            if (_book.ContainsKey(canonicalTranscript))
             {
-                return _book[transcript];
+                if (canonicalTranscript == "" && _book[canonicalTranscript] == 0)
+                {
+                    // future moves will also be canonicalized, so for aethetic purposes just pick a more centralized identical tile
+                    return (null, Constants.TileIndexes["N26"]);
+                }
+
+                return (canonical, canonical.CanonicalToBoard(_book[canonicalTranscript]));
             }
             else
             {
-                return -1;
+#if DEBUG
+                if (transcript == "")
+                {
+                    return (null, Constants.TileIndexes["N26"]);
+                }
+#endif
+
+                return (null, -1);
             }
         }
 
-        public void Generate(int depth, int seconds)
+        public void Extend(int depth, int iterations, int gap, bool parallel, bool resume, string bot)
         {
-            int done = 0;
-            OnStatusUpdate?.Invoke(done, 12643);
+#if WINDOWS
+            ApplicationPriorityOptimizer.EnableMaximumPerformanceMode();
+#endif
 
-            // Blue's first move
-            var blueStart = GenerateBookForPosition(depth, seconds, "", true);
+            _stop = false;
+            _pending = new ConcurrentDictionary<string, bool>();
 
-            OnStatusUpdate?.Invoke(++done, 12643);
+            var batch = 2;
+            var maxstreak = 100;
+            var winstreak = 0;
+            var failstreak = 0;
+            //var first = true;
+
+            //var redo = _book.Select(x => x.Key).ToList();
+            //_book.Clear();
+            //Parallel.ForEach(redo, new ParallelOptions() { MaxDegreeOfParallelism = 8 }, r =>
+            //{
+            //    GenerateBookForPosition(depth, iterations, r, true, gap);
+            //    OnStatusUpdate?.Invoke(_book.Count, redo.Count, null);
+            //});
+            //return;
+
+            while (winstreak < maxstreak && failstreak < maxstreak)
+            {
+                var transcripts = new List<(Player, string)>();
+
+                if (!string.IsNullOrEmpty(bot))
+                {
+                    //if (!first)
+                    //{
+                    //    break;
+                    //}
+                    //first = false;
+
+                    var gameFolder = $"{Environment.GetFolderPath(SpecialFolder.MyDocuments)}\\My Games\\Volcanoes\\";
+                    foreach (var tf in Directory.GetFiles(gameFolder, "*.csv"))
+                    {
+                        if (tf.Contains("-data-"))
+                        {
+                            var records = File.ReadAllLines(tf).Skip(1).ToList();
+                            foreach (var result in records)
+                            {
+                                var cols = result.Split(",");
+                                if (_record)
+                                {
+                                    // process wins
+                                    if (cols[0] == bot && cols[2] == "One")
+                                    {
+                                        transcripts.Add((Player.One, cols[7]));
+                                    }
+                                    else if (cols[1] == bot && cols[2] == "Two")
+                                    {
+                                        transcripts.Add((Player.Two, cols[7]));
+                                    }
+                                }
+                                else
+                                {
+                                    // process losses
+                                    if (cols[0] == bot && cols[2] == "Two")
+                                    {
+                                        transcripts.Add((Player.One, cols[7]));
+                                    }
+                                    else if (cols[1] == bot && cols[2] == "One")
+                                    {
+                                        transcripts.Add((Player.Two, cols[7]));
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    transcripts = transcripts.Where(x => new VolcanoGame().LoadTranscript(x.Item2)).ToList();
+
+                    OnStatusUpdate?.Invoke(0, _book.Count, $"Processing {transcripts.Count} tournament losses");
+                }
+                else
+                {
+                    transcripts = GenerateLosingTranscripts(batch);
+                }
+
+                _done = 0;
+                _total = transcripts.Count;
+
+                if (transcripts.Count == 0)
+                {
+                    winstreak += batch;
+                    OnStatusUpdate?.Invoke(_book.Count, _book.Count, $"{_book.Count} positions (win streak {winstreak})");
+                    continue;
+                }
+                else
+                {
+                    winstreak = 0;
+                    OnStatusUpdate?.Invoke(_done, Math.Max(_done, _total), $"{_done}/{_total} lines, {_book.Count} positions");
+                }
+
+                var count = _book.Count;
+
+                var action = ((Player, string) loss) =>
+                {
+                    if (_stop)
+                    {
+                        return;
+                    }
+
+                    var (_, canonicalTranscript) = GetCanonicalTranscript(loss.Item2);
+
+                    //if (canonicalTranscript == "N22 N07 G N24 N05 G N09" || loss.Item2 == "N10 N13 N01 N31 N04 N27 N15 S36 S38 N34 S26 S33 S27 N40 N11 S33")
+                    //{
+                    //    var test = 1;
+                    //}
+
+                    // find the first non-book move
+                    var player = loss.Item1;
+                    var moves = canonicalTranscript.Split(" ");
+                    for (var i = 1; i <= Math.Min(depth, moves.Length); i++)
+                    {
+                        var extra = i < moves.Length && moves[i] == "G" ? 1 : 0;
+                        var partial = string.Join(" ", moves.Take(i + extra));
+                        if (GetPlayerToMove(partial) == player)
+                        {
+                            var next = GetMoveInternal(partial);
+                            if (next.move == -1)
+                            {
+                                if (_record)
+                                {
+                                    // record move
+                                    SaveBookForPosition(partial, moves, depth, iterations, gap);
+                                }
+                                else
+                                {
+                                    // update the book with a better move
+                                    GenerateBookForPosition(depth, iterations, partial, true, gap);
+                                }
+
+                                OnStatusUpdate?.Invoke(_done, Math.Max(_done, _total), $"{_done}/{_total} lines, {_book.Count} positions");
+                                break;
+                            }
+                            else if (i + 1 < moves.Length && !_record)
+                            {
+                                // it's my move and i have a book entry, but it differs from the line played in this transcript
+                                // since we'll never actually hit the position we can skip it and not generate moves
+                                var actual = string.Join(" ", moves.Take(i + extra + 1));
+                                if (actual == "G" && i + extra + 2 < moves.Length)
+                                {
+                                    actual = string.Join(" ", moves.Take(i + extra + 2));
+                                }
+                                var proposed = partial + " " + Constants.TileNames[next.move];
+
+                                if (!CanonicallyIdentical(actual, proposed))
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    _done++;
+                    OnStatusUpdate?.Invoke(_done, Math.Max(_done, _total), $"{_done}/{_total} lines, {_book.Count} positions");
+                };
+
+                if (parallel)
+                {
+                    Parallel.ForEach(transcripts, new ParallelOptions() { MaxDegreeOfParallelism = 8 }, action);
+                }
+                else
+                {
+                    transcripts.ForEach(action);
+                }
+
+                // was anything added
+                if (count == _book.Count)
+                {
+                    if (!string.IsNullOrEmpty(bot))
+                    {
+                        OnStatusUpdate?.Invoke(_book.Count, _book.Count, $"{transcripts.Count} positions");
+                        break;
+                    }
+
+                    failstreak += batch;
+                    OnStatusUpdate?.Invoke(_book.Count, _book.Count, $"{_book.Count} positions (fail streak {failstreak})");
+                    continue;
+                }
+                else
+                {
+                    failstreak = 0;
+                }
+            }
+        }
+
+        private bool CanonicallyIdentical(string transcript1, string transcript2)
+        {
+            var a = GetCanonicalBoard(transcript1);
+            var b = GetCanonicalBoard(transcript2);
+
+            for (var i = 0; i < 80; i++)
+            {
+                if (a[i] != b[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private int[] GetCanonicalBoard(string transcript)
+        {
+            var game = new VolcanoGame();
+            game.LoadTranscript(transcript);
+
+            var canonical = new Canonical();
+            canonical.SetIndex(game);
+
+            game.CurrentState = canonical.Canonicalize(game.CurrentState);
+
+            return game.CurrentState.Tiles;
+        }
+
+        public void Generate(int depth, int iterations, int gap, bool parallel, bool resume)
+        {
+#if WINDOWS
+            ApplicationPriorityOptimizer.EnableMaximumPerformanceMode();
+#endif
+
+            _stop = false;
+            _pending = new ConcurrentDictionary<string, bool>();
+
+            var total = 1;
+
+            // Blue's first move (hardcode to one of the 20 identical equilateral triangles since plenty of computational power says that's slightly better than one of the 60 identical isosceles triangles)
+            var blueStart = "N07";
+            _book[""] = Constants.TileIndexes[blueStart];
+            UpdateBook(depth, iterations, gap);
+
+            //// Prime the root node
+            //_engine.forcedIterations = 80;
+            //_engine._persistable = true;
+            //_engine._persistableFull = true;
+            //var prime = new Board();
+            //_engine.GetBestMove(prime, 1, new EngineCancellationToken(() => false));
+            //prime.MakeMove(_book[""]);
+            //_engine.GetBestMove(prime, 1, new EngineCancellationToken(() => false));
 
             // Blue's second and third move (after all possible moves from orange)
             var allGamesBlue = GetAllTranscriptsAfterPosition(blueStart, false);
+            total += allGamesBlue.Count * 2;
 
             // Orange's first and second move (after all possible moves from blue)
             var allGamesOrange = GetAllTranscriptsAfterPosition("", true);
+            total += allGamesOrange.Count * 2;
+            total += allGamesOrange.Count * 2;
 
-            Parallel.ForEach(allGamesBlue, transcript =>
+            var allGames = new List<string>();
+            allGames.AddRange(allGamesBlue);
+            allGames.AddRange(allGamesOrange);
+
+            //if (resume && File.Exists("book.temp"))
+            //{
+            //    var completed = File.ReadAllLines("book.temp");
+            //    for (var i = allGames.Count - 1; i >= 0; i--)
+            //    {
+            //        if (completed.Contains(allGames[i]))
+            //        {
+            //            allGames.RemoveAt(i);
+            //            done++;
+            //        }
+            //    }
+            //    OnStatusUpdate?.Invoke(done, total);
+            //}
+
+            OnStatusUpdate?.Invoke(_book.Count, total, null);
+
+            // Order by initial depth
+            allGames = allGames.OrderBy(x => x.Length).ThenBy(x => x).ToList();
+
+            if (parallel)
             {
-                GenerateBookForPosition(depth, seconds, transcript, false);
+                // Warning! This consumes a ton of memory and will grind to a halt if you set an interation count too high!
+                Parallel.ForEach(allGames, transcript =>
+                {
+                    if (_stop)
+                    {
+                        return;
+                    }
 
-                OnStatusUpdate?.Invoke(++done, 12643);
-            });
-
-            Parallel.ForEach(allGamesOrange, transcript =>
+                    GenerateBookForPosition(depth, iterations, transcript, false, gap);
+                    SaveProgress(transcript);
+                    OnStatusUpdate?.Invoke(_book.Count, total, null);
+                });
+            }
+            else
             {
-                GenerateBookForPosition(depth, seconds, transcript, false);
+                allGames.ForEach(transcript =>
+                {
+                    if (_stop)
+                    {
+                        return;
+                    }
 
-                OnStatusUpdate?.Invoke(++done, 12643);
-            });
+                    GenerateBookForPosition(depth, iterations, transcript, false, gap);
+                    SaveProgress(transcript);
+                    OnStatusUpdate?.Invoke(_book.Count, total, null);
+                });
+            }
 
-            OnStatusUpdate?.Invoke(12643, 12643);
+            OnStatusUpdate?.Invoke(_book.Count, total, null);
         }
 
-        private string GenerateBookForPosition(int depth, int seconds, string transcript, bool singleOnly)
+        private static readonly object _fileLock = new object();
+
+        private void SaveProgress(string transcript)
+        {
+            lock (_fileLock)
+            {
+                File.AppendAllLines("book.temp", [transcript]);
+            }
+        }
+
+        private void SaveBookForPosition(string partial, string[] moves, int depth, int iterations, int gap)
+        {
+            var game = new VolcanoGame();
+            game.LoadTranscript(partial);
+
+            var canonical = new Canonical();
+            canonical.SetIndex(game);
+
+            game.CurrentState = canonical.Canonicalize(game.CurrentState);
+
+            var t = "";
+            if (game.MoveHistory.Count > 0)
+            {
+                t = game.MoveHistory
+                    .Select(canonical.BoardToCanonical)
+                    .Select(x => Constants.TileNames[x])
+                    .Aggregate((c, n) => c + " " + n);
+            }
+
+            var num = partial.Split(' ').Count();
+            if (num < moves.Length)
+            {
+                var best = moves[num];
+                if (best == "G" && num + 1 < moves.Length)
+                {
+                    best = moves[num + 1];
+                }
+
+                if (best != "G")
+                {
+                    if (!_book.ContainsKey(t) && game.CurrentState.GetMoves().Count > 0)
+                    {
+                        var b = canonical.BoardToCanonical(Constants.TileIndexes[best]);
+
+                        lock (_book)
+                        {
+                            _book[t] = b;
+                        }
+
+                        UpdateBook(depth, iterations, gap);
+                    }
+                }
+            }
+        }
+
+        private string GenerateBookForPosition(int depth, int iterations, string transcript, bool singleOnly, int gap)
         {
             var bestTranscript = "";
 
-            if (!_book.ContainsKey(transcript))
+            var game = new VolcanoGame();
+            game.LoadTranscript(transcript);
+
+            var canonical = new Canonical();
+            canonical.SetIndex(game);
+
+            game.CurrentState = canonical.Canonicalize(game.CurrentState);
+
+            var t = "";
+            if (game.MoveHistory.Count > 0)
             {
-                var game = new VolcanoGame();
-                game.LoadTranscript(transcript);
+                t = game.MoveHistory
+                    .Select(canonical.BoardToCanonical)
+                    .Select(x => Constants.TileNames[x])
+                    .Aggregate((c, n) => c + " " + n);
+            }
 
-                var engine = new MonteCarloTreeSearchEngine(false);
-                var best = engine.GetBestMove(game.CurrentState, seconds, new EngineCancellationToken(() => false));
+            if (!_book.ContainsKey(t) && !_pending.ContainsKey(t) && game.CurrentState.GetMoves().Count > 0)
+            {
+                _pending.TryAdd(t, true);
 
-                var t = game.GetTranscriptLine();
+                //if (t == "")
+                //{
+                //    lock (_book)
+                //    {
+                //        // hardcoded first move
+                //        _book[t] = Constants.TileIndexes["N26"];
+                //    }
+                //    UpdateBook(depth, iterations, gap);
+                //    return "N26";
+                //}
+
+                // use iterations instead of time so we can run in parallel without starving a thread and getting bad results
+                //var engine = new AlphaZeroEngine(VolcanoZeroVersion.V3); // new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false, _solver = true, _moveFilter = new NearbyMoveFilter(), _rolloutStrategy = new NearbyRolloutStrategy() }; // new AlphaZeroEngine(VolcanoZeroVersion.V2);
+                // var engine = new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V1);
+                var engine = new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V2);
+                //engine.simplifyFirstMove = true;
+                engine.ForcedSimulations = iterations;
+                //engine.forcedGap = gap;
+
+                var best = engine.GetBestMove(game.CurrentState, iterations, new EngineCancellationToken(() => false));
+
                 var b = best.BestMove;
 
                 lock (_book)
@@ -124,15 +603,15 @@ namespace Volcano.Engine
                 }
 
                 game.MakeMove(b);
-                bestTranscript = game.GetTranscriptLine();
+                bestTranscript = game.GetTranscriptLine().Replace("+", "");
 
-                UpdateBook(depth, seconds);
+                UpdateBook(depth, iterations, gap);
 
-                if (!singleOnly)
+                if (!singleOnly && game.CurrentState.GetMoves().Count > 0)
                 {
-                    best = engine.GetBestMove(game.CurrentState, seconds, new EngineCancellationToken(() => false));
+                    best = engine.GetBestMove(game.CurrentState, iterations, new EngineCancellationToken(() => false));
 
-                    t = game.GetTranscriptLine();
+                    t = game.GetTranscriptLine().Replace("+", "");
                     b = best.BestMove;
 
                     lock (_book)
@@ -140,34 +619,90 @@ namespace Volcano.Engine
                         _book[t] = b;
                     }
 
-                    UpdateBook(depth, seconds);
+                    UpdateBook(depth, iterations, gap);
                 }
             }
 
             return bestTranscript;
         }
 
-        private void UpdateBook(int depth, int seconds)
+        private void UpdateBook(int depth, int iterations, int gap)
         {
-            _lock.Wait();
-
-            using (var r = new StreamWriter(_file))
+            var attempts = 3;
+            for (var i = 1; i <= attempts; i++)
             {
-                r.WriteLine(depth);
-                r.WriteLine(_book.Count);
-                r.WriteLine(seconds);
+                _lock.Wait();
 
-                lock (_book)
+                try
                 {
-                    foreach (var entry in _book)
+                    //using (var r = new StreamWriter(_file))
+                    //{
+                    //    r.WriteLine(depth);
+                    //    r.WriteLine(_book.Count);
+                    //    r.WriteLine(iterations);
+                    //    lock (_book)
+                    //    {
+                    //        foreach (var entry in _book)
+                    //        {
+                    //            r.WriteLine(entry.Key);
+                    //            r.WriteLine(Constants.TileNames[entry.Value]);
+                    //        }
+                    //    }
+                    //}
+
+                    if (File.Exists(_file))
                     {
-                        r.WriteLine(entry.Key);
-                        r.WriteLine(Constants.TileNames[entry.Value]);
+                        if (File.Exists($"{_file}.tempsave"))
+                        {
+                            File.Delete($"{_file}.tempsave");
+                        }
+                        File.Copy(_file, $"{_file}.tempsave");
                     }
+
+                    using (var writer = new BinaryWriter(File.Open(_file, FileMode.Create)))
+                    {
+                        writer.Write(_fileHeader); // header
+                        writer.Write("mcts-v2"); // engine
+                        writer.Write(iterations); // iterations
+                        writer.Write(gap); // gap
+
+                        writer.Write(_book.Count);
+                        foreach (var entry in _book)
+                        {
+                            var transcriptMoves = entry.Key == "" ? [] : entry.Key.Split(' ').Select(x => Constants.TileIndexes[x.Replace("+", "")]).ToList();
+                            writer.Write((byte)transcriptMoves.Count);
+                            foreach (var move in transcriptMoves)
+                            {
+                                writer.Write((byte)move);
+                            }
+                            writer.Write((byte)entry.Value);
+                        }
+                    }
+
+                    if (File.Exists($"{_file}.tempsave"))
+                    {
+                        File.Delete($"{_file}.tempsave");
+                    }
+
+#if DEBUG
+                    SaveCG();
+#endif
+                    break;
+                }
+                catch
+                {
+                    if (i == attempts)
+                    {
+                        throw;
+                    }
+
+                    Thread.Sleep(1000 + Random.Shared.Next(1000));
+                }
+                finally
+                {
+                    _lock.Release();
                 }
             }
-
-            _lock.Release();
         }
 
         private List<string> GetAllTranscriptsAfterPosition(string transcript, bool singleOnly)
@@ -177,12 +712,17 @@ namespace Volcano.Engine
             var baseGame = new VolcanoGame();
             baseGame.LoadTranscript(transcript);
 
-            foreach (var firstMove in baseGame.CurrentState.GetMoves())
+            // sine the board is canonicalized, there are really only two first moves
+            var allMoves = transcript == "" ? [0, 1] : baseGame.CurrentState.GetMoves();
+
+            foreach (var firstMove in allMoves)
             {
                 var firstCopy = new VolcanoGame();
                 firstCopy.LoadTranscript(baseGame.GetTranscriptLine());
 
                 firstCopy.MakeMove(firstMove);
+
+                //_engine.GetBestMove(firstCopy.CurrentState, 1, new EngineCancellationToken(() => false));
 
                 if (singleOnly)
                 {
@@ -197,12 +737,238 @@ namespace Volcano.Engine
 
                         secondCopy.MakeMove(secondMove);
 
+                        //_engine.GetBestMove(secondCopy.CurrentState, 1, new EngineCancellationToken(() => false));
+
                         transcripts.Add(secondCopy.GetTranscriptLine());
                     }
                 }
             }
 
             return transcripts;
+        }
+
+        private List<(Player, string)> GenerateLosingTranscripts(int rounds)
+        {
+            var transcripts = new List<(Player, string)>();
+            var games = new List<Action>();
+
+            for (var i = 0; i < rounds; i++)
+            {
+                games.Add(() =>
+                {
+                    try
+                    {
+                        var killswitch = Stopwatch.StartNew();
+                        var game = new VolcanoGame();
+                        var victory = VictoryType.None;
+                        game.OnGameOver += (p, v) => victory = v;
+
+                        var me = new MonteCarloTreeSearchEngine(MCTSVersion.V2, this); // new AlphaZeroEngine(VolcanoZeroVersion.V2, this) { _policyOnly = true }; // new RandomEngine(this);
+                        var op = new MonteCarloTreeSearchEngine(MCTSVersion.V2); // new RandomEngine(); // AlphaZeroEngine(VolcanoZeroVersion.v1_6r_128f_233472g) { _policyOnly = true };
+
+                        game.RegisterEngine(Player.One, i % 2 == 0 ? me : op, true);
+                        game.RegisterEngine(Player.Two, i % 2 == 0 ? op : me, true);
+                        game.SecondsPerEngineMove = 1;
+                        game.TimeoutGrace = 5000;
+                        game.StartNewGame();
+                        game.ComputerPlay();
+
+                        while (victory == VictoryType.None &&
+                            game.CurrentState.Winner == Player.Empty &&
+                            game.CurrentState.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns &&
+                            killswitch.ElapsedMilliseconds < VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000)
+                        {
+                            System.Threading.Thread.Sleep(100);
+                        }
+
+                        game.ForceStop();
+
+                        // played as player 1 but lost
+                        if (i % 2 == 0 && game.CurrentState.Winner != Player.One)
+                        {
+                            lock (transcripts)
+                            {
+                                transcripts.Add((Player.One, game.GetTranscriptLine()));
+                            }
+                        }
+
+                        // played as player 2 but lost
+                        if (i % 2 == 1 && game.CurrentState.Winner != Player.Two)
+                        {
+                            lock (transcripts)
+                            {
+                                transcripts.Add((Player.Two, game.GetTranscriptLine()));
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        try
+                        {
+                            using (var sw = new StreamWriter("errors.txt", true))
+                            {
+                                sw.WriteLine("Failed to run validation game: " + ex.ToString());
+                            }
+                        }
+                        catch
+                        {
+                            // oh well
+                        }
+                    }
+                });
+            }
+
+            Parallel.ForEach(games, g => g());
+
+            return transcripts;
+        }
+
+        private Player GetPlayerToMove(string transcript)
+        {
+            var turn = transcript.Split(" ").Length;
+            switch (turn % 6)
+            {
+                case 0:
+                case 4:
+                case 5:
+                    return Player.One;
+
+                case 1:
+                case 2:
+                case 3:
+                    return Player.Two;
+
+                default:
+                    return Player.Empty;
+            }
+        }
+
+        internal void Cancel()
+        {
+            _stop = true;
+        }
+
+        private void SaveCG()
+        {
+            using (var ms = new MemoryStream())
+            using (var bw = new BinaryWriter(ms))
+            {
+                bw.Write(_book.Count);
+                foreach (var entry in _book)
+                {
+                    var t = entry.Key;
+                    var m = entry.Value;
+                    var game = new VolcanoGame();
+                    game.LoadTranscript(t);
+                    var h = game.CurrentState.GetFullHash();
+                    bw.Write(h);
+                    bw.Write((byte)m);
+                }
+                var s = new CGS().Serialize(ms.ToArray());
+                File.WriteAllText("cgs.txt", s);
+            }
+
+            //using (var ms = new MemoryStream())
+            //using (var bw = new BinaryWriter(ms))
+            //{
+            //    for (var i = 0; i < 120; i++)
+            //    {
+            //        for (var j = 0; j < 80; j++)
+            //        {
+            //            bw.Write((byte)Canonical._indexToCanonical[i, j]);
+            //            // bw.Write((byte)Canonical._canonicalToIndex[i, j]);
+            //        }
+            //    }
+            //    var s = new CGS().Serialize(ms.ToArray());
+            //    File.WriteAllText("canonical.txt", s);
+            //}
+        }
+
+        internal class CGS
+        {
+            public string Serialize(byte[] data)
+            {
+                var bitIndex = 0;
+                var number = 0;
+                var encoded = data.Length.ToString().PadLeft(6, '0');
+
+                for (var i = 0; i < data.Length; i++)
+                {
+                    number |= data[i] << bitIndex;
+                    bitIndex += 8;
+
+                    if (bitIndex >= 15)
+                    {
+                        var charNumber = (number & 0x7FFF) + 95;
+
+                        if (charNumber + 97 >= 8232)
+                        {
+                            charNumber += 2;
+                        }
+
+                        var b = 'a' + charNumber;
+
+                        encoded += Convert.ToChar(b);
+                        number = number >> 15;
+                        bitIndex -= 15;
+                    }
+                }
+
+                if (bitIndex > 0)
+                {
+                    var charNumber = (number & 0x7FFF) + 95;
+                    if (charNumber >= 8232)
+                    {
+                        charNumber += 2;
+                    }
+
+                    var b = 'a' + charNumber;
+                    encoded += Convert.ToChar(b);
+                }
+
+                return encoded;
+            }
+
+            public byte[] Deserialize(string serialized)
+            {
+                var charIndex = 0;
+                var charNumber = 0;
+                var bitStorage = 0;
+                var errorCount = 0;
+
+                var length = int.Parse(serialized.Substring(0, 6));
+                serialized = serialized.Substring(6);
+
+                var data = new byte[length];
+
+                for (var i = 0; i < length; i++)
+                {
+                    if (bitStorage < 8 && charIndex < serialized.Length)
+                    {
+                        var number = (serialized[charIndex++] - 'a');
+                        if (number + 97 >= 8232)
+                        {
+                            number -= 2;
+                        }
+
+                        number -= 95;
+
+                        charNumber |= number << bitStorage;
+                        bitStorage += 15;
+                    }
+
+                    if (data[i] != (charNumber & 0xFF))
+                    {
+                        errorCount++;
+                    }
+
+                    data[i] = (byte)(charNumber & 0xFF);
+                    charNumber >>= 8;
+                    bitStorage -= 8;
+                }
+
+                return data;
+            }
         }
 
         private class BookNode

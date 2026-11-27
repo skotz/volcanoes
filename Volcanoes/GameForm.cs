@@ -1,18 +1,15 @@
-﻿using Volcano.Interface;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Volcano.Game;
-using System.IO;
-using Volcano.Engine;
 using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
+using Volcano.Engine;
+using Volcano.Game;
+using Volcano.Interface;
+using Volcano.Neural;
 using Volcano.Search;
 using static System.Environment;
 
@@ -20,23 +17,28 @@ namespace Volcano
 {
     public partial class GameForm : Form
     {
-        GameGraphics graphics;
-        VolcanoGame game;
-        EngineHelper engines;
-        GameGraphicsSettings settings;
+        private GameGraphics graphics;
+        private VolcanoGame game;
+        private EngineHelper engines;
+        private GameGraphicsSettings settings;
 
-        List<int> transcript;
-        int transcriptMove;
+        private List<int> transcript;
+        private int transcriptMove;
 
-        EngineOutputForm outputForm;
+        private EngineOutputForm outputForm;
 
-        string openingBook = "openings.dat";
+        private string openingBook = "Books\\openings-v1-60s.dat";
 
-        string gameFolder = $"{Environment.GetFolderPath(SpecialFolder.MyDocuments)}\\My Games\\Volcanoes\\";
+        private string gameFolder = $"{Environment.GetFolderPath(SpecialFolder.MyDocuments)}\\My Games\\Volcanoes\\";
 
-        public GameForm()
+        public GameForm(string[] args = null)
         {
             InitializeComponent();
+
+            if (args != null && args.Any(a => a.Equals("train", StringComparison.OrdinalIgnoreCase)))
+            {
+                Shown += (s, e) => StartTraining();
+            }
 
             if (!Directory.Exists(gameFolder))
             {
@@ -54,6 +56,7 @@ namespace Volcano
             engines = new EngineHelper();
             engines.Add<BarricadeEngine>("Barricade");
             engines.Add<RandomEngine>("Random");
+            engines.Add<BeeLineTwoEngine>("Beeline v2");
             engines.Add<DeepBeelineEngine>("Deep Beeline");
             engines.Add<MonteCarloBarricadeEngine>("Monte Carlo Barricade");
             engines.Add<MonteCarloBeelineRandParallelEngine>("Parallel MCTS Beeline");
@@ -61,12 +64,115 @@ namespace Volcano
             engines.Add<MonteCarloBeelineThreeEngine>("Monte Carlo Beeline 3");
             engines.Add<MonteCarloBeelineFourEngine>("Monte Carlo Beeline 4");
             engines.Add<MonteCarloTreeSearchEngine>("Monte Carlo Tree Search");
+            engines.Add<MonteCarloCanonicalEngine>("Monte Carlo Canonical");
             //engines.Add<MonteCarloTreeSearchFixedEngine>("MCTS Alt");
+            //engines.Add<MiniMaxAlphaBetaEngine>("MiniMax Alpha-Beta");
 
-            engines.Add("MCTS Opening Book", () => new MonteCarloTreeSearchEngine(true, false, false, openingBook));
-            engines.Add("MCTS Victory Hash", () => new MonteCarloTreeSearchEngine(true, true, false, ""));
-            engines.Add("MCTS Fast Win Check", () => new MonteCarloTreeSearchEngine(true, false, true, ""));
-            engines.Add("MCTS Trio", () => new MonteCarloTreeSearchEngine(true, true, true, openingBook));
+            //engines.Add<BeamSearchEngine>("Beam Search");
+            //engines.Add<MiniMaxPlusEngine>("MiniMax Plus");
+
+            engines.Add("MCTS Book v1", () => new MonteCarloTreeSearchEngine(true, false, false, false, openingBook));
+            engines.Add("MCTS Book v2", () => new MonteCarloTreeSearchEngine(true, false, false, false, "Books\\openings-v2-100000i.dat"));
+            engines.Add("MCTS Victory Hash", () => new MonteCarloTreeSearchEngine(true, true, false, false, ""));
+            engines.Add("MCTS Fast Win Check", () => new MonteCarloTreeSearchEngine(true, false, true, false, ""));
+            engines.Add("MCTS Trio", () => new MonteCarloTreeSearchEngine(true, true, true, false, openingBook));
+            engines.Add("MCTS Last Player Fix", () => new MonteCarloTreeSearchEngine(true, false, false, true, ""));
+            engines.Add("MCTS Count Draws", () => new MonteCarloTreeSearchEngine() { _countDraws = true });
+            engines.Add("MCTS v2", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2));
+            engines.Add("MCTS v2 Book", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2, "Books\\openings-v3-ex-100000i.dat"));
+            engines.Add("MCTS v2 Book G-10", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2, "Books\\openings-v4-gcnii-10k.dat"));
+            engines.Add("MCTS Persist", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _persistable = true });
+
+            //engines.Add("MCTS v2 Rollout 0.5-1", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.5, 1) });
+            //engines.Add("MCTS v2 Rollout 0.5-2", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.5, 2) });
+            engines.Add("MCTS v2 Beeline Rollout", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy() });
+            engines.Add("MCTS v2 Empty Rollout", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new EmptyNeighborRolloutStrategy() });
+            engines.Add("MCTS v2 Three Rollout", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new ThreeAwayRolloutStrategy() });
+            engines.Add("MCTS v2 Point Rollout", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new PointNeighborRolloutStrategy() });
+            //engines.Add("MCTS v2 Canonical Filter", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _moveFilter = new CanonicalMoveFilter() });
+            engines.Add("MCTS v2 Nearby Filter", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _moveFilter = new NearbyMoveFilter(), _rolloutStrategy = new NearbyRolloutStrategy() });
+            //engines.Add("MCTS v2 Rollout 0.5-4", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.5, 4) });
+            //engines.Add("MCTS v2 Rollout 0.5-5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.5, 5) });
+            //engines.Add("MCTS v2 Rollout 0.8-1", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.8, 1) });
+            //engines.Add("MCTS v2 Rollout 0.8-2", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.8, 2) });
+            //engines.Add("MCTS v2 Rollout 0.8-3", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.8, 3) });
+            //engines.Add("MCTS v2 Rollout 0.8-4", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.8, 4) });
+            //engines.Add("MCTS v2 Rollout 0.8-5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.8, 5) });
+            //engines.Add("MCTS v2 Rollout 0.5-10", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.5, 10) });
+            //engines.Add("MCTS v2 Rollout 0.25-5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.25, 5) });
+            //engines.Add("MCTS v2 Rollout 0.75-5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.75, 5) });
+            //engines.Add("MCTS v2 Rollout 1.0-5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(1.0, 5) });
+            //engines.Add("MCTS v2 Rollout 1.0-10", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(1.0, 10) });
+
+            engines.Add("MCTS v2 Flood Win", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _floodWinSearch = true });
+
+            engines.Add("MCTS v2 UCB 0.5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 0.5 });
+
+            engines.Add("MCTS v2 PUCT", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _puct = true, _ucbFactor = 0.6, _temperature = 0.75 });
+
+            engines.Add("MCTS v2 Solver", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false, _solver = true });
+
+            engines.Add("MCTS v2 Solver UCB 0.5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _allowForcedWins = false, _solver = true, _ucbFactor = 0.5 });
+
+            engines.Add("MCTS v2 Store", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _store = true });
+
+            engines.Add("MCTS v2 RAVE", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true, _raveEquiv = 1000 });
+            //engines.Add("MCTS v2 RAVE 100", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true, _raveEquiv = 100 });
+            //engines.Add("MCTS v2 RAVE 500", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true, _raveEquiv = 500 });
+            //engines.Add("MCTS v2 RAVE 1000", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true, _raveEquiv = 1000 });
+            //engines.Add("MCTS v2 RAVE 3000", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rave = true, _raveEquiv = 3000 });
+
+            //engines.Add("MCTS UCB 0.75", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 0.75 });
+            //engines.Add("MCTS UCB 1", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 1 });
+            //engines.Add("MCTS UCB 1.25", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 1.25 });
+            //engines.Add("MCTS UCB 1.5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 1.5 });
+            //engines.Add("MCTS UCB 1.75", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 1.75 });
+            //engines.Add("MCTS UCB 2", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 2 });
+            //engines.Add("MCTS UCB 2.5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 2.5 });
+            //engines.Add("MCTS UCB 3", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _ucbFactor = 3 });
+
+            //engines.Add("MCTS PUCT 0.1", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.1 });
+            //engines.Add("MCTS PUCT 0.2", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.2 });
+            //engines.Add("MCTS PUCT 0.3", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.3 });
+            //engines.Add("MCTS PUCT 0.4", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.4 });
+            //engines.Add("MCTS PUCT 0.5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.5 });
+            //engines.Add("MCTS PUCT 0.6", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.6 });
+            //engines.Add("MCTS PUCT 0.7", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.7 });
+            //engines.Add("MCTS PUCT 0.8", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.8 });
+            //engines.Add("MCTS PUCT 0.9", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.9 });
+            //engines.Add("MCTS PUCT 1.0", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 1.0 });
+            //engines.Add("MCTS PUCT 0.55 1.5", () => new MonteCarloTreeSearchEngine(MCTSVersion.V3) { _temperature = 0.55, _ucbFactor = 1.5 });
+
+            engines.Add("VolcanoZero DCNN v4", () => new AlphaZeroEngine(VolcanoZeroVersion.V4));
+            engines.Add("VolcanoZero DCNN v4 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V4) { _policyOnly = true });
+
+            engines.Add("VolcanoZero DCNN v5", () => new AlphaZeroEngine(VolcanoZeroVersion.V5));
+            engines.Add("VolcanoZero DCNN v5 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V5) { _policyOnly = true });
+
+            engines.Add("VolcanoZero DCNN v6", () => new AlphaZeroEngine(VolcanoZeroVersion.V6));
+            engines.Add("VolcanoZero DCNN v6 Policy", () => new AlphaZeroEngine(VolcanoZeroVersion.V6) { _policyOnly = true });
+
+            engines.Add("VolcanoZero GCNII v1", () => new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V1));
+            engines.Add("VolcanoZero GCNII v1 Policy", () => new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V1) { _policyOnly = true });
+
+            engines.Add("VolcanoZero GCNII v2", () => new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V2));
+            engines.Add("VolcanoZero GCNII v2 Book", () => new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V2, "Books\\openings-v4-gcnii-10k.dat"));
+            engines.Add("VolcanoZero GCNII v2 Policy", () => new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V2) { _policyOnly = true });
+
+            if (File.Exists("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\graph\\training-model.dat"))
+            {
+                engines.Add("VolcanoZero GCNII TRAINING", () => new AlphaZeroGraphEngine(VolcanoGraphZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\graph\\training-model.dat", 12, 128, new PathGraphEncoder())));
+            }
+            if (File.Exists("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat"))
+            {
+                engines.Add("VolcanoZero TRAINING", () => new AlphaZeroEngine(VolcanoZeroConfig.FromFile("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\training-model.dat", 5, 64, new SimpleEncoder())));
+            }
+            if (File.Exists("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Debug\\net10.0-windows\\new-book.dat"))
+            {
+                engines.Add("MCTS v2 Book TRAINING", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2, "C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Debug\\net10.0-windows\\new-book.dat"));
+            }
+
+            //engines.Add<DeepQNetworkEngine>("Deep Q-Network");
 
             //engines.Add<MonteCarloPlayoutEngine>("MCTS Playout");
             //engines.Add<MonteCarloBeelineParallelEngine>("Parallel MCTS Beeline Full");
@@ -103,6 +209,10 @@ namespace Volcano
             FileSystemWatcher graphicsSettingsFsw = new FileSystemWatcher(".", gameFolder + "graphics.json");
             graphicsSettingsFsw.EnableRaisingEvents = true;
             graphicsSettingsFsw.Changed += GraphicsSettingsFsw_Changed;
+
+            //new Canonical(new Board().Tiles).Generate(graphics);
+            //SymmetryGenerator.Generate();
+            //CanonicalCounter.Run();
         }
 
         private void Game_OnMoveMade(bool growthHappened)
@@ -245,7 +355,7 @@ namespace Volcano
                     games /= 2;
                 }
 
-                Tournament tourney = new Tournament(games, selfPlayForm.SecondsPerMove, gameFolder + "selfplay-table-" + date + ".csv", gameFolder + "selfplay-data-" + date + ".csv", engines, selfPlayForm.Engines, selfPlayForm.Engines.Count == 1, TournamentType.RoundRobin);
+                Tournament tourney = new Tournament(games, selfPlayForm.SecondsPerMove, gameFolder + "selfplay-table-" + date + ".csv", gameFolder + "selfplay-data-" + date + ".csv", engines, selfPlayForm.Engines, selfPlayForm.Engines.Count == 1, TournamentType.RoundRobin, true);
                 tourney.OnTournamentCompleted += Tourney_OnTournamentCompleted;
                 tourney.OnTournamentStatus += Tourney_OnTournamentStatus;
                 tourney.Start();
@@ -254,7 +364,7 @@ namespace Volcano
 
         private void newTournamentToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = new TournamentForm(engines.EngineNames);
+            var form = new TournamentForm(engines);
             var dr = form.ShowDialog();
             if (dr == DialogResult.OK)
             {
@@ -265,7 +375,7 @@ namespace Volcano
 
                 string date = DateTime.Now.ToString("yyyyMMddhhmmss");
 
-                Tournament tourney = new Tournament(form.Rounds, form.SecondsPerMove, gameFolder + "tourney-table-" + date + ".csv", gameFolder + "tourney-data-" + date + ".csv", engines, form.Engines, form.SelfPlay || form.Engines.Count == 1, form.TournamentType);
+                Tournament tourney = new Tournament(form.Rounds, form.SecondsPerMove, gameFolder + "tourney-table-" + date + ".csv", gameFolder + "tourney-data-" + date + ".csv", engines, form.Engines, form.SelfPlay || form.Engines.Count == 1, form.TournamentType, form.Parallel, form.ForceSimulations);
                 tourney.OnTournamentCompleted += Tourney_OnTournamentCompleted;
                 tourney.OnTournamentStatus += Tourney_OnTournamentStatus;
                 tourney.Start();
@@ -489,6 +599,7 @@ namespace Volcano
                 }
             }
         }
+
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             if (keyData == Keys.Left)
@@ -509,8 +620,10 @@ namespace Volcano
 
         private void generateOpeningBooksToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var bookForm = new BookForm(openingBook);
-            bookForm.ShowDialog();
+            DisableGraphics();
+
+            var bookForm = new BookForm("new-book.dat");
+            bookForm.ShowAsync();
         }
 
         private void loadCGStringFromClipboardToolStripMenuItem_Click(object sender, EventArgs e)
@@ -531,10 +644,65 @@ namespace Volcano
                     game.CurrentState.Tiles[i] = position[index];
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 MessageBox.Show("Failed to load game from CG string!");
             }
+        }
+
+        private void trainQLearningToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            StartTraining();
+        }
+
+        private void StartTraining()
+        {
+            DisableGraphics();
+
+            var trainingForm = new TrainingForm();
+            trainingForm.ShowAsync();
+        }
+
+        private void DisableGraphics()
+        {
+            gameTimer.Stop();
+            using (var g3 = gamePanel.CreateGraphics())
+            {
+                g3.Clear(Color.Black);
+            }
+        }
+
+        private void canonicalizeBoardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var canonical = new Canonical();
+            //var state = new GameRule().ChangePerspective(game.CurrentState, Player.One);
+            canonical.SetIndex(game.CurrentState);
+            game.CurrentState = canonical.Canonicalize(game.CurrentState);
+
+            //var test = SymmetryGenerator.GeneratePermutations();
+            //if (o == null)
+            //{
+            //    o = (int[])game.CurrentState.Tiles.Clone();
+            //}
+
+            //for (var i = 0; i < 80; i++)
+            //{
+            //    game.CurrentState.Tiles[i] = o[test[x][i]];
+            //}
+            //x = (x + 1) % test.Count;
+
+            //game.CurrentState = new GameRule().ChangePerspective(game.CurrentState, Player.One);
+
+            //game.CurrentState.MakeMove(Constants.AllGrowMove, false, false);
+
+            //game.CurrentState = JsonConvert.DeserializeObject<Board>("{\"Tiles\":[0,4,-4,4,-3,4,-4,-4,4,4,4,0,4,4,4,4,4,4,4,4,-4,-4,0,-4,-4,-4,-4,-4,-4,-4,-4,0,4,4,4,4,4,4,4,4,-4,-4,-4,-4,-4,-4,-4,-4,4,4,4,0,4,4,4,4,0,4,-4,4,-4,-4,-4,-4,-4,-4,-4,-4,-3,-4,-4,4,0,-4,4,4,0,-4,4,-4],\"Dormant\":[false,true,true,true,false,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,false,true,true,true,false,true,true,true,false,true,true,true],\"Player\":0,\"Turn\":299,\"Winner\":2,\"WinningPathPlayerOne\":[],\"WinningPathPlayerTwo\":[],\"LastMoveIncreasedTile\":true,\"Transcript\":null,\"allowHash\":false,\"fastWinSearch\":false,\"Flipped\":false,\"winHashes\":null,\"State\":0}");
+        }
+
+        private void benchmarkEncodersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var path = Path.Combine(Environment.CurrentDirectory, "encoder-speed.csv");
+            Volcano.Neural.EncoderBenchmark.Run(path);
+            MessageBox.Show($"Encoder benchmark complete: {path}", "Benchmark Encoders");
         }
     }
 }

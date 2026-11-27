@@ -1,7 +1,7 @@
 # Volcanoes
-This is a prototype for a new board game concept being designed by Simon Dorfman and developed by Scott Clayton.
+This is a prototype for a new board game concept designed by Simon Dorfman and developed by Scott Clayton.
 
-![Screenshot](Concept/History/z-history-20200125.png)
+![Gameplay](Concept/History/z-history-20261113a.gif)
 
 ## Rules
 The goal of the game is to create a line of adjacent volcanoes which connect tiles on 
@@ -34,27 +34,33 @@ When a volcano advances to level-four (via a player's turn or via a growth turn)
 ## Engines
 Several computer AIs are included with Volcanoes. Here are the current rankings from a recent round robin tournament:
 
-![Engine Cross Table](Concept/History/z-history-20190101.png)
-
-Our goal is to learn strategies for this game through the analysis of games played by computer AIs.
+![Engine Cross Table](Concept/History/z-history-20261126a.png)
 
 More information about the last two columns:
 
 * CS = Cumulative Score (number of wins)
 * NS = [Neustadtl Score](https://en.wikipedia.org/wiki/Sonneborn%E2%80%93Berger_score) (tie break score; basically a score weighted by strength of opposition where a win against a stronger opponent is worth more)
 
+Several trained deep neural network models and precomputed opening books are included. Some models are strong enough to beat vanilla MCTS (running 10,000+ simulations) on their policy output alone!
+
+![Model Training](Concept/History/z-history-20261127a.png)
+
 ## Features
 Most engines report their progress while searching for the best move.
 
-![Engine Output](Concept/History/z-history-20181231c.png)
+![Engine Output](Concept/History/z-history-20261011a.png)
+
+The analysis overlay shows how an engine ranks each move in a given position.
+
+![Analysis Overlay](Concept/History/z-history-20261011e.png)
 
 The board can be rotated around different axes to make it easier to see paths which wrap around the cyclical board.
 
-![Board Rotation](Concept/History/z-history-20181231b.gif)
+![Board Rotation](Concept/History/z-history-20261011d.gif)
 
 Run round robin tournaments with the provided engines to get cross tables and detailed result data.
 
-![Board Rotation](Concept/History/z-history-20181231d.png)
+![Board Rotation](Concept/History/z-history-20261011c.png)
 
 | Player One              | Player Two    | Winner | Termination | Total Moves | Total Milliseconds | Starting Tile Index | Transcript                                                                                                                            | Winning Path                                    |
 | ----------------------- | ------------- | ------ | ----------- | ----------- | ------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |

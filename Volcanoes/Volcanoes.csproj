@@ -1,191 +1,106 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9124719E-F0E3-43DE-B9C7-59B191857B2E}</ProjectGuid>
+    <Configurations>Debug;Release;Linux;Publish</Configurations>
+    <TargetFramework Condition="'$(Configuration)'=='Linux'">net10.0</TargetFramework>
+    <TargetFramework Condition="'$(Configuration)'!='Linux'">net10.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Volcano</RootNamespace>
-    <AssemblyName>Volcanoes</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Deterministic>true</Deterministic>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <PlatformTarget>x64</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <NoWarn>$(NoWarn);CA1416;WFO1000</NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>x64</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
+  <PropertyGroup Condition="'$(Configuration)'=='Linux'">
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Publish'">
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)'=='net10.0-windows'">
+    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+    <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="BookForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="BookForm.Designer.cs">
-      <DependentUpon>BookForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="EngineOutputForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="EngineOutputForm.Designer.cs">
-      <DependentUpon>EngineOutputForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Engine\BarricadeEngine.cs" />
-    <Compile Include="Engine\BeeLineEngine.cs" />
-    <Compile Include="Engine\EngineStatus.cs" />
-    <Compile Include="Engine\ExceptionEngine.cs" />
-    <Compile Include="Engine\IStatus.cs" />
-    <Compile Include="Engine\MonteCarloPlayoutEngine.cs" />
-    <Compile Include="Engine\MonteCarloBarricadeEngine.cs" />
-    <Compile Include="Engine\MonteCarloBeelineFourEngine.cs" />
-    <Compile Include="Engine\MonteCarloBeelineParallelDeepEngine.cs" />
-    <Compile Include="Engine\MonteCarloBeelineRandParallelEngine.cs" />
-    <Compile Include="Engine\MonteCarloBeelineParallelEngine.cs" />
-    <Compile Include="Engine\MonteCarloBeelineThreeEngine.cs" />
-    <Compile Include="Engine\MonteCarloTreeSearchFixedEngine.cs" />
-    <Compile Include="Engine\MonteCarloTreeSearchParallelEngine.cs" />
-    <Compile Include="Engine\MonteCarloTreeSearchEngine.cs" />
-    <Compile Include="Engine\MonteCarloTwoEngine.cs" />
-    <Compile Include="Engine\MonteCarloBeelineEngine.cs" />
-    <Compile Include="Engine\EngineCancellationToken.cs" />
-    <Compile Include="Engine\EngineMove.cs" />
-    <Compile Include="Engine\KittyCornerEngine.cs" />
-    <Compile Include="Engine\AlphaEngine.cs" />
-    <Compile Include="Engine\EngineHelper.cs" />
-    <Compile Include="Engine\IEngine.cs" />
-    <Compile Include="Engine\LongestPathEngine.cs" />
-    <Compile Include="Engine\DeepBeelineEngine.cs" />
-    <Compile Include="Engine\MiniMaxAlphaBetaEngine.cs" />
-    <Compile Include="Engine\OpeningBook.cs" />
-    <Compile Include="Engine\TournamentType.cs" />
-    <Compile Include="Game\GameSettings.cs" />
-    <Compile Include="Game\Move.cs" />
-    <Compile Include="Game\VictoryType.cs" />
-    <Compile Include="Interface\MenuColorTable.cs" />
-    <Compile Include="Interface\MenuProfessionalRenderer.cs" />
-    <Compile Include="Interface\GameRotation.cs" />
-    <Compile Include="Search\KittyPathFinder.cs" />
-    <Compile Include="Search\UnrestrictedPathFinder.cs" />
-    <Compile Include="Search\LongestPathFinder.cs" />
-    <Compile Include="Engine\PositionHash.cs" />
-    <Compile Include="Search\PathFinder.cs" />
-    <Compile Include="Search\WeightedNonEnemyPathFinder.cs" />
-    <Compile Include="Search\NonEnemyPathFinder.cs" />
-    <Compile Include="Engine\RandomEngine.cs" />
-    <Compile Include="Engine\SearchResult.cs" />
-    <Compile Include="Engine\SkipTileEngine.cs" />
-    <Compile Include="GameForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GameForm.Designer.cs">
-      <DependentUpon>GameForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Game\Board.cs" />
-    <Compile Include="Game\Constants.cs" />
-    <Compile Include="Game\GameState.cs" />
-    <Compile Include="Game\TileType.cs" />
-    <Compile Include="Game\Tournament.cs" />
-    <Compile Include="Game\VolcanoGame.cs" />
-    <Compile Include="Game\MoveType.cs" />
-    <Compile Include="Game\Player.cs" />
-    <Compile Include="Interface\GameGraphics.cs" />
-    <Compile Include="Interface\GameGraphicsSettings.cs" />
-    <Compile Include="Interface\GameTile.cs" />
-    <Compile Include="Interface\JsonColorConverter.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Search\PathResult.cs" />
-    <Compile Include="SelfPlayForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SelfPlayForm.Designer.cs">
-      <DependentUpon>SelfPlayForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="TournamentForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="TournamentForm.Designer.cs">
-      <DependentUpon>TournamentForm.cs</DependentUpon>
-    </Compile>
-    <EmbeddedResource Include="BookForm.resx">
-      <DependentUpon>BookForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="EngineOutputForm.resx">
-      <DependentUpon>EngineOutputForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GameForm.resx">
-      <DependentUpon>GameForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <EmbeddedResource Include="SelfPlayForm.resx">
-      <DependentUpon>SelfPlayForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="TournamentForm.resx">
-      <DependentUpon>TournamentForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup />
-  <ItemGroup>
     <Content Include="icon.ico" />
-    <None Include="Resources\rotate-right.png" />
-    <None Include="Resources\rotate-clockwise.png" />
-    <None Include="Resources\rotate-counter-clockwise.png" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.21.9" />
+    <PackageReference Include="LiteDB" Version="5.0.21" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="SharpZipLib" Version="1.4.0" />
+    <PackageReference Include="SkiaSharp" Version="2.88.6" />
+    <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="2.88.6" />
+    <PackageReference Condition="'$(TargetFramework)'=='net10.0-windows'" Include="SkiaSharp.NativeAssets.Win32" Version="2.88.6" />
+    <PackageReference Condition="'$(TargetFramework)'=='net10.0'" Include="SkiaSharp.NativeAssets.Linux" Version="2.88.6" />
+    <PackageReference Condition="'$(TargetFramework)'=='net10.0'" Include="System.Drawing.Common" Version="10.0.0" />
+    <PackageReference Condition="'$(TargetFramework)'=='net10.0'" Include="TorchSharp" Version="0.105.1" />
+    <PackageReference Condition="'$(TargetFramework)'!='net10.0'" Include="TorchSharp" Version="0.107.0" />
+    <PackageReference Condition="'$(TargetFramework)'=='net10.0'" Include="TorchSharp-cuda-linux" Version="0.105.1" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)'=='net10.0-windows' And '$(Configuration)'!='Publish'">
+    <PackageReference Include="libtorch-cuda-12.8-win-x64" Version="2.10.0" />
+    <PackageReference Include="libtorch-cuda-12.8-win-x64-part1" Version="2.10.0" />
+    <PackageReference Include="libtorch-cuda-12.8-win-x64-part10" Version="2.10.0" />
+    <PackageReference Include="libtorch-cuda-12.8-win-x64-part2" Version="2.10.0" />
+    <PackageReference Include="libtorch-cuda-12.8-win-x64-part3-fragment1" Version="2.10.0" />
+    <PackageReference Include="libtorch-cuda-12.8-win-x64-part3-primary" Version="2.10.0" />
+    <PackageReference Include="libtorch-cuda-12.8-win-x64-part4" Version="2.10.0" />
+    <PackageReference Include="libtorch-cuda-12.8-win-x64-part5-fragment1" Version="2.10.0" />
+    <PackageReference Include="libtorch-cuda-12.8-win-x64-part5-fragment2" Version="2.10.0" />
+    <PackageReference Include="libtorch-cuda-12.8-win-x64-part5-primary" Version="2.10.0" />
+    <PackageReference Include="libtorch-cuda-12.8-win-x64-part6" Version="2.10.0" />
+    <PackageReference Include="libtorch-cuda-12.8-win-x64-part7-fragment1" Version="2.10.0" />
+    <PackageReference Include="libtorch-cuda-12.8-win-x64-part7-primary" Version="2.10.0" />
+    <PackageReference Include="libtorch-cuda-12.8-win-x64-part8" Version="2.10.0" />
+    <PackageReference Include="libtorch-cuda-12.8-win-x64-part9-fragment1" Version="2.10.0" />
+    <PackageReference Include="libtorch-cuda-12.8-win-x64-part9-fragment2" Version="2.10.0" />
+    <PackageReference Include="libtorch-cuda-12.8-win-x64-part9-primary" Version="2.10.0" />
+    <PackageReference Include="TorchSharp-cuda-windows" Version="0.107.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)'=='net10.0-windows' And '$(Configuration)'=='Publish'">
+    <PackageReference Include="libtorch-cpu-win-x64" Version="2.10.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Books\openings-v4-gcnii-10k.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Books\openings-v1-60s.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Books\openings-v2-100000i.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Books\openings-v3-ex-100000i.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Models\volcanozero-dcnn-v4-10r-192f-204800g.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Models\volcanozero-dcnn-v5-5r-64f-204800g.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Models\volcanozero-dcnn-v6-10r-192f-409600g.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Models\volcanozero-gcnii-v1-12r-128w-204800g.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Models\volcanozero-gcnii-v2-12r-128w-204800g.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)'=='net10.0'">
+    <Compile Remove="**\*Form.cs" />
+    <Compile Remove="**\*Form.Designer.cs" />
+    <Compile Remove="Interface\MenuProfessionalRenderer.cs" />
+    <Compile Remove="Interface\MenuColorTable.cs" />
+    <Compile Remove="Interface\GameGraphics.cs" />
+    <Compile Remove="Properties\Settings.Designer.cs" />
+    <Compile Remove="Properties\Resources.Designer.cs" />
+    <EmbeddedResource Remove="**\*.resx" />
+  </ItemGroup>
 </Project>

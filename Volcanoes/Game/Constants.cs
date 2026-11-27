@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,14 +52,107 @@ namespace Volcano.Game
         public static ConcurrentDictionary<string, int> TileIndexes = GetTileIndexes();
 
         /// <summary>
+        /// The 20 equilateral triangle indexes
+        /// </summary>
+        public static int[] EquilateralIndexes = GetEquilateralIndexes();
+
+        /// <summary>
+        /// The 60 isosceles triangle indexes
+        /// </summary>
+        public static int[] IsoscelesIndexes = GetIsoscelesIndexes();
+
+        /// <summary>
+        /// Neighbors for every tile, ordered counter-clockwise.
+        /// For the 60 isosceles triangles, index 0 is the neighbor directly opposite the 5-fold vertex.
+        /// For the 20 equilateral triangles, index 0 is the North-East-most neighbor.
+        /// </summary>
+        public static int[][] CounterClockwiseNeighbors = GetCounterClockwiseNeighbors();
+
+        /// <summary>
         /// An array mapping each tile to a list of tiles 3 moves away
         /// </summary>
         public static int[][] ThreeAway = GetThreeAway();
 
         /// <summary>
+        /// An array mapping each tile to a list of tiles connected by their points
+        /// </summary>
+        public static int[][] PointNeighbors = GetPointNeighbors();
+
+        /// <summary>
+        /// Distances between two tiles
+        /// </summary>
+        public static int[][] Distances = GetDistances();
+
+        /// <summary>
         /// Random numbers to use for zobrist style hashes
         /// </summary>
         public static long[,] ZobristKeys = GetZobristKeys();
+
+        public static long[,] AdditionalZobristKeys = GetAdditionalZobristKeys();
+
+        private static int[][] GetPointNeighbors()
+        {
+            var neighbors = new int[80][];
+
+            // solve for the canonical form then extrapolate
+            var n07 = new int[] { TileIndexes["N21"], TileIndexes["N22"], TileIndexes["N23"], TileIndexes["N09"], TileIndexes["N10"], TileIndexes["N02"], TileIndexes["N05"], TileIndexes["N19"], TileIndexes["N20"] };
+            var n01 = new int[] { TileIndexes["N08"], TileIndexes["N09"], TileIndexes["N10"], TileIndexes["N03"], TileIndexes["N04"], TileIndexes["N19"], TileIndexes["N20"], TileIndexes["N06"] };
+
+            for (var i = 0; i < 80; i++)
+            {
+                var canonical = new CanonicalTile();
+                canonical.SetIndex(i);
+
+                var type = canonical.BoardToCanonical(i);
+                if (type == 0)
+                {
+                    // N07 x20
+                    neighbors[i] = new int[n07.Length];
+                    for (var x = 0; x < n07.Length; x++)
+                    {
+                        neighbors[i][x] = canonical.CanonicalToBoard(n07[x]);
+                    }
+                }
+                else if (type == 1)
+                {
+                    // N01 x60
+                    neighbors[i] = new int[n01.Length];
+                    for (var x = 0; x < n01.Length; x++)
+                    {
+                        neighbors[i][x] = canonical.CanonicalToBoard(n01[x]);
+                    }
+                }
+            }
+
+            return neighbors;
+        }
+
+        private static int[][] GetDistances()
+        {
+            var distances = new int[80][];
+            var pathfinder = new UnrestrictedPathFinder();
+            var state = new Board();
+
+            for (var f = 0; f < 80; f++)
+            {
+                distances[f] = new int[80];
+            }
+
+            for (var f = 0; f < 80; f++)
+            {
+                for (var t = 0; t < 80; t++)
+                {
+                    if (f != t)
+                    {
+                        var path = pathfinder.FindPath(state, f, t);
+                        distances[f][t] = path.Path.Count - 1;
+                        distances[t][f] = path.Path.Count - 1;
+                    }
+                }
+            }
+
+            return distances;
+        }
 
         private static int[][] GetConnectingTiles()
         {
@@ -177,6 +269,78 @@ namespace Volcano.Game
             return connections;
         }
 
+        private static int[][] GetCounterClockwiseNeighbors()
+        {
+            var neighbors = new Dictionary<string, string[]>();
+
+            neighbors.Add("N07", ["N01", "N06", "N08"]);
+            neighbors.Add("N10", ["N02", "N09", "N11"]);
+            neighbors.Add("N13", ["N03", "N12", "N14"]);
+            neighbors.Add("N16", ["N04", "N15", "N17"]);
+            neighbors.Add("N19", ["N05", "N18", "N20"]);
+
+            neighbors.Add("N01", ["N07", "N02", "N05"]);
+            neighbors.Add("N02", ["N10", "N03", "N01"]);
+            neighbors.Add("N03", ["N13", "N04", "N02"]);
+            neighbors.Add("N04", ["N16", "N05", "N03"]);
+            neighbors.Add("N05", ["N19", "N01", "N04"]);
+
+            neighbors.Add("N06", ["N07", "N20", "N21"]);
+            neighbors.Add("N09", ["N10", "N08", "N25"]);
+            neighbors.Add("N12", ["N13", "N11", "N29"]);
+            neighbors.Add("N15", ["N16", "N14", "N33"]);
+            neighbors.Add("N18", ["N19", "N17", "N37"]);
+
+            neighbors.Add("N08", ["N07", "N23", "N09"]);
+            neighbors.Add("N11", ["N10", "N27", "N12"]);
+            neighbors.Add("N14", ["N13", "N31", "N15"]);
+            neighbors.Add("N17", ["N16", "N35", "N18"]);
+            neighbors.Add("N20", ["N19", "N39", "N06"]);
+
+            neighbors.Add("N22", ["N23", "N21", "S32"]);
+            neighbors.Add("N26", ["N27", "N25", "S36"]);
+            neighbors.Add("N30", ["N31", "N29", "S40"]);
+            neighbors.Add("N34", ["N35", "N33", "S24"]);
+            neighbors.Add("N38", ["N39", "N37", "S28"]);
+
+            neighbors.Add("N23", ["N22", "N24", "N08"]);
+            neighbors.Add("N27", ["N26", "N28", "N11"]);
+            neighbors.Add("N31", ["N30", "N32", "N14"]);
+            neighbors.Add("N35", ["N34", "N36", "N17"]);
+            neighbors.Add("N39", ["N38", "N40", "N20"]);
+
+            neighbors.Add("N21", ["N22", "N06", "N40"]);
+            neighbors.Add("N25", ["N26", "N09", "N24"]);
+            neighbors.Add("N29", ["N30", "N12", "N28"]);
+            neighbors.Add("N33", ["N34", "N15", "N32"]);
+            neighbors.Add("N37", ["N38", "N18", "N36"]);
+
+            neighbors.Add("N24", ["S34", "N25", "N23"]);
+            neighbors.Add("N28", ["S38", "N29", "N27"]);
+            neighbors.Add("N32", ["S22", "N33", "N31"]);
+            neighbors.Add("N36", ["S26", "N37", "N35"]);
+            neighbors.Add("N40", ["S30", "N21", "N39"]);
+
+            var indexes = new int[80][];
+            foreach (var tile in neighbors)
+            {
+                var a = TileIndexes[tile.Key];
+                indexes[a] = tile.Value.Select(x => TileIndexes[x]).ToArray();
+
+                var b = TileIndexes[tile.Key.Replace("N", "!").Replace("S", "N").Replace("!", "S")];
+                var t = tile.Value.Select(x => TileIndexes[x.Replace("N", "!").Replace("S", "N").Replace("!", "S")]).ToArray();
+                if (EquilateralIndexes.Contains(b))
+                {
+                    indexes[b] = [t[2], t[1], t[0]];
+                }
+                else
+                {
+                    indexes[b] = [t[0], t[2], t[1]];
+                }
+            }
+            return indexes;
+        }
+
         private static string[] GetTileNames()
         {
             return new string[] {
@@ -184,6 +348,23 @@ namespace Volcano.Game
                 "S34", "N24", "S35", "S33", "S38", "N28", "S39", "S37", "S22", "N32", "S23", "S21", "S26", "N36", "S27", "S25", "S30", "N40", "S31", "S29", "S16", "S04", "S15", "S17", "S19", "S05", "S18", "S20", "S07", "S01", "S06", "S08", "S10", "S02", "S09", "S11", "S13", "S03", "S12", "S14",
                 "G",
             };
+        }
+
+        private static int[] GetEquilateralIndexes()
+        {
+            return new string[] { "N07", "N10", "N13", "N16", "N19", "N22", "N26", "N30", "N34", "N38", "S07", "S10", "S13", "S16", "S19", "S22", "S26", "S30", "S34", "S38" }
+                .Select(x => TileIndexes[x])
+                .OrderBy(x => x)
+                .ToArray();
+        }
+
+        private static int[] GetIsoscelesIndexes()
+        {
+            return GetTileNames()
+                .Select(x => TileIndexes[x])
+                .Where(x => x < 80 && !EquilateralIndexes.Contains(x))
+                .OrderBy(x => x)
+                .ToArray();
         }
 
         private static string[] GetOldTileNames()
@@ -427,12 +608,30 @@ namespace Volcano.Game
 
         private static long[,] GetZobristKeys()
         {
-            var rand = new Random();
+            var rand = new Random(314);
             var tiles = new long[80, 100];
 
             for (int i = 0; i < 80; i++)
             {
                 for (int x = 0; x < 100; x++)
+                {
+                    var buffer = new byte[sizeof(long)];
+                    rand.NextBytes(buffer);
+                    tiles[i, x] = BitConverter.ToInt64(buffer, 0);
+                }
+            }
+
+            return tiles;
+        }
+
+        private static long[,] GetAdditionalZobristKeys()
+        {
+            var rand = new Random();
+            var tiles = new long[5, 1000];
+
+            for (int i = 0; i < 5; i++)
+            {
+                for (int x = 0; x < 1000; x++)
                 {
                     var buffer = new byte[sizeof(long)];
                     rand.NextBytes(buffer);

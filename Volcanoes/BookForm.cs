@@ -10,6 +10,8 @@ namespace Volcano
     {
         public string BookLocation { get; set; }
 
+        private OpeningBook _bookGenerator;
+
         public BookForm(string location)
         {
             InitializeComponent();
@@ -21,29 +23,78 @@ namespace Volcano
         {
             if (!backgroundWorker1.IsBusy)
             {
+                numDepth.Enabled = false;
                 button1.Enabled = false;
-                numSeconds.Enabled = false;
-                backgroundWorker1.RunWorkerAsync((int)numSeconds.Value);
+                numIterations.Enabled = false;
+                numGap.Enabled = false;
+                cbParallel.Enabled = false;
+                cbResume.Enabled = false;
+                cbExtend.Enabled = false;
+                btnStop.Enabled = true;
+                txtExtend.Enabled = false;
+                backgroundWorker1.RunWorkerAsync(new int[] { (int)numIterations.Value, (int)numGap.Value, cbParallel.Checked ? 1 : 0, cbResume.Checked ? 1 : 0, cbExtend.Checked ? 1 : 0, (int)numDepth.Value });
             }
         }
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
+            var args = e.Argument as int[];
+            var resume = args[3] == 1;
+            var extend = args[4] == 1;
+
             if (File.Exists(BookLocation))
             {
-                File.Move(BookLocation, BookLocation + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak.");
+                if (resume)
+                {
+                    File.Copy(BookLocation, BookLocation + "." + DateTime.Now.ToString("yyyyMMddHHmmss") + ".resume.bak.");
+                }
+                else
+                {
+                    File.Move(BookLocation, BookLocation + "." + DateTime.Now.ToString("yyyyMMddHHmmss") + ".bak.");
+                }
             }
 
-            var bookGenerator = new OpeningBook(BookLocation);
-            bookGenerator.OnStatusUpdate += BookGenerator_OnStatusUpdate;
-            bookGenerator.Generate(7, (int)e.Argument);
+            if (File.Exists("book.temp"))
+            {
+                if (resume)
+                {
+                    File.Copy("book.temp", "book.temp" + "." + DateTime.Now.ToString("yyyyMMddHHmmss") + ".resume.bak.");
+                }
+                else
+                {
+                    File.Move("book.temp", "book.temp" + "." + DateTime.Now.ToString("yyyyMMddHHmmss") + ".bak.");
+                }
+            }
+
+            _bookGenerator = new OpeningBook(BookLocation);
+            _bookGenerator.OnStatusUpdate += BookGenerator_OnStatusUpdate;
+
+            if (extend)
+            {
+                _bookGenerator.Extend(args[5], args[0], args[1], args[2] == 1, resume, txtExtend.Text);
+            }
+            else
+            {
+                _bookGenerator.Generate(args[5], args[0], args[1], args[2] == 1, resume);
+            }
         }
 
-        private void BookGenerator_OnStatusUpdate(int completed, int total)
+        private void BookGenerator_OnStatusUpdate(int completed, int total, string message)
         {
             var percent = (int)(100.0 * completed / total);
 
-            backgroundWorker1.ReportProgress(percent, completed.ToString("N0") + "/" + total.ToString("N0"));
+            if (percent > 100)
+            {
+                percent = 100;
+            }
+
+            var status = completed == 0 ? "Initializing" : (completed.ToString("N0") + "/" + total.ToString("N0"));
+            if (!string.IsNullOrEmpty(message))
+            {
+                status = message;
+            }
+
+            backgroundWorker1.ReportProgress(percent, status);
         }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -54,8 +105,15 @@ namespace Volcano
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            numDepth.Enabled = true;
             button1.Enabled = true;
-            numSeconds.Enabled = true;
+            numIterations.Enabled = true;
+            numGap.Enabled = true;
+            cbParallel.Enabled = true;
+            cbExtend.Enabled = true;
+            cbResume.Enabled = true; // File.Exists("book.temp");
+            btnStop.Enabled = false;
+            txtExtend.Enabled = true;
             MessageBox.Show("Done");
         }
 
@@ -67,6 +125,14 @@ namespace Volcano
                 {
                     e.Cancel = true;
                 }
+            }
+        }
+
+        private void btnStop_Click(object sender, EventArgs e)
+        {
+            if (_bookGenerator != null)
+            {
+                _bookGenerator.Cancel();
             }
         }
     }

@@ -29,139 +29,239 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BookForm));
-            this.button1 = new System.Windows.Forms.Button();
-            this.numSeconds = new System.Windows.Forms.NumericUpDown();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.numDepth = new System.Windows.Forms.NumericUpDown();
-            this.progressBar2 = new System.Windows.Forms.ProgressBar();
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.labelStatus = new System.Windows.Forms.Label();
-            ((System.ComponentModel.ISupportInitialize)(this.numSeconds)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numDepth)).BeginInit();
-            this.SuspendLayout();
+            button1 = new System.Windows.Forms.Button();
+            numIterations = new System.Windows.Forms.NumericUpDown();
+            label1 = new System.Windows.Forms.Label();
+            label2 = new System.Windows.Forms.Label();
+            numDepth = new System.Windows.Forms.NumericUpDown();
+            progressBar2 = new System.Windows.Forms.ProgressBar();
+            backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            labelStatus = new System.Windows.Forms.Label();
+            numGap = new System.Windows.Forms.NumericUpDown();
+            label3 = new System.Windows.Forms.Label();
+            cbParallel = new System.Windows.Forms.CheckBox();
+            cbResume = new System.Windows.Forms.CheckBox();
+            cbExtend = new System.Windows.Forms.CheckBox();
+            btnStop = new System.Windows.Forms.Button();
+            txtExtend = new System.Windows.Forms.TextBox();
+            label4 = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)numIterations).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numDepth).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numGap).BeginInit();
+            SuspendLayout();
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(113, 64);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 2;
-            this.button1.Text = "Generate";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            button1.Location = new System.Drawing.Point(96, 204);
+            button1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            button1.Name = "button1";
+            button1.Size = new System.Drawing.Size(123, 27);
+            button1.TabIndex = 7;
+            button1.Text = "Generate";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
             // 
-            // numSeconds
+            // numIterations
             // 
-            this.numSeconds.Location = new System.Drawing.Point(68, 38);
-            this.numSeconds.Maximum = new decimal(new int[] {
-            1000000,
-            0,
-            0,
-            0});
-            this.numSeconds.Name = "numSeconds";
-            this.numSeconds.Size = new System.Drawing.Size(120, 20);
-            this.numSeconds.TabIndex = 3;
-            this.numSeconds.Value = new decimal(new int[] {
-            120,
-            0,
-            0,
-            0});
+            numIterations.Location = new System.Drawing.Point(96, 44);
+            numIterations.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numIterations.Maximum = new decimal(new int[] { 1000000000, 0, 0, 0 });
+            numIterations.Name = "numIterations";
+            numIterations.Size = new System.Drawing.Size(123, 23);
+            numIterations.TabIndex = 1;
+            numIterations.Value = new decimal(new int[] { 10000, 0, 0, 0 });
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(10, 40);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(49, 13);
-            this.label1.TabIndex = 4;
-            this.label1.Text = "Seconds";
+            label1.AutoSize = true;
+            label1.Location = new System.Drawing.Point(13, 46);
+            label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(69, 15);
+            label1.TabIndex = 4;
+            label1.Text = "Simulations";
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(10, 14);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(36, 13);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "Depth";
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(13, 16);
+            label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(39, 15);
+            label2.TabIndex = 5;
+            label2.Text = "Depth";
             // 
             // numDepth
             // 
-            this.numDepth.Enabled = false;
-            this.numDepth.Location = new System.Drawing.Point(68, 12);
-            this.numDepth.Maximum = new decimal(new int[] {
-            1000000,
-            0,
-            0,
-            0});
-            this.numDepth.Name = "numDepth";
-            this.numDepth.ReadOnly = true;
-            this.numDepth.Size = new System.Drawing.Size(120, 20);
-            this.numDepth.TabIndex = 6;
-            this.numDepth.Value = new decimal(new int[] {
-            7,
-            0,
-            0,
-            0});
+            numDepth.Location = new System.Drawing.Point(96, 14);
+            numDepth.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numDepth.Maximum = new decimal(new int[] { 1000000, 0, 0, 0 });
+            numDepth.Name = "numDepth";
+            numDepth.ReadOnly = true;
+            numDepth.Size = new System.Drawing.Size(123, 23);
+            numDepth.TabIndex = 0;
+            numDepth.Value = new decimal(new int[] { 50, 0, 0, 0 });
             // 
             // progressBar2
             // 
-            this.progressBar2.Location = new System.Drawing.Point(12, 93);
-            this.progressBar2.Name = "progressBar2";
-            this.progressBar2.Size = new System.Drawing.Size(177, 23);
-            this.progressBar2.TabIndex = 8;
+            progressBar2.Location = new System.Drawing.Point(13, 269);
+            progressBar2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            progressBar2.Name = "progressBar2";
+            progressBar2.Size = new System.Drawing.Size(206, 27);
+            progressBar2.TabIndex = 8;
             // 
             // backgroundWorker1
             // 
-            this.backgroundWorker1.WorkerReportsProgress = true;
-            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
-            this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
-            this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
+            backgroundWorker1.WorkerReportsProgress = true;
+            backgroundWorker1.DoWork += backgroundWorker1_DoWork;
+            backgroundWorker1.ProgressChanged += backgroundWorker1_ProgressChanged;
+            backgroundWorker1.RunWorkerCompleted += backgroundWorker1_RunWorkerCompleted;
             // 
             // labelStatus
             // 
-            this.labelStatus.AutoSize = true;
-            this.labelStatus.Location = new System.Drawing.Point(12, 69);
-            this.labelStatus.Name = "labelStatus";
-            this.labelStatus.Size = new System.Drawing.Size(38, 13);
-            this.labelStatus.TabIndex = 9;
-            this.labelStatus.Text = "Ready";
+            labelStatus.AutoSize = true;
+            labelStatus.Location = new System.Drawing.Point(13, 242);
+            labelStatus.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelStatus.Name = "labelStatus";
+            labelStatus.Size = new System.Drawing.Size(39, 15);
+            labelStatus.TabIndex = 9;
+            labelStatus.Text = "Ready";
+            // 
+            // numGap
+            // 
+            numGap.Location = new System.Drawing.Point(96, 73);
+            numGap.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numGap.Maximum = new decimal(new int[] { 1000000000, 0, 0, 0 });
+            numGap.Name = "numGap";
+            numGap.Size = new System.Drawing.Size(123, 23);
+            numGap.TabIndex = 2;
+            numGap.Value = new decimal(new int[] { 10000, 0, 0, 0 });
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new System.Drawing.Point(13, 75);
+            label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label3.Name = "label3";
+            label3.Size = new System.Drawing.Size(28, 15);
+            label3.TabIndex = 4;
+            label3.Text = "Gap";
+            // 
+            // cbParallel
+            // 
+            cbParallel.AutoSize = true;
+            cbParallel.Location = new System.Drawing.Point(96, 156);
+            cbParallel.Name = "cbParallel";
+            cbParallel.Size = new System.Drawing.Size(64, 19);
+            cbParallel.TabIndex = 5;
+            cbParallel.Text = "Parallel";
+            cbParallel.UseVisualStyleBackColor = true;
+            // 
+            // cbResume
+            // 
+            cbResume.AutoSize = true;
+            cbResume.Checked = true;
+            cbResume.CheckState = System.Windows.Forms.CheckState.Checked;
+            cbResume.Location = new System.Drawing.Point(96, 131);
+            cbResume.Name = "cbResume";
+            cbResume.Size = new System.Drawing.Size(68, 19);
+            cbResume.TabIndex = 4;
+            cbResume.Text = "Resume";
+            cbResume.UseVisualStyleBackColor = true;
+            // 
+            // cbExtend
+            // 
+            cbExtend.AutoSize = true;
+            cbExtend.Checked = true;
+            cbExtend.CheckState = System.Windows.Forms.CheckState.Checked;
+            cbExtend.Location = new System.Drawing.Point(96, 181);
+            cbExtend.Name = "cbExtend";
+            cbExtend.Size = new System.Drawing.Size(62, 19);
+            cbExtend.TabIndex = 6;
+            cbExtend.Text = "Extend";
+            cbExtend.UseVisualStyleBackColor = true;
+            // 
+            // btnStop
+            // 
+            btnStop.Enabled = false;
+            btnStop.Location = new System.Drawing.Point(12, 204);
+            btnStop.Name = "btnStop";
+            btnStop.Size = new System.Drawing.Size(77, 27);
+            btnStop.TabIndex = 8;
+            btnStop.Text = "Stop";
+            btnStop.UseVisualStyleBackColor = true;
+            btnStop.Click += btnStop_Click;
+            // 
+            // txtExtend
+            // 
+            txtExtend.Location = new System.Drawing.Point(96, 102);
+            txtExtend.Name = "txtExtend";
+            txtExtend.Size = new System.Drawing.Size(123, 23);
+            txtExtend.TabIndex = 3;
+            txtExtend.Text = "skotz";
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new System.Drawing.Point(13, 105);
+            label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label4.Name = "label4";
+            label4.Size = new System.Drawing.Size(64, 15);
+            label4.TabIndex = 4;
+            label4.Text = "Extend Bot";
             // 
             // BookForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(201, 126);
-            this.Controls.Add(this.labelStatus);
-            this.Controls.Add(this.progressBar2);
-            this.Controls.Add(this.numDepth);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.numSeconds);
-            this.Controls.Add(this.button1);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.Name = "BookForm";
-            this.Text = "Opening Book Generator";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.BookForm_FormClosing);
-            ((System.ComponentModel.ISupportInitialize)(this.numSeconds)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numDepth)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            ClientSize = new System.Drawing.Size(232, 308);
+            Controls.Add(txtExtend);
+            Controls.Add(btnStop);
+            Controls.Add(cbResume);
+            Controls.Add(cbExtend);
+            Controls.Add(cbParallel);
+            Controls.Add(labelStatus);
+            Controls.Add(progressBar2);
+            Controls.Add(numDepth);
+            Controls.Add(label2);
+            Controls.Add(label4);
+            Controls.Add(label3);
+            Controls.Add(label1);
+            Controls.Add(numGap);
+            Controls.Add(numIterations);
+            Controls.Add(button1);
+            Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+            Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            MaximizeBox = false;
+            MinimizeBox = false;
+            Name = "BookForm";
+            Text = "Opening Book Generator";
+            FormClosing += BookForm_FormClosing;
+            ((System.ComponentModel.ISupportInitialize)numIterations).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numDepth).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numGap).EndInit();
+            ResumeLayout(false);
+            PerformLayout();
 
         }
 
         #endregion
 
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.NumericUpDown numSeconds;
+        private System.Windows.Forms.NumericUpDown numIterations;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.NumericUpDown numDepth;
         private System.Windows.Forms.ProgressBar progressBar2;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.Windows.Forms.Label labelStatus;
+        private System.Windows.Forms.NumericUpDown numGap;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.CheckBox cbParallel;
+        private System.Windows.Forms.CheckBox cbResume;
+        private System.Windows.Forms.CheckBox cbExtend;
+        private System.Windows.Forms.Button btnStop;
+        private System.Windows.Forms.TextBox txtExtend;
+        private System.Windows.Forms.Label label4;
     }
 }

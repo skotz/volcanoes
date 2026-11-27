@@ -6,11 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Volcano.Engine;
+using Volcano.Interface;
 
 namespace Volcano.Game
 {
     internal class Tournament
     {
+        private const int _simulationModeSecondsPerMove = 3600;
         private int _rounds;
         private int _secondsPerMove;
         private string _crossTableFile;
@@ -18,6 +20,8 @@ namespace Volcano.Game
         private EngineHelper _engines;
         private List<string> _players;
         private bool _allowSelfPlay;
+        private bool _runParallel;
+        private bool _forceSimulations;
         private TournamentType _tournamentType;
 
         private List<Action> games;
@@ -37,7 +41,7 @@ namespace Volcano.Game
 
         public delegate void TournamentStatusHandler(TournamentStatus status);
 
-        public Tournament(int rounds, int secondsPerMove, string crossTableFile, string gameDataFile, EngineHelper engines, List<string> players, bool allowSelfPlay, TournamentType tournamentType)
+        public Tournament(int rounds, int secondsPerMove, string crossTableFile, string gameDataFile, EngineHelper engines, List<string> players, bool allowSelfPlay, TournamentType tournamentType, bool parallel, bool forceSimulations = false)
         {
             _rounds = rounds;
             _secondsPerMove = secondsPerMove;
@@ -46,6 +50,8 @@ namespace Volcano.Game
             _engines = engines;
             _players = players;
             _allowSelfPlay = allowSelfPlay;
+            _runParallel = parallel;
+            _forceSimulations = forceSimulations;
             _tournamentType = tournamentType;
 
             worker = new BackgroundWorker();
@@ -59,6 +65,8 @@ namespace Volcano.Game
         {
             if (!worker.IsBusy)
             {
+                ApplicationPriorityOptimizer.EnableMaximumPerformanceMode();
+
                 if (_tournamentType == TournamentType.RoundRobin)
                 {
                     totalGames = _rounds * _players.Count * (_allowSelfPlay ? _players.Count : (_players.Count - 1));
@@ -94,9 +102,18 @@ namespace Volcano.Game
                     }
                 }
 
+                games = games.OrderBy(x => Random.Shared.Next()).ToList();
+
                 for (int r = 0; r < _rounds; r++)
                 {
-                    Parallel.ForEach(games, x => x());
+                    if (_runParallel)
+                    {
+                        Parallel.ForEach(games, x => x());
+                    }
+                    else
+                    {
+                        games.ForEach(x => x());
+                    }
                 }
             }
             else if (_tournamentType == TournamentType.Swiss)
@@ -123,7 +140,14 @@ namespace Volcano.Game
                         QueueGame(swissPlayers[i + 1].Engine, swissPlayers[i].Engine);
                     }
 
-                    Parallel.ForEach(games, x => x());
+                    if (_runParallel)
+                    {
+                        Parallel.ForEach(games, x => x());
+                    }
+                    else
+                    {
+                        games.ForEach(x => x());
+                    }
 
                     // Update scores for next round
                     for (int i = 0; i < ((swissPlayers.Count % 2 == 1) ? swissPlayers.Count - 1 : swissPlayers.Count); i++)
@@ -197,18 +221,12 @@ namespace Volcano.Game
                 decimal total = results.Where(x => x.PlayerOne == engine1 || x.PlayerTwo == engine1).Count();
                 line.TotalScore = score;
                 line.TotalPercentage = score * 100m / total;
-                line.Score = score;
                 lines.Add(line);
             }
-
-            lines.Sort((c, n) => n.Sort.CompareTo(c.Sort));
 
             List<string> names = new List<string>();
             for (int i = 0; i < lines.Count; i++)
             {
-                lines[i].CrossTableName = (i + 1) + ". " + lines[i].Name;
-                names.Add((i + 1).ToString());
-
                 lines[i].NeustadtlScore = 0m;
                 foreach (var opponent in lines)
                 {
@@ -217,6 +235,17 @@ namespace Volcano.Game
                         lines[i].NeustadtlScore += opponent.TotalScore * lines[i].Data[opponent.Name];
                     }
                 }
+            }
+
+            lines = lines
+                .OrderByDescending(x => x.TotalScore)
+                .ThenByDescending(x => x.NeustadtlScore)
+                .ToList();
+
+            for (int i = 0; i < lines.Count; i++)
+            {
+                lines[i].CrossTableName = (i + 1) + ". " + lines[i].Name;
+                names.Add((i + 1).ToString());
             }
 
             // It doesn't make sense to save a cross table when there's only one person competing
@@ -255,9 +284,26 @@ namespace Volcano.Game
 
                 try
                 {
-                    game.RegisterEngine(Player.One, _engines.GetEngine(engine1), true);
-                    game.RegisterEngine(Player.Two, _engines.GetEngine(engine2), true);
-                    game.SecondsPerEngineMove = _secondsPerMove;
+                    var player1 = _engines.GetEngine(engine1);
+                    var player2 = _engines.GetEngine(engine2);
+
+                    if (_forceSimulations)
+                    {
+                        if (player1 is ISimulate simulate1)
+                        {
+                            simulate1.ForcedSimulations = _secondsPerMove;
+                        }
+
+                        if (player2 is ISimulate simulate2)
+                        {
+                            simulate2.ForcedSimulations = _secondsPerMove;
+                        }
+                    }
+
+                    game.RegisterEngine(Player.One, player1, true);
+                    game.RegisterEngine(Player.Two, player2, true);
+                    game.SecondsPerEngineMove = _forceSimulations ? _simulationModeSecondsPerMove : _secondsPerMove;
+                    game.TimeoutGrace = 1000;
                     game.StartNewGame();
                     game.ComputerPlay();
 
@@ -485,18 +531,9 @@ namespace Volcano.Game
         public string Name { get; set; }
         public string CrossTableName { get; set; }
         public Dictionary<string, decimal> Data { get; set; }
-        public decimal Score { get; set; }
         public decimal TotalScore { get; set; }
         public decimal TotalPercentage { get; set; }
         public decimal NeustadtlScore { get; set; }
-
-        public decimal Sort
-        {
-            get
-            {
-                return Score * 100000 + NeustadtlScore;
-            }
-        }
 
         public TournamentResultLine()
         {

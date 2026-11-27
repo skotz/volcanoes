@@ -1,0 +1,539 @@
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using TorchSharp;
+using TorchSharp.Modules;
+using Volcano.Engine;
+using Volcano.Game;
+
+namespace Volcano.Neural
+{
+    internal abstract class AlphaZeroBase
+    {
+        protected readonly torch.nn.Module<torch.Tensor, Tuple<torch.Tensor, torch.Tensor>> model;
+        protected readonly torch.Device device;
+        protected readonly Adam optimizer;
+        protected readonly torch.optim.lr_scheduler.LRScheduler scheduler;
+        protected readonly GameRule game;
+        protected readonly AlphaZeroConfig config;
+        protected readonly IBoardEncoder encoder;
+
+        protected AlphaZeroBase(torch.nn.Module<torch.Tensor, Tuple<torch.Tensor, torch.Tensor>> model, torch.Device device, Adam optimizer, torch.optim.lr_scheduler.LRScheduler scheduler, IBoardEncoder encoder, GameRule game, AlphaZeroConfig config)
+        {
+            this.model = model;
+            this.device = device;
+            this.optimizer = optimizer;
+            this.scheduler = scheduler;
+            this.encoder = encoder;
+            this.game = game;
+            this.config = config;
+        }
+
+        /// <summary>Plays out games and returns the positions gathered.</summary>
+        protected abstract TrainingData SelfPlay();
+
+        /// <summary>Creates a fresh engine for the model being trained, loading the current training checkpoint, used to benchmark win rate.</summary>
+        protected IEngine CreateBenchmarkEngine(string savePath, int forcedIterations)
+        {
+            string modelPath = Path.Combine(savePath, "training-model.dat");
+            if (model is GraphResNet)
+            {
+                return new AlphaZeroGraphEngine(VolcanoGraphZeroConfig.FromFile(modelPath, 12, 128, encoder)) { ForcedSimulations = forcedIterations };
+            }
+            return new AlphaZeroEngine(VolcanoZeroConfig.FromFile(modelPath, 5, 64, encoder)) { ForcedSimulations = forcedIterations };
+        }
+
+        /// <summary>How many times <see cref="SelfPlay"/> is called per training iteration.</summary>
+        protected abstract int SelfPlayCallsPerIteration { get; }
+
+        /// <summary>
+        /// Reweights visit counts before sampling a self-play move. A temperature of 1 samples in
+        /// proportion to visits; near zero it becomes "always play the best move".
+        /// </summary>
+        protected static double[] ApplyTemperature(double[] probs, double temperature)
+        {
+            // Treat a near-zero temperature as an explicit argmax. Computing it as pow(p, 1/T)
+            // with T = 0.01 means raising to the hundredth power, which only avoids underflowing
+            // to all-zeros by luck.
+            if (temperature <= 0.02)
+            {
+                double[] greedy = new double[probs.Length];
+                int best = 0;
+                for (int i = 1; i < probs.Length; i++)
+                {
+                    if (probs[i] > probs[best]) best = i;
+                }
+                greedy[best] = 1;
+                return greedy;
+            }
+
+            double power = 1.0 / temperature;
+            double[] result = new double[probs.Length];
+            for (int i = 0; i < probs.Length; i++)
+            {
+                result[i] = Math.Pow(probs[i], power);
+            }
+            return result;
+        }
+
+        /// <summary>Temperature for a given ply: exploratory in the opening, greedy afterwards.</summary>
+        protected double TemperatureForMove(int moveIndex)
+        {
+            //moveCount < config.TemperatureMoves ? config.Temperature : 0.0;
+            if (moveIndex < config.TemperatureMovesFull)
+            {
+                return 1.0;
+            }
+            else if (moveIndex < config.TemperatureMovesPartial)
+            {
+                return Math.Pow(config.TemperatureMovesDecay, moveIndex - (config.TemperatureMovesFull - 1));
+            }
+            else
+            {
+                return 0.0;
+            }
+        }
+
+        /// <summary>Visit-count distribution over actions at a search root.</summary>
+        protected double[] GetActionProbs(NNNode root)
+        {
+            double[] probs = new double[game.ActionSize];
+            double total = 0;
+            foreach (NNNode child in root.Children)
+            {
+                probs[child.ActionTaken] = child.VisitCount;
+                total += child.VisitCount;
+            }
+            if (total > 0)
+            {
+                for (int i = 0; i < probs.Length; i++) probs[i] /= total;
+            }
+            return probs;
+        }
+
+        /// <summary>One pass over the data: shuffle, then fit policy (cross-entropy) and value (MSE).</summary>
+        public (double, double, double, double) Train(TrainingData data)
+        {
+            int n = data.Count;
+            if (n == 0) return (0, 0, 0, 0);
+
+            int[] order = Enumerable.Range(0, n).ToArray();
+            for (int i = n - 1; i > 0; i--)      // Fisher-Yates shuffle
+            {
+                int j = Random.Shared.Next(i + 1);
+                (order[i], order[j]) = (order[j], order[i]);
+            }
+
+            int actions = game.ActionSize;
+            var canonical = new Canonical();
+            float lastPolicyLoss = 0, lastValueLoss = 0, lastLoss = 0, lastPolicyEntropy = 0, lastTargetEntropy = 0;
+
+            for (int start = 0; start < n; start += config.BatchSize)
+            {
+                int size = Math.Min(config.BatchSize, n - start);
+
+                Board[] states = new Board[size];
+                float[] flatPolicy = new float[size * actions];
+                float[] values = new float[size];
+
+                for (int k = 0; k < size; k++)
+                {
+                    int idx = order[start + k];
+                    states[k] = data.States[idx];
+                    double[] p = data.Probs[idx];
+                    if (config.EnableSymmetryAugmentation)
+                    {
+                        canonical.SetRandomPermutation();
+                        states[k] = canonical.Canonicalize(states[k]);
+                        p = canonical.Canonicalize(p);
+                    }
+                    for (int a = 0; a < actions; a++)
+                    {
+                        flatPolicy[k * actions + a] = (float)p[a];
+                    }
+                    values[k] = data.Values[idx];
+                }
+
+                using var scope = torch.NewDisposeScope();
+
+                torch.Tensor input = encoder.Encode(states, device);
+                torch.Tensor policyTarget = torch.tensor(flatPolicy, new long[] { size, actions }).to(device);
+                torch.Tensor valueTarget = torch.tensor(values, new long[] { size, 1 }).to(device);
+
+                var output = model.forward(input);
+                var (policyLoss, valueLoss, loss) = PolicyValueLoss.Compute(model, output, policyTarget, valueTarget);
+
+                optimizer.zero_grad();
+                loss.backward();
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0);
+                optimizer.step();
+
+                using (torch.no_grad())
+                {
+                    var logP = torch.nn.functional.log_softmax(output.Item1, dim: 1);
+                    lastPolicyEntropy = -(logP.exp() * logP).sum(new long[] { 1 }).mean().item<float>();
+                    lastTargetEntropy = -(policyTarget * (policyTarget + 1e-9f).log()).sum(new long[] { 1 }).mean().item<float>();
+                }
+
+                //// Print gradient magnitudes across your GCN layers
+                //foreach (var (pName, parameter) in model.named_parameters())
+                //{
+                //    if (parameter.grad?.IsInvalid != null)
+                //    {
+                //        double gradNorm = parameter.grad.norm().item<float>();
+                //        AlphaZeroEngine.WriteLine($"Layer: {pName} | Gradient Norm: {gradNorm:F6}");
+
+                //        if (gradNorm == 0.0)
+                //            AlphaZeroEngine.WriteLine($"[CRITICAL] Vanishing gradient detected at {pName}!");
+                //        if (double.IsNaN(gradNorm) || double.IsInfinity(gradNorm))
+                //            AlphaZeroEngine.WriteLine($"[CRITICAL] Exploding gradient / NaNs detected at {pName}!");
+                //    }
+                //}
+
+                lastPolicyLoss = policyLoss.item<float>();
+                lastValueLoss = valueLoss.item<float>();
+                lastLoss = loss.item<float>();
+            }
+
+            AlphaZeroLog.WriteLine($"Loss policy: {lastPolicyLoss}");
+            AlphaZeroLog.WriteLine($"Loss value: {lastValueLoss}");
+            AlphaZeroLog.WriteLine($"Loss: {lastLoss}");
+            AlphaZeroLog.WriteLine($"Policy entropy: {lastPolicyEntropy} (target: {lastTargetEntropy}, uniform: {Math.Log(actions)})");
+
+            return (lastPolicyLoss, lastValueLoss, lastLoss, lastPolicyEntropy);
+        }
+
+        /// <summary>The AlphaZero loop: self-play, train on the result, checkpoint, repeat.</summary>
+        public void Learn(string savePath)
+        {
+            Directory.CreateDirectory(savePath);
+
+            AlphaZeroLog.WriteLine($"cuda.is_available: {torch.cuda.is_available()}, training device: {device}");
+
+            // Replay buffer holding
+            // newest games makes each iteration overfit a small, freshly-generated sample and
+            // partially forget the previous one; mixing in recent history keeps the value
+            // targets stable and stops rare tactical positions from vanishing after one round.
+            // Game outcomes are ground truth, so older entries stay valid targets — only their
+            // policy distributions are slightly stale, which is the intended trade.
+            Queue<TrainingData> replayBuffer = new();
+
+            string replayBufferPath = Path.Combine(savePath, "training-buffer.dat");
+            if (File.Exists(replayBufferPath))
+            {
+                var replays = File.ReadAllLines(replayBufferPath);
+                foreach (var replay in replays)
+                {
+                    replayBuffer.Enqueue(JsonConvert.DeserializeObject<TrainingData>(replay));
+                }
+                var count = replayBuffer.Sum(x => x.Count);
+                AlphaZeroLog.WriteLine($"loaded {count} positions into replay buffer from {replays.Length} iteration(s)");
+            }
+
+            string trainingStatePath = Path.Combine(savePath, "training.json");
+            int startIteration = 0;
+            if (File.Exists(trainingStatePath))
+            {
+                startIteration = JsonConvert.DeserializeObject<TrainingState>(File.ReadAllText(trainingStatePath)).Iteration + 1;
+                AlphaZeroLog.WriteLine($"resuming at iteration {startIteration}");
+            }
+
+            for (int iteration = startIteration; iteration < config.NumIterations; iteration++)
+            {
+                AlphaZeroLog.WriteLine($"iteration {iteration}");
+
+                TrainingData fresh = new TrainingData();
+                model.eval();
+                for (int j = 0; j < SelfPlayCallsPerIteration; j++)
+                {
+                    AlphaZeroLog.WriteLine($"Self-play {j + 1}");
+                    fresh.Add(SelfPlay());
+                }
+
+                //var test = new TrainingData();
+                //while (test.Count < 2048)
+                //{
+                //    test.Add(new Board(), [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 1.0f);
+                //}
+                //fresh.Add(test);
+
+                replayBuffer.Enqueue(fresh);
+                while (replayBuffer.Count > config.ReplayBufferIterations)
+                {
+                    replayBuffer.Dequeue();
+                }
+
+                TrainingData previous = new TrainingData();
+                foreach (TrainingData batch in replayBuffer.SkipLast(1))
+                {
+                    previous.Add(batch);
+                }
+
+                int sampleLimit = config.BatchSize * config.BatchesPerIteration;
+                int historicalCount = Math.Max(0, Math.Min(previous.Count, sampleLimit - fresh.Count));
+                int[] historicalIndices = Enumerable.Range(0, previous.Count).ToArray();
+                Random.Shared.Shuffle(historicalIndices);
+
+                var samples = new List<(Board State, double[] Probs, float Value)>(fresh.Count + historicalCount);
+                for (int i = 0; i < fresh.Count; i++)
+                {
+                    samples.Add((fresh.States[i], fresh.Probs[i], fresh.Values[i]));
+                }
+                for (int k = 0; k < historicalCount; k++)
+                {
+                    int i = historicalIndices[k];
+                    samples.Add((previous.States[i], previous.Probs[i], previous.Values[i]));
+                }
+                var shuffled = samples.ToArray();
+                Random.Shared.Shuffle(shuffled);
+
+                TrainingData data = new TrainingData();
+                foreach (var (state, probs, value) in shuffled)
+                {
+                    data.Add(state, probs, value);
+                }
+                AlphaZeroLog.WriteLine($"training on {data.Count} positions ({fresh.Count} fresh + {historicalCount} historical) from {replayBuffer.Count} iteration{(replayBuffer.Count == 1 ? "" : "s")}");
+                model.train();
+                var lastLoss = (0.0, 0.0, 0.0, 0.0);
+                for (int epoch = 0; epoch < config.NumEpochs; epoch++)
+                {
+                    AlphaZeroLog.WriteLine($"epoch {epoch}");
+                    lastLoss = Train(data);
+                }
+
+                scheduler.step();
+                foreach (var group in optimizer.ParamGroups)
+                {
+                    group.LearningRate = Math.Max(group.LearningRate, config.MinLearningRate);
+                }
+                var lr = scheduler.get_last_lr();
+                AlphaZeroLog.WriteLine($"Current LR: {string.Join(",", lr)}");
+
+                string format = "0.##################################################";
+
+                string path2 = Path.Combine(savePath, "training-model.dat");
+                SaveWithBackup(path2, p => model.save(p));
+
+                var displayWinRate = "n/a";
+                //if ((iteration + 1) % 10 == 0 && config.NumParallelGames > 128)
+                //{
+                //    displayWinRate = GetWinRate(savePath, 10, 1000, 1000, 1000).ToString(format);
+                //}
+
+                string status = Path.Combine(savePath, "status.csv");
+                List<string> statusLines = new();
+                if (!File.Exists(status))
+                {
+                    statusLines.Add("iteration,timestamp,games,policy loss,value loss,total loss,entropy,learning rate,win rate");
+                }
+                statusLines.Add($"{iteration + 1},{DateTime.Now.ToString("yyyyMMddHHmmss")},{config.NumSelfPlayIterations * (iteration + 1)},{lastLoss.Item1.ToString(format)},{lastLoss.Item2.ToString(format)},{lastLoss.Item3.ToString(format)},{lastLoss.Item4.ToString(format)},{lr.First().ToString(format)},{displayWinRate}");
+                AppendWithBackup(status, statusLines);
+                string path1 = Path.Combine(savePath, $"model-{config.NumSelfPlayIterations * (iteration + 1)}-{DateTime.Now.ToString("yyyyMMddHHmmss")}.dat");
+                model.save(path1);
+
+                string path3 = Path.Combine(savePath, "training-optimizer.dat");
+                SaveWithBackup(path3, p => optimizer.save_state_dict(p));
+                SaveWithBackup(replayBufferPath, p => File.WriteAllLines(p, replayBuffer.Select(x => JsonConvert.SerializeObject(x))));
+                SaveWithBackup(trainingStatePath, p => File.WriteAllText(p, JsonConvert.SerializeObject(new TrainingState { Iteration = iteration })));
+            }
+        }
+
+        /// <summary>Renames an existing file to a single ".bak" copy, replacing any previous backup. Returns false if the rename failed.</summary>
+        private static bool TryBackupFile(string path)
+        {
+            if (!File.Exists(path))
+            {
+                return true;
+            }
+
+            string backupPath = path + ".bak";
+            try
+            {
+                if (File.Exists(backupPath))
+                {
+                    File.Delete(backupPath);
+                }
+                File.Move(path, backupPath);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                AlphaZeroLog.WriteLine($"Failed to back up {path}: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>Backs up an existing file, then writes the new file. If the backup failed, writes a timestamped copy of the path instead.</summary>
+        private static void SaveWithBackup(string path, Action<string> save)
+        {
+            string written = path;
+            if (!TryBackupFile(path))
+            {
+                written = UniqueTimestampedPath(path);
+                AlphaZeroLog.WriteLine($"Backup of {path} failed; saving to {written} instead.");
+            }
+            save(written);
+            CopyToBackupFolder(written);
+        }
+
+        /// <summary>Copies an existing file to a single ".bak" copy, then appends lines. If the copy failed, appends to a timestamped copy of the path instead.</summary>
+        private static void AppendWithBackup(string path, IEnumerable<string> lines)
+        {
+            string written = path;
+            if (File.Exists(path))
+            {
+                try
+                {
+                    File.Copy(path, path + ".bak", true);
+                }
+                catch (Exception ex)
+                {
+                    written = UniqueTimestampedPath(path);
+                    AlphaZeroLog.WriteLine($"Failed to back up {path}: {ex.Message}; appending to {written} instead.");
+                }
+            }
+            File.AppendAllLines(written, lines);
+            CopyToBackupFolder(written);
+        }
+
+        private static string UniqueTimestampedPath(string path)
+        {
+            return $"{path}.{DateTime.Now.ToString("yyyyMMddHHmmss")}.dat";
+        }
+
+        /// <summary>Copies a written file to the configured Linux folder. Only compiled for Linux builds.</summary>
+        private static void CopyToBackupFolder(string path)
+        {
+#if LINUX
+            const string folder = "/home/scott/volcanoes";
+            try
+            {
+                Directory.CreateDirectory(folder);
+                File.Copy(path, Path.Combine(folder, Path.GetFileName(path)), true);
+            }
+            catch (Exception ex)
+            {
+                AlphaZeroLog.WriteLine($"Failed to copy {path} to {folder}: {ex.Message}");
+            }
+#endif
+        }
+
+        private sealed class TrainingState
+        {
+            public int Iteration { get; set; }
+        }
+
+        private static readonly object lossLogLock = new();
+
+        private static void AppendLoss(string savePath, string one, string two, int onesims, int twosims, string winner, string victory, string transcript)
+        {
+            try
+            {
+                lock (lossLogLock)
+                {
+                    string path = Path.Combine(savePath, "losses.csv");
+                    if (!File.Exists(path))
+                    {
+                        File.AppendAllLines(path, ["time,one,two,onesims,twosims,winner,victory,transcript"]);
+                    }
+                    string line = string.Join(",", DateTime.Now.ToString("yyyyMMddHHmmss"), one, two, onesims, twosims, winner, victory, "\"" + transcript.Replace("\"", "\"\"") + "\"");
+                    File.AppendAllLines(path, [line]);
+                }
+            }
+            catch (Exception ex)
+            {
+                AlphaZeroLog.WriteLine($"Failed to append to losses.csv: {ex.Message}");
+            }
+        }
+
+        private double GetWinRate(string savePath, int rounds, int alphasims, int benchsimstart, int benchsiminc)
+        {
+            var wins = 0;
+            var games = new List<Action>();
+            var timer = Stopwatch.StartNew();
+
+            for (var i = 0; i < rounds; i++)
+            {
+                var round = i;
+                var sims = benchsimstart + benchsiminc * round;
+                games.Add(() =>
+                {
+                    try
+                    {
+                        var killswitch = Stopwatch.StartNew();
+                        var game = new VolcanoGame();
+                        var victory = VictoryType.None;
+                        game.OnGameOver += (p, v) => victory = v;
+
+                        var opponent = new MonteCarloTreeSearchEngine(MCTSVersion.V2) { ForcedSimulations = sims };
+                        var model = CreateBenchmarkEngine(savePath, alphasims);
+
+                        game.RegisterEngine(Player.One, round % 2 == 0 ? model : opponent, true);
+                        game.RegisterEngine(Player.Two, round % 2 == 0 ? opponent : model, true);
+                        game.SecondsPerEngineMove = 120;
+                        game.TimeoutGrace = 5000;
+                        game.StartNewGame();
+                        game.ComputerPlay();
+
+                        while (victory == VictoryType.None &&
+                            game.CurrentState.Winner == Player.Empty &&
+                            game.CurrentState.Turn < VolcanoGame.Settings.TournamentAdjudicateMaxTurns &&
+                            killswitch.ElapsedMilliseconds < VolcanoGame.Settings.TournamentAdjudicateMaxSeconds * 1000)
+                        {
+                            System.Threading.Thread.Sleep(100);
+                        }
+
+                        game.ForceStop();
+
+                        if (game.CurrentState.Winner == Player.One && round % 2 == 0)
+                        {
+                            wins++;
+                        }
+                        if (game.CurrentState.Winner == Player.Two && round % 2 == 1)
+                        {
+                            wins++;
+                        }
+                        if (game.CurrentState.Winner == (round % 2 == 0 ? Player.Two : Player.One))
+                        {
+                            AppendLoss(
+                                savePath,
+                                round % 2 == 0 ? "model" : "bench",
+                                round % 2 == 0 ? "bench" : "model",
+                                round % 2 == 0 ? alphasims : sims,
+                                round % 2 == 0 ? sims : alphasims,
+                                game.CurrentState.Winner == Player.One ? "one" : (game.CurrentState.Winner == Player.Two ? "two" : "draw"),
+                                victory.ToString(),
+                                game.GetTranscriptLine());
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        try
+                        {
+                            using (var sw = new StreamWriter("errors.txt", true))
+                            {
+                                sw.WriteLine("Failed to run validation game: " + ex.ToString());
+                            }
+
+                            AlphaZeroLog.WriteLine("Failed to run validation game: " + ex.Message);
+                        }
+                        catch
+                        {
+                            // oh well
+                        }
+                    }
+                });
+            }
+
+            Parallel.ForEach(games, g => g());
+
+            AlphaZeroLog.WriteLine($"Won {wins} of {rounds} games in {timer.Elapsed.ToString(@"hh\:mm\:ss")}");
+
+            return (double)wins / rounds;
+        }
+    }
+}

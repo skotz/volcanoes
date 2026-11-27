@@ -25,6 +25,10 @@ namespace Volcano.Game
 
         public bool allowHash;
         public bool fastWinSearch;
+        public bool _floodWinSearch;
+
+        // whether the board tiles have been inverted for perspective
+        public bool Flipped;
 
         public ConcurrentDictionary<long, Player> winHashes;
 
@@ -43,8 +47,12 @@ namespace Volcano.Game
             Tiles = new int[80];
             Dormant = new bool[80];
             Winner = Player.Empty;
-            WinningPathPlayerOne = new List<int>();
-            WinningPathPlayerTwo = new List<int>();
+            if (!StaticBoardSlim.Enabled)
+            {
+                WinningPathPlayerOne = new List<int>();
+                WinningPathPlayerTwo = new List<int>();
+            }
+            Flipped = false;
         }
 
         public Board(Board copy)
@@ -56,8 +64,16 @@ namespace Volcano.Game
             Player = copy.Player;
             Turn = copy.Turn;
             Winner = copy.Winner;
-            WinningPathPlayerOne = copy.WinningPathPlayerOne;
-            WinningPathPlayerTwo = copy.WinningPathPlayerTwo;
+            if (!StaticBoardSlim.Enabled)
+            {
+                WinningPathPlayerOne = copy.WinningPathPlayerOne;
+                WinningPathPlayerTwo = copy.WinningPathPlayerTwo;
+            }
+            Flipped = copy.Flipped;
+
+            winHashes = copy.winHashes;
+            fastWinSearch = copy.fastWinSearch;
+            _floodWinSearch = copy._floodWinSearch;
         }
 
         /// <summary>
@@ -252,8 +268,12 @@ namespace Volcano.Game
             if (phases <= 0)
             {
                 Winner = Player.Draw;
-                WinningPathPlayerOne = new List<int>();
-                WinningPathPlayerTwo = new List<int>();
+
+                if (!StaticBoardSlim.Enabled)
+                {
+                    WinningPathPlayerOne = new List<int>();
+                    WinningPathPlayerTwo = new List<int>();
+                }
             }
         }
 
@@ -261,10 +281,21 @@ namespace Volcano.Game
         {
             Winner = Player.Empty;
 
+            //if (Tiles[24] == 4)
+            //{
+            //    Winner = Player.One;
+            //    return;
+            //}
+            //else if (Tiles[24] == -4)
+            //{
+            //    Winner = Player.Two;
+            //    return;
+            //}
+
             var hash = 0L;
             if (allowHash)
             {
-                hash = GetHash();
+                hash = GetSimpleHash();
                 if (winHashes.ContainsKey(hash))
                 {
                     Winner = winHashes[hash];
@@ -272,56 +303,105 @@ namespace Volcano.Game
                 }
             }
 
-            // We only need to cover the first 40 tiles since their antipodes cover the last 40
-            for (int i = 0; i < 40; i++)
+            // Training only
+            if (StaticWinCache.Enabled)
             {
-                if (Tiles[i] != 0 &&
-                    ((Tiles[Constants.Antipodes[i]] > 0 && Tiles[i] > 0) || (Tiles[Constants.Antipodes[i]] < 0 && Tiles[i] < 0)) &&
-                    Math.Abs(Tiles[i]) > VolcanoGame.Settings.MaxMagmaChamberLevel &&
-                    Math.Abs(Tiles[Constants.Antipodes[i]]) > VolcanoGame.Settings.MaxMagmaChamberLevel)
+                hash = GetSimpleHash();
+                if (StaticWinCache.Winners.TryGetValue(hash, out var winner))
                 {
-                    // Only search until we find a winner or detect a draw
-                    if (Winner == Player.Empty || (Winner == Player.One && Tiles[i] < 0) || (Winner == Player.Two && Tiles[i] > 0))
-                    {
-                        if (fastWinSearch)
-                        {
-                            var winner = FastWinSearch(i, Constants.Antipodes[i]);
-                            if (winner != Player.Empty)
-                            {
-                                if (Tiles[i] > 0)
-                                {
-                                    Winner = Winner != Player.Empty ? Player.Draw : Player.One;
-                                }
-                                else
-                                {
-                                    Winner = Winner != Player.Empty ? Player.Draw : Player.Two;
-                                }
+                    Winner = winner;
+                    return;
+                }
+            }
 
-                                if (Winner == Player.Draw)
+            //if (Tiles[42] > 0)
+            //{
+            //    Winner = Player.One;
+            //    return;
+            //}
+            //else if (Tiles[42] < 0)
+            //{
+            //    Winner = Player.Two;
+            //    return;
+            //}
+
+            if (_floodWinSearch)
+            {
+                var win = FloodWinSearch();
+                if (win[0] && !win[1])
+                {
+                    Winner = Player.One;
+                }
+                else if (!win[0] && win[1])
+                {
+                    Winner = Player.Two;
+                }
+                else if (win[0] && win[1])
+                {
+                    Winner = Player.Draw;
+                }
+            }
+            else
+            {
+                // We only need to cover the first 40 tiles since their antipodes cover the last 40
+                for (int i = 0; i < 40; i++)
+                {
+                    if (Tiles[i] != 0 &&
+                        ((Tiles[Constants.Antipodes[i]] > 0 && Tiles[i] > 0) || (Tiles[Constants.Antipodes[i]] < 0 && Tiles[i] < 0)) &&
+                        Math.Abs(Tiles[i]) > VolcanoGame.Settings.MaxMagmaChamberLevel &&
+                        Math.Abs(Tiles[Constants.Antipodes[i]]) > VolcanoGame.Settings.MaxMagmaChamberLevel)
+                    {
+                        // Only search until we find a winner or detect a draw
+                        if (Winner == Player.Empty || (Winner == Player.One && Tiles[i] < 0) || (Winner == Player.Two && Tiles[i] > 0))
+                        {
+                            if (fastWinSearch || StaticWinSearch.Enabled)
+                            {
+                                var winner = FastWinSearch(i, Constants.Antipodes[i]);
+                                if (winner != Player.Empty)
                                 {
-                                    return;
+                                    if (Tiles[i] > 0)
+                                    {
+                                        Winner = Winner != Player.Empty ? Player.Draw : Player.One;
+                                    }
+                                    else
+                                    {
+                                        Winner = Winner != Player.Empty ? Player.Draw : Player.Two;
+                                    }
+
+                                    if (Winner == Player.Draw)
+                                    {
+                                        return;
+                                    }
                                 }
                             }
-                        }
-                        else
-                        {
-                            var path = pathFinder.FindPath(this, i, Constants.Antipodes[i]).Path;
-                            if (path.Count > 0)
+                            else
                             {
-                                if (Tiles[i] > 0)
+                                var path = pathFinder.FindPath(this, i, Constants.Antipodes[i]).Path;
+                                if (path.Count > 0)
                                 {
-                                    Winner = Winner != Player.Empty ? Player.Draw : Player.One;
-                                    WinningPathPlayerOne = path;
-                                }
-                                else
-                                {
-                                    Winner = Winner != Player.Empty ? Player.Draw : Player.Two;
-                                    WinningPathPlayerTwo = path;
-                                }
+                                    if (Tiles[i] > 0)
+                                    {
+                                        Winner = Winner != Player.Empty ? Player.Draw : Player.One;
 
-                                if (Winner == Player.Draw)
-                                {
-                                    return;
+                                        if (!StaticBoardSlim.Enabled)
+                                        {
+                                            WinningPathPlayerOne = path;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Winner = Winner != Player.Empty ? Player.Draw : Player.Two;
+
+                                        if (!StaticBoardSlim.Enabled)
+                                        {
+                                            WinningPathPlayerTwo = path;
+                                        }
+                                    }
+
+                                    if (Winner == Player.Draw)
+                                    {
+                                        return;
+                                    }
                                 }
                             }
                         }
@@ -333,39 +413,130 @@ namespace Volcano.Game
             {
                 winHashes[hash] = Winner;
             }
+
+            if (StaticWinCache.Enabled)
+            {
+                StaticWinCache.Winners.TryAdd(hash, Winner);
+            }
         }
+
+        //private void Test()
+        //{
+        //    var test = TotalWinSearch();
+        //    if (test[0] && !test[1] && Winner != Player.One)
+        //    {
+        //        var t = 1;
+        //    }
+        //    else if (!test[0] && test[1] && Winner != Player.Two)
+        //    {
+        //        var t = 1;
+        //    }
+        //    else if (test[0] && test[1] && Winner != Player.Draw)
+        //    {
+        //        var t = 1;
+        //    }
+        //    else if (!test[0] && !test[1] && Winner != Player.Empty)
+        //    {
+        //        var t = 1;
+        //    }
+        //}
 
         private Player FastWinSearch(int start, int end)
         {
             var visited = new bool[80];
-            var queue = new Queue<int>();
+            var queue = new int[80];
+            var qi = 0;
+            var qh = 0;
 
-            queue.Enqueue(start);
+            queue[qh++] = start;
+            visited[start] = true;
 
-            while (queue.Count > 0)
+            while (qi < qh)
             {
-                var next = queue.Dequeue();
+                var next = queue[qi++];
 
-                if (!visited[next])
+                if (next == end)
                 {
-                    visited[next] = true;
+                    return Tiles[next] > 0 ? Player.One : Player.Two;
+                }
 
-                    if ((Tiles[next] > 0 && Tiles[start] > 0) || (Tiles[next] < 0 && Tiles[start] < 0))
+                // Check if tile belongs to the same player as the start tile
+                if ((Tiles[next] > 0 && Tiles[start] > 0) || (Tiles[next] < 0 && Tiles[start] < 0))
+                {
+                    var adjacent = Constants.AdjacentIndexes[next];
+                    for (int i = 0; i < adjacent.Length; i++)
                     {
-                        if (next == end)
+                        int neighbor = adjacent[i];
+                        if (!visited[neighbor])
                         {
-                            return Tiles[next] > 0 ? Player.One : Player.Two;
-                        }
-
-                        for (int i = 0; i < Constants.AdjacentIndexes[next].Length; i++)
-                        {
-                            queue.Enqueue(Constants.AdjacentIndexes[next][i]);
+                            visited[neighbor] = true;
+                            queue[qh++] = neighbor;
                         }
                     }
                 }
             }
 
             return Player.Empty;
+        }
+
+        private bool[] FloodWinSearch()
+        {
+            var win = new bool[2];
+            var visited = new bool[80];
+
+            for (var p = 0; p < 2; p++)
+            {
+                var done = false;
+                for (var i = 0; i < 40 && !done; i++)
+                {
+                    if (!visited[i] && ((Tiles[i] > 0 && p == 0) || (Tiles[i] < 0 && p == 1)))
+                    {
+                        var group = new bool[80];
+                        var target = new bool[80];
+
+                        var queue = new int[80];
+                        var qi = 0;
+                        var qh = 0;
+
+                        queue[qh++] = i;
+                        group[i] = true;
+                        visited[i] = true;
+                        target[Constants.Antipodes[i]] = true;
+
+                        while (qi < qh)
+                        {
+                            var next = queue[qi++];
+
+                            // Check if tile belongs to the same player as the start tile
+                            if ((Tiles[next] > 0 && p == 0) || (Tiles[next] < 0 && p == 1))
+                            {
+                                if (target[next])
+                                {
+                                    done = true;
+                                    win[p] = true;
+                                    break;
+                                }
+
+                                visited[next] = true;
+                                target[Constants.Antipodes[next]] = true;
+
+                                var adjacent = Constants.AdjacentIndexes[next];
+                                for (var a = 0; a < adjacent.Length; a++)
+                                {
+                                    var neighbor = adjacent[a];
+                                    if (!group[neighbor])
+                                    {
+                                        group[neighbor] = true;
+                                        queue[qh++] = neighbor;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return win;
         }
 
         /// <summary>
@@ -474,13 +645,60 @@ namespace Volcano.Game
         }
 
         /// <summary>
+        /// Get the current player adjusted for flipped states
+        /// </summary>
+        /// <returns></returns>
+        public Player GetAbsolutePlayer()
+        {
+            if (Flipped)
+            {
+                if (Player == Player.One)
+                {
+                    return Player.Two;
+                }
+                else if (Player == Player.Two)
+                {
+                    return Player.One;
+                }
+            }
+
+            return Player;
+        }
+
+        /// <summary>
+        /// Get the winning player adjusted for flipped states
+        /// </summary>
+        /// <returns></returns>
+        public Player GetAbsoluteWinner()
+        {
+            if (Flipped)
+            {
+                if (Winner == Player.One)
+                {
+                    return Player.Two;
+                }
+                else if (Winner == Player.Two)
+                {
+                    return Player.One;
+                }
+            }
+
+            return Winner;
+        }
+
+        public int GetAbsoluteTurn()
+        {
+            return Turn - (Flipped ? 3 : 0);
+        }
+
+        /// <summary>
         /// Which player should move on a given turn number.
         /// </summary>
         /// <param name="turn"></param>
         /// <returns></returns>
-        private Player GetPlayerForTurn(int turn)
+        public Player GetPlayerForTurn(int turn)
         {
-            switch ((turn - 1) % 6)
+            switch ((turn - 1 + 6) % 6)
             {
                 case 0:
                 case 4:
@@ -512,7 +730,7 @@ namespace Volcano.Game
         /// </summary>
         /// <param name="turn"></param>
         /// <returns></returns>
-        private MoveType GetMoveTypeForTurn(int turn)
+        public MoveType GetMoveTypeForTurn(int turn)
         {
             switch ((turn - 1) % 6)
             {
@@ -529,13 +747,43 @@ namespace Volcano.Game
             }
         }
 
-        public long GetHash()
+        /// <summary>
+        /// Whether it's the first or second move for a given player (since you get two in a row)
+        /// </summary>
+        /// <param name="turn"></param>
+        /// <returns></returns>
+        public int GetMoveNumber()
+        {
+            if (GetMoveTypeForTurn(Turn + 1) == MoveType.AllGrow)
+            {
+                return 1;
+            }
+            else
+            {
+                return 2;
+            }
+        }
+
+        public long GetSimpleHash()
         {
             long hash = 0;
 
             for (int i = 0; i < 80; i++)
             {
+                // this only hashes for win detection, not unique board states
                 hash ^= Constants.ZobristKeys[i, Tiles[i] == 0 ? 0 : (Tiles[i] > 0 ? 1 : 2)];
+            }
+
+            return hash;
+        }
+
+        public long GetFullHash()
+        {
+            var hash = 0L;
+
+            for (int i = 0; i < 80; i++)
+            {
+                hash ^= Constants.ZobristKeys[i, Tiles[i] + 4];
             }
 
             return hash;

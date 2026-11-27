@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Volcano.Engine
 {
-    class EngineHelper
+    internal class EngineHelper
     {
         private Dictionary<string, Func<IEngine>> _engines;
 
@@ -32,7 +30,7 @@ namespace Volcano.Engine
                 return _engines.Select(x => x.Key).ToList();
             }
         }
-        
+
         public IEngine GetEngine(string name)
         {
             if (_engines.ContainsKey(name))
@@ -41,6 +39,23 @@ namespace Volcano.Engine
             }
 
             return null;
+        }
+
+        public bool IsValid(string name)
+        {
+            try
+            {
+                return GetEngine(name) != null;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool SupportsSimulations(string name)
+        {
+            return GetEngine(name) is ISimulate;
         }
     }
 }

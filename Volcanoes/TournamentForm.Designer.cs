@@ -29,167 +29,217 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TournamentForm));
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            this.label1 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
-            this.checkedListBox1 = new System.Windows.Forms.CheckedListBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.numSecondsPerMove = new System.Windows.Forms.NumericUpDown();
-            this.cbSelfPlay = new System.Windows.Forms.CheckBox();
-            this.comboType = new System.Windows.Forms.ComboBox();
-            this.label4 = new System.Windows.Forms.Label();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numSecondsPerMove)).BeginInit();
-            this.SuspendLayout();
+            numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+            label1 = new System.Windows.Forms.Label();
+            button1 = new System.Windows.Forms.Button();
+            checkedListBox1 = new System.Windows.Forms.CheckedListBox();
+            label2 = new System.Windows.Forms.Label();
+            label3 = new System.Windows.Forms.Label();
+            numSecondsPerMove = new System.Windows.Forms.NumericUpDown();
+            cbSelfPlay = new System.Windows.Forms.CheckBox();
+            comboType = new System.Windows.Forms.ComboBox();
+            label4 = new System.Windows.Forms.Label();
+            cbParallel = new System.Windows.Forms.CheckBox();
+            button2 = new System.Windows.Forms.Button();
+            button3 = new System.Windows.Forms.Button();
+            rbSeconds = new System.Windows.Forms.RadioButton();
+            rbSimulations = new System.Windows.Forms.RadioButton();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numSecondsPerMove).BeginInit();
+            SuspendLayout();
             // 
             // numericUpDown1
             // 
-            this.numericUpDown1.Location = new System.Drawing.Point(120, 12);
-            this.numericUpDown1.Maximum = new decimal(new int[] {
-            1000000,
-            0,
-            0,
-            0});
-            this.numericUpDown1.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(280, 20);
-            this.numericUpDown1.TabIndex = 4;
-            this.numericUpDown1.Value = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
+            numericUpDown1.Location = new System.Drawing.Point(140, 14);
+            numericUpDown1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numericUpDown1.Maximum = new decimal(new int[] { 1000000, 0, 0, 0 });
+            numericUpDown1.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            numericUpDown1.Name = "numericUpDown1";
+            numericUpDown1.Size = new System.Drawing.Size(327, 23);
+            numericUpDown1.TabIndex = 4;
+            numericUpDown1.Value = new decimal(new int[] { 5, 0, 0, 0 });
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 12);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(44, 13);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "Rounds";
+            label1.AutoSize = true;
+            label1.Location = new System.Drawing.Point(14, 14);
+            label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(47, 15);
+            label1.TabIndex = 3;
+            label1.Text = "Rounds";
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(325, 403);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 5;
-            this.button1.Text = "Start";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            button1.Location = new System.Drawing.Point(379, 465);
+            button1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            button1.Name = "button1";
+            button1.Size = new System.Drawing.Size(88, 27);
+            button1.TabIndex = 5;
+            button1.Text = "Start";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
             // 
             // checkedListBox1
             // 
-            this.checkedListBox1.CheckOnClick = true;
-            this.checkedListBox1.FormattingEnabled = true;
-            this.checkedListBox1.Location = new System.Drawing.Point(120, 91);
-            this.checkedListBox1.Name = "checkedListBox1";
-            this.checkedListBox1.Size = new System.Drawing.Size(280, 304);
-            this.checkedListBox1.TabIndex = 6;
+            checkedListBox1.CheckOnClick = true;
+            checkedListBox1.FormattingEnabled = true;
+            checkedListBox1.Location = new System.Drawing.Point(140, 105);
+            checkedListBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            checkedListBox1.Name = "checkedListBox1";
+            checkedListBox1.Size = new System.Drawing.Size(326, 346);
+            checkedListBox1.TabIndex = 6;
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 91);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(41, 13);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Players";
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(14, 105);
+            label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(44, 15);
+            label2.TabIndex = 3;
+            label2.Text = "Players";
             // 
             // label3
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 38);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(98, 13);
-            this.label3.TabIndex = 3;
-            this.label3.Text = "Seconds Per Move";
+            label3.AutoSize = true;
+            label3.Location = new System.Drawing.Point(14, 44);
+            label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label3.Name = "label3";
+            label3.Size = new System.Drawing.Size(57, 15);
+            label3.TabIndex = 3;
+            label3.Text = "Per Move";
             // 
             // numSecondsPerMove
             // 
-            this.numSecondsPerMove.Location = new System.Drawing.Point(120, 38);
-            this.numSecondsPerMove.Maximum = new decimal(new int[] {
-            1000000,
-            0,
-            0,
-            0});
-            this.numSecondsPerMove.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numSecondsPerMove.Name = "numSecondsPerMove";
-            this.numSecondsPerMove.Size = new System.Drawing.Size(280, 20);
-            this.numSecondsPerMove.TabIndex = 4;
-            this.numSecondsPerMove.Value = new decimal(new int[] {
-            5,
-            0,
-            0,
-            0});
+            numSecondsPerMove.Location = new System.Drawing.Point(140, 44);
+            numSecondsPerMove.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numSecondsPerMove.Maximum = new decimal(new int[] { 1000000, 0, 0, 0 });
+            numSecondsPerMove.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            numSecondsPerMove.Name = "numSecondsPerMove";
+            numSecondsPerMove.Size = new System.Drawing.Size(143, 23);
+            numSecondsPerMove.TabIndex = 4;
+            numSecondsPerMove.Value = new decimal(new int[] { 5, 0, 0, 0 });
             // 
             // cbSelfPlay
             // 
-            this.cbSelfPlay.AutoSize = true;
-            this.cbSelfPlay.Location = new System.Drawing.Point(120, 407);
-            this.cbSelfPlay.Name = "cbSelfPlay";
-            this.cbSelfPlay.Size = new System.Drawing.Size(95, 17);
-            this.cbSelfPlay.TabIndex = 7;
-            this.cbSelfPlay.Text = "Allow Self Play";
-            this.cbSelfPlay.UseVisualStyleBackColor = true;
+            cbSelfPlay.AutoSize = true;
+            cbSelfPlay.Location = new System.Drawing.Point(140, 470);
+            cbSelfPlay.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            cbSelfPlay.Name = "cbSelfPlay";
+            cbSelfPlay.Size = new System.Drawing.Size(103, 19);
+            cbSelfPlay.TabIndex = 7;
+            cbSelfPlay.Text = "Allow Self Play";
+            cbSelfPlay.UseVisualStyleBackColor = true;
             // 
             // comboType
             // 
-            this.comboType.FormattingEnabled = true;
-            this.comboType.Items.AddRange(new object[] {
-            "Round Robin",
-            "Swiss Pairing"});
-            this.comboType.Location = new System.Drawing.Point(120, 64);
-            this.comboType.Name = "comboType";
-            this.comboType.Size = new System.Drawing.Size(280, 21);
-            this.comboType.TabIndex = 8;
-            this.comboType.SelectedIndexChanged += new System.EventHandler(this.comboType_SelectedIndexChanged);
+            comboType.FormattingEnabled = true;
+            comboType.Items.AddRange(new object[] { "Round Robin", "Swiss Pairing" });
+            comboType.Location = new System.Drawing.Point(140, 74);
+            comboType.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            comboType.Name = "comboType";
+            comboType.Size = new System.Drawing.Size(326, 23);
+            comboType.TabIndex = 8;
+            comboType.SelectedIndexChanged += comboType_SelectedIndexChanged;
             // 
             // label4
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 64);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(31, 13);
-            this.label4.TabIndex = 3;
-            this.label4.Text = "Type";
+            label4.AutoSize = true;
+            label4.Location = new System.Drawing.Point(14, 74);
+            label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label4.Name = "label4";
+            label4.Size = new System.Drawing.Size(31, 15);
+            label4.TabIndex = 3;
+            label4.Text = "Type";
+            // 
+            // cbParallel
+            // 
+            cbParallel.AutoSize = true;
+            cbParallel.Location = new System.Drawing.Point(251, 470);
+            cbParallel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            cbParallel.Name = "cbParallel";
+            cbParallel.Size = new System.Drawing.Size(64, 19);
+            cbParallel.TabIndex = 9;
+            cbParallel.Text = "Parallel";
+            cbParallel.UseVisualStyleBackColor = true;
+            // 
+            // button2
+            // 
+            button2.Location = new System.Drawing.Point(14, 133);
+            button2.Name = "button2";
+            button2.Size = new System.Drawing.Size(121, 23);
+            button2.TabIndex = 10;
+            button2.Text = "Check All";
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += button2_Click;
+            // 
+            // button3
+            // 
+            button3.Location = new System.Drawing.Point(14, 162);
+            button3.Name = "button3";
+            button3.Size = new System.Drawing.Size(121, 23);
+            button3.TabIndex = 10;
+            button3.Text = "Check None";
+            button3.UseVisualStyleBackColor = true;
+            button3.Click += button3_Click;
+            // 
+            // rbSeconds
+            // 
+            rbSeconds.AutoSize = true;
+            rbSeconds.Checked = true;
+            rbSeconds.Location = new System.Drawing.Point(304, 44);
+            rbSeconds.Name = "rbSeconds";
+            rbSeconds.Size = new System.Drawing.Size(69, 19);
+            rbSeconds.TabIndex = 11;
+            rbSeconds.TabStop = true;
+            rbSeconds.Text = "Seconds";
+            rbSeconds.UseVisualStyleBackColor = true;
+            rbSeconds.CheckedChanged += rbSeconds_CheckedChanged;
+            // 
+            // rbSimulations
+            // 
+            rbSimulations.AutoSize = true;
+            rbSimulations.Location = new System.Drawing.Point(379, 44);
+            rbSimulations.Name = "rbSimulations";
+            rbSimulations.Size = new System.Drawing.Size(87, 19);
+            rbSimulations.TabIndex = 12;
+            rbSimulations.Text = "Simulations";
+            rbSimulations.UseVisualStyleBackColor = true;
+            rbSimulations.CheckedChanged += rbSimulations_CheckedChanged;
             // 
             // TournamentForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(412, 438);
-            this.Controls.Add(this.comboType);
-            this.Controls.Add(this.cbSelfPlay);
-            this.Controls.Add(this.checkedListBox1);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.numSecondsPerMove);
-            this.Controls.Add(this.numericUpDown1);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.Name = "TournamentForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Volcanoes - Tournament";
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numSecondsPerMove)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            ClientSize = new System.Drawing.Size(481, 505);
+            Controls.Add(rbSimulations);
+            Controls.Add(rbSeconds);
+            Controls.Add(button3);
+            Controls.Add(button2);
+            Controls.Add(cbParallel);
+            Controls.Add(comboType);
+            Controls.Add(cbSelfPlay);
+            Controls.Add(checkedListBox1);
+            Controls.Add(button1);
+            Controls.Add(numSecondsPerMove);
+            Controls.Add(numericUpDown1);
+            Controls.Add(label4);
+            Controls.Add(label3);
+            Controls.Add(label2);
+            Controls.Add(label1);
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+            Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            MaximizeBox = false;
+            MinimizeBox = false;
+            Name = "TournamentForm";
+            StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            Text = "Volcanoes - Tournament";
+            ((System.ComponentModel.ISupportInitialize)numericUpDown1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numSecondsPerMove).EndInit();
+            ResumeLayout(false);
+            PerformLayout();
 
         }
 
@@ -205,5 +255,10 @@
         private System.Windows.Forms.CheckBox cbSelfPlay;
         private System.Windows.Forms.ComboBox comboType;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.CheckBox cbParallel;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.RadioButton rbSeconds;
+        private System.Windows.Forms.RadioButton rbSimulations;
     }
 }
