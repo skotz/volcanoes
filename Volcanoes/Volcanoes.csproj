@@ -65,6 +65,9 @@
     <PackageReference Include="libtorch-cpu-win-x64" Version="2.10.0" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="Books\openings-v4-gcnii-10k.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Books\openings-v1-60s.dat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

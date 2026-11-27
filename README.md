@@ -43,6 +43,8 @@ More information about the last two columns:
 
 Several trained deep neural network models and precomputed opening books are included. Some models are strong enough to beat vanilla MCTS (running 10,000+ simulations) on their policy output alone!
 
+![Model Training](Concept/History/z-history-20261127a.png)
+
 ## Features
 Most engines report their progress while searching for the best move.
 

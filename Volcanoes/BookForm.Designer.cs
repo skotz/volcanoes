@@ -56,7 +56,7 @@
             button1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             button1.Name = "button1";
             button1.Size = new System.Drawing.Size(123, 27);
-            button1.TabIndex = 2;
+            button1.TabIndex = 7;
             button1.Text = "Generate";
             button1.UseVisualStyleBackColor = true;
             button1.Click += button1_Click;
@@ -68,8 +68,8 @@
             numIterations.Maximum = new decimal(new int[] { 1000000000, 0, 0, 0 });
             numIterations.Name = "numIterations";
             numIterations.Size = new System.Drawing.Size(123, 23);
-            numIterations.TabIndex = 3;
-            numIterations.Value = new decimal(new int[] { 1000000, 0, 0, 0 });
+            numIterations.TabIndex = 1;
+            numIterations.Value = new decimal(new int[] { 10000, 0, 0, 0 });
             // 
             // label1
             // 
@@ -99,7 +99,7 @@
             numDepth.Name = "numDepth";
             numDepth.ReadOnly = true;
             numDepth.Size = new System.Drawing.Size(123, 23);
-            numDepth.TabIndex = 6;
+            numDepth.TabIndex = 0;
             numDepth.Value = new decimal(new int[] { 50, 0, 0, 0 });
             // 
             // progressBar2
@@ -134,8 +134,8 @@
             numGap.Maximum = new decimal(new int[] { 1000000000, 0, 0, 0 });
             numGap.Name = "numGap";
             numGap.Size = new System.Drawing.Size(123, 23);
-            numGap.TabIndex = 3;
-            numGap.Value = new decimal(new int[] { 250000, 0, 0, 0 });
+            numGap.TabIndex = 2;
+            numGap.Value = new decimal(new int[] { 10000, 0, 0, 0 });
             // 
             // label3
             // 
@@ -153,7 +153,7 @@
             cbParallel.Location = new System.Drawing.Point(96, 156);
             cbParallel.Name = "cbParallel";
             cbParallel.Size = new System.Drawing.Size(64, 19);
-            cbParallel.TabIndex = 10;
+            cbParallel.TabIndex = 5;
             cbParallel.Text = "Parallel";
             cbParallel.UseVisualStyleBackColor = true;
             // 
@@ -165,7 +165,7 @@
             cbResume.Location = new System.Drawing.Point(96, 131);
             cbResume.Name = "cbResume";
             cbResume.Size = new System.Drawing.Size(68, 19);
-            cbResume.TabIndex = 10;
+            cbResume.TabIndex = 4;
             cbResume.Text = "Resume";
             cbResume.UseVisualStyleBackColor = true;
             // 
@@ -177,7 +177,7 @@
             cbExtend.Location = new System.Drawing.Point(96, 181);
             cbExtend.Name = "cbExtend";
             cbExtend.Size = new System.Drawing.Size(62, 19);
-            cbExtend.TabIndex = 10;
+            cbExtend.TabIndex = 6;
             cbExtend.Text = "Extend";
             cbExtend.UseVisualStyleBackColor = true;
             // 
@@ -187,7 +187,7 @@
             btnStop.Location = new System.Drawing.Point(12, 204);
             btnStop.Name = "btnStop";
             btnStop.Size = new System.Drawing.Size(77, 27);
-            btnStop.TabIndex = 11;
+            btnStop.TabIndex = 8;
             btnStop.Text = "Stop";
             btnStop.UseVisualStyleBackColor = true;
             btnStop.Click += btnStop_Click;
@@ -197,7 +197,7 @@
             txtExtend.Location = new System.Drawing.Point(96, 102);
             txtExtend.Name = "txtExtend";
             txtExtend.Size = new System.Drawing.Size(123, 23);
-            txtExtend.TabIndex = 12;
+            txtExtend.TabIndex = 3;
             txtExtend.Text = "skotz";
             // 
             // label4

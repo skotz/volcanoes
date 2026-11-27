@@ -80,6 +80,7 @@ namespace Volcano
             engines.Add("MCTS Count Draws", () => new MonteCarloTreeSearchEngine() { _countDraws = true });
             engines.Add("MCTS v2", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2));
             engines.Add("MCTS v2 Book", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2, "Books\\openings-v3-ex-100000i.dat"));
+            engines.Add("MCTS v2 Book G-10", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2, "Books\\openings-v4-gcnii-10k.dat"));
             engines.Add("MCTS Persist", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _persistable = true });
 
             //engines.Add("MCTS v2 Rollout 0.5-1", () => new MonteCarloTreeSearchEngine(MCTSVersion.V2) { _rolloutStrategy = new BeelineRolloutStrategy(0.5, 1) });
@@ -155,6 +156,7 @@ namespace Volcano
             engines.Add("VolcanoZero GCNII v1 Policy", () => new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V1) { _policyOnly = true });
 
             engines.Add("VolcanoZero GCNII v2", () => new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V2));
+            engines.Add("VolcanoZero GCNII v2 Book", () => new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V2, "Books\\openings-v4-gcnii-10k.dat"));
             engines.Add("VolcanoZero GCNII v2 Policy", () => new AlphaZeroGraphEngine(VolcanoGraphZeroVersion.V2) { _policyOnly = true });
 
             if (File.Exists("C:\\Users\\Scott\\Documents\\GitHub\\volcanoes\\Volcanoes\\bin\\Release\\net10.0-windows\\models\\graph\\training-model.dat"))

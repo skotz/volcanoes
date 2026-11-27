@@ -73,9 +73,23 @@ namespace Volcano.Engine
         public int ForcedSimulations { get; set; } = -1;
         public bool forceFirstMove = true;
 
+        private OpeningBook _book;
+
         public AlphaZeroGraphEngine(VolcanoGraphZeroVersion version)
             : this(GetConfig(version), false)
         {
+        }
+
+        public AlphaZeroGraphEngine(VolcanoGraphZeroVersion version, string book)
+            : this(GetConfig(version), false)
+        {
+            _book = new OpeningBook(book);
+        }
+
+        public AlphaZeroGraphEngine(VolcanoGraphZeroVersion version, OpeningBook book)
+            : this(GetConfig(version), false)
+        {
+            _book = book;
         }
 
         public AlphaZeroGraphEngine(VolcanoGraphZeroConfig config)
@@ -152,6 +166,18 @@ namespace Volcano.Engine
 
         public SearchResult GetBestMove(Board state, int maxSeconds, EngineCancellationToken token)
         {
+            if (_book != null)
+            {
+                var bookMove = _book.GetMove(state.Transcript);
+                if (bookMove >= 0)
+                {
+                    return new SearchResult
+                    {
+                        BestMove = bookMove
+                    };
+                }
+            }
+
             var timer = Stopwatch.StartNew();
 
             if (forceFirstMove && state.Turn == 1 && state.Tiles.All(t => t == 0))
